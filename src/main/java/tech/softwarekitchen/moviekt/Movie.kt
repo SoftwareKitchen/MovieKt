@@ -14,6 +14,13 @@ data class Vector2i(val x: Int, val y: Int){
     }
 }
 
+/**
+ * Movie wrapper class
+ * @param name target file name
+ * @param length video length in seconds
+ * @param fps frames per second
+ * @param size width and height of the video
+ */
 class Movie(
     private val name: String,
     private val length: Int,
@@ -47,6 +54,13 @@ class Movie(
         outputStream = process.outputStream
     }
 
+    /**
+     * Write an image as frame into the video
+     * @param image the image
+     * @throws ImageSizeMismatchException image size doesn't match video size
+     * @throws VideoIsClosedException the video is already closed due to enough frames provided (1 + length\[s\] * fps)
+     * @throws FFMPEGDidntShutdownException enough frames were provided, but FFMPEG didn't shutdown itself
+     */
     @OptIn(ExperimentalUnsignedTypes::class)
     @Throws(ImageSizeMismatchException::class, VideoIsClosedException::class, FFMPEGDidntShutdownException::class)
     fun writeFrame(image: BufferedImage){
@@ -78,12 +92,21 @@ class Movie(
         }
     }
 
+    /**
+     * Render the entire video via callback function
+     * @param frameCallback Callback that provides a required frame with parameters (zero based number of Frames: Int, total number of frames in video: Int, frame time: Float)
+     */
     fun render(frameCallback: (Int,Int,Float) -> BufferedImage){
         while(framesWritten < numFrames){
             writeFrame(frameCallback(framesWritten,numFrames,framesWritten * (1 / fps.toFloat())))
         }
     }
 
+    /**
+     * Render the entire video via root clip
+     * @param rootFrame the video's root element
+     * @throws ImageSizeMismatchException clip size doesn't match video size
+     */
     @Throws(ImageSizeMismatchException::class)
     fun render(rootFrame: Clip){
         if(rootFrame.size.x != size.x || rootFrame.size.y != size.y){
