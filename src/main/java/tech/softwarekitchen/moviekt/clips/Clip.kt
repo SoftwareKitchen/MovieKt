@@ -6,12 +6,13 @@ import java.lang.Float.max
 import java.lang.Float.min
 
 abstract class Clip(
-    val base: Vector2i,
+    private val base: Vector2i,
     val size: Vector2i,
     val tOffset: Float,
     val visibilityDuration: Float?
 ){
     private val children =  ArrayList<Clip>()
+    private var dislocate: (Float, Float?, Float?) -> Vector2i = {tAbs, tTot, tRel -> Vector2i(0,0)}
     private var opacity: (Float, Float?, Float?) -> Float = {tAbs, tTot, tRel -> 1f}
     abstract fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float, tInternal: Float): BufferedImage
 
@@ -23,23 +24,33 @@ abstract class Clip(
         opacity = func
     }
 
+    fun setDislocate(func: (Float, Float?, Float?) -> Vector2i){
+        dislocate = func
+    }
+
+    fun getPosition(tAbs: Float, tTot: Float?, tRel: Float?): Vector2i{
+        return base.plus(dislocate(tAbs, tTot, tRel))
+    }
+
     fun render(frameNo: Int, nFrames: Int, t: Float): BufferedImage{
         val tInternal = t - tOffset
         val background = renderContent(frameNo, nFrames, t, tInternal)
+
+        val tFac = when(visibilityDuration){
+            null -> null
+            else -> tInternal / visibilityDuration
+        }
 
         children
             .filter{t >= it.tOffset && (it.visibilityDuration == null || t <= it.tOffset+it.visibilityDuration)}
             .forEach{
                 child ->
                 val childImg = child.render(frameNo, nFrames, tInternal)
-                background.graphics.drawImage(childImg,child.base.x, child.base.y,child.size.x,child.size.y,null)
+                val childPosition = child.getPosition(tInternal,visibilityDuration,tFac)
+                background.graphics.drawImage(childImg,childPosition.x,childPosition.y,child.size.x,child.size.y,null)
             }
 
         val copy = cloneImage(background)
-        val tFac = when(visibilityDuration){
-            null -> null
-            else -> tInternal / visibilityDuration
-        }
         val alpha = opacity(tInternal, visibilityDuration, tFac)
 
         if(alpha < 1f) {

@@ -8,7 +8,11 @@ import java.awt.image.BufferedImage
 import java.io.OutputStream
 import java.util.concurrent.TimeUnit
 
-data class Vector2i(val x: Int, val y: Int)
+data class Vector2i(val x: Int, val y: Int){
+    fun plus(other: Vector2i): Vector2i{
+        return Vector2i(x+other.x, y+other.y)
+    }
+}
 
 class Movie(
     private val name: String,
