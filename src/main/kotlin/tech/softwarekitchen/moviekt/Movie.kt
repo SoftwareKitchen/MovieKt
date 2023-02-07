@@ -1,5 +1,6 @@
 package tech.softwarekitchen.moviekt
 
+import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.Clip
 import tech.softwarekitchen.moviekt.exception.FFMPEGDidntShutdownException
 import tech.softwarekitchen.moviekt.exception.ImageSizeMismatchException
@@ -8,11 +9,6 @@ import java.awt.image.BufferedImage
 import java.io.OutputStream
 import java.util.concurrent.TimeUnit
 
-data class Vector2i(val x: Int, val y: Int){
-    fun plus(other: Vector2i): Vector2i{
-        return Vector2i(x+other.x, y+other.y)
-    }
-}
 
 /**
  * Movie wrapper class

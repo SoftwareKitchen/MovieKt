@@ -1,6 +1,6 @@
 package tech.softwarekitchen.moviekt.animation
 
-import tech.softwarekitchen.moviekt.Vector2i
+import tech.softwarekitchen.common.vector.Vector2i
 
 class DislocationAnimation(partialAnimation: (Float, Float?, Float?) -> Vector2i?): ChainableAnimation<Vector2i>(partialAnimation, Vector2i(0,0))
 

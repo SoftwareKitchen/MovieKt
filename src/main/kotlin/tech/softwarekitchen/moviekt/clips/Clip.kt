@@ -1,6 +1,6 @@
 package tech.softwarekitchen.moviekt.clips
 
-import tech.softwarekitchen.moviekt.Vector2i
+import tech.softwarekitchen.common.vector.Vector2i
 import java.awt.image.BufferedImage
 import java.lang.Float.max
 import java.lang.Float.min

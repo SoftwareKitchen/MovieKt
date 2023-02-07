@@ -29,6 +29,11 @@
             <version>${kotlin.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>tech.software-kitchen.common</groupId>
+            <artifactId>Common-Vector</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
 
     <build>
