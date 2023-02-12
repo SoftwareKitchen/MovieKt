@@ -7,6 +7,8 @@ import tech.softwarekitchen.moviekt.exception.ImageSizeMismatchException
 import tech.softwarekitchen.moviekt.exception.VideoIsClosedException
 import java.awt.image.BufferedImage
 import java.io.OutputStream
+import java.time.Duration
+import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
 
@@ -29,6 +31,7 @@ class Movie(
     private val outputStream: OutputStream
 
     init{
+        Thread(this::log).start()
         process = ProcessBuilder("ffmpeg"
             ,"-y"
             ,"-f","rawvideo"
@@ -48,6 +51,23 @@ class Movie(
             .redirectOutput(ProcessBuilder.Redirect.INHERIT)
             .start()
         outputStream = process.outputStream
+    }
+
+    private fun log(){
+        val startTime = LocalDateTime.now()
+        while(framesWritten < numFrames){
+            val now = LocalDateTime.now()
+            val elapsed = Duration.between(startTime, now)
+            val doneRatio = framesWritten.toDouble() / numFrames.toDouble()
+            val remaining = when(doneRatio){
+                0.0 -> "???"
+                else -> (elapsed.toSeconds() * (1.0 - doneRatio) / doneRatio).toInt().toString()
+            }
+
+            println("${String.format("%.2f",doneRatio * 100)}% Elapsed ${elapsed.toSeconds()}s Left: ${remaining}s")
+            Thread.sleep(5000)
+        }
+        println("--- Done ---")
     }
 
     /**
