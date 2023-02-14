@@ -9,13 +9,17 @@ import java.awt.image.BufferedImage
 data class Padding(val left: Int, val right: Int, val top: Int, val bottom: Int)
 
 enum class DiagramAxisLegendMode{
-    None, AxisOnly, Default
+    None, AxisOnly, Full
+}
+enum class DiagramAxisMode{
+    Linear, Logarithmic
 }
 data class DiagramAxisConfiguration(
-    val legendMode: DiagramAxisLegendMode = DiagramAxisLegendMode.Default,
+    val legendMode: DiagramAxisLegendMode = DiagramAxisLegendMode.AxisOnly,
     val min: Double? = null,
     val max: Double? = null,
-    val unit: String? = null
+    val unit: String? = null,
+    val mode: DiagramAxisMode? = DiagramAxisMode.Linear
 )
 
 abstract class DiagramClip(
@@ -32,12 +36,12 @@ abstract class DiagramClip(
         val bottomPadding = when(xAxis.legendMode){
             DiagramAxisLegendMode.None -> 0
             DiagramAxisLegendMode.AxisOnly -> 3
-            DiagramAxisLegendMode.Default -> 30
+            DiagramAxisLegendMode.Full -> 30
         }
         val leftPadding = when(yAxis.legendMode){
             DiagramAxisLegendMode.None -> 0
             DiagramAxisLegendMode.AxisOnly -> 3
-            DiagramAxisLegendMode.Default -> 70
+            DiagramAxisLegendMode.Full -> 70
         }
         padding = Padding(leftPadding,0,0,bottomPadding)
         dataDisplaySize = Vector2i(size.x - padding.left - padding.right, size.y - padding.top - padding.bottom)
@@ -62,16 +66,15 @@ abstract class DiagramClip(
     }
 
     private fun drawYAxis(graphics: Graphics2D){
+        graphics.color = Color.WHITE
         when(yAxis.legendMode){
             DiagramAxisLegendMode.None -> {}
             DiagramAxisLegendMode.AxisOnly -> {
-                graphics.color = Color.WHITE
                 graphics.fillRect(0,padding.top,padding.left,dataDisplaySize.y)
             }
-            DiagramAxisLegendMode.Default -> {
-                graphics.color = Color.WHITE
-
+            DiagramAxisLegendMode.Full-> {
                 val yAxisEntries = getYLegendEntries(dataDisplaySize.y)
+
                 for(item in yAxisEntries){
                     graphics.fillRect(padding.left-7,padding.top + item.pos-2,7,5)
                     graphics.drawString(item.legend,2,padding.top + item.pos+8)
@@ -82,15 +85,13 @@ abstract class DiagramClip(
     }
 
     private fun drawXAxis(graphics: Graphics2D){
+        graphics.color = Color.WHITE
         when(xAxis.legendMode){
             DiagramAxisLegendMode.None -> {}
             DiagramAxisLegendMode.AxisOnly -> {
-                graphics.color = Color.WHITE
                 graphics.fillRect(padding.left,size.y - padding.bottom,dataDisplaySize.x-padding.right,size.y)
             }
-            DiagramAxisLegendMode.Default -> {
-                graphics.color = Color.WHITE
-
+            DiagramAxisLegendMode.Full -> {
                 val xAxisEntries = getXLegendEntries(dataDisplaySize.x)
                 for(item in xAxisEntries){
                     graphics.fillRect(padding.left+item.pos-2,size.y - padding.bottom,5,7)

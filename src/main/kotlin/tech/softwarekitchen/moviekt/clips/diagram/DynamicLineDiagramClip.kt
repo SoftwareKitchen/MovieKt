@@ -7,7 +7,7 @@ import java.awt.Polygon
 import java.awt.image.BufferedImage
 
 enum class DynamicLineDiagramBackgroundGrid{
-    None, Y
+    None, X, Y
 }
 
 data class DynamicLineDiagramColorConfiguration(
@@ -32,13 +32,7 @@ class DynamicLineDiagramClip(
     override fun generateDataDisplay(size: Vector2i, frameNo: Int, nFrames: Int, tTotal: Float, tInternal: Float): BufferedImage {
         val image = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)
         val data = dataProvider()
-        val dataBounds = getDataBounds()
-        val xScale: (Double) -> Int = {
-            (size.x * (it - dataBounds.xmin) / (dataBounds.xmax - dataBounds.xmin)).toInt()
-        }
-        val yScale: (Double) -> Int = {
-            (size.y * (1 - (it - dataBounds.ymin) / (dataBounds.ymax - dataBounds.ymin))).toInt()
-        }
+        val (xScale, yScale) = getScreenMapper(size)
 
         val xMapped = data.indices.map{xScale(it.toDouble())}
         val dataMapped = data.map(yScale)

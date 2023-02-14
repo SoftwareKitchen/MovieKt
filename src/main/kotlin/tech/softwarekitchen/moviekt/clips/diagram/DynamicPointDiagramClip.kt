@@ -28,15 +28,14 @@ class DynamicPointDiagramClip(
         drawBackgroundGrid(img)
 
         val graphics = img.createGraphics()
-        val bounds = getDataBounds()
-        val xScaler: (Double) -> Int = {(size.x * (it - bounds.xmin) / (bounds.xmax - bounds.xmin)).toInt()}
-        val yScaler: (Double) -> Int = {(size.y * (1 - (it - bounds.ymin) / (bounds.ymax - bounds.ymin))).toInt()}
+        val (xScale, yScale) = getScreenMapper(size)
 
         val data = dataProvider()
+        val bounds = getDataBounds()
         graphics.color = Color.WHITE
         data.forEach {
-            val x = xScaler(it.x)
-            val y = yScaler(it.y)
+            val x = xScale(it.x)
+            val y = yScale(it.y)
             graphics.drawLine(x-5,y-5,x+5,y+5)
             graphics.drawLine(x-5,y+5,x+5,y-5)
         }
