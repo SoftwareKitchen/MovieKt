@@ -44,8 +44,9 @@ abstract class DiagramClip(
     }
 
     abstract fun generateDataDisplay(size: Vector2i, frameNo: Int, nFrames: Int, tTotal: Float, tInternal: Float): BufferedImage
-    data class YLegendEntry(val yPos: Int, val legend: String)
-    abstract fun getYLegendEntries(dataScreenHeight: Int): List<YLegendEntry>
+    data class LegendEntry(val pos: Int, val legend: String)
+    abstract fun getYLegendEntries(dataScreenHeight: Int): List<LegendEntry>
+    abstract fun getXLegendEntries(dataScreenWidth: Int): List<LegendEntry>
 
 
     override fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float, tInternal: Float): BufferedImage {
@@ -56,6 +57,7 @@ abstract class DiagramClip(
         targetGraph.drawImage(dataImage, padding.left, padding.top, null)
 
         drawYAxis(targetGraph)
+        drawXAxis(targetGraph)
         return target
     }
 
@@ -71,10 +73,30 @@ abstract class DiagramClip(
 
                 val yAxisEntries = getYLegendEntries(dataDisplaySize.y)
                 for(item in yAxisEntries){
-                    graphics.fillRect(padding.left-7,padding.top + item.yPos-2,7,5)
-                    graphics.drawString(item.legend,2,padding.top + item.yPos+8)
+                    graphics.fillRect(padding.left-7,padding.top + item.pos-2,7,5)
+                    graphics.drawString(item.legend,2,padding.top + item.pos+8)
                 }
                 graphics.fillRect(padding.left-4,padding.top,3,dataDisplaySize.y)
+            }
+        }
+    }
+
+    private fun drawXAxis(graphics: Graphics2D){
+        when(xAxis.legendMode){
+            DiagramAxisLegendMode.None -> {}
+            DiagramAxisLegendMode.AxisOnly -> {
+                graphics.color = Color.WHITE
+                graphics.fillRect(padding.left,size.y - padding.bottom,dataDisplaySize.x-padding.right,size.y)
+            }
+            DiagramAxisLegendMode.Default -> {
+                graphics.color = Color.WHITE
+
+                val xAxisEntries = getXLegendEntries(dataDisplaySize.x)
+                for(item in xAxisEntries){
+                    graphics.fillRect(padding.left+item.pos-2,size.y - padding.bottom,5,7)
+                    graphics.drawString(item.legend,padding.left + item.pos-20,size.y - padding.bottom + 20)
+                }
+                graphics.fillRect(padding.left,size.y - padding.bottom,dataDisplaySize.x,3)
             }
         }
     }

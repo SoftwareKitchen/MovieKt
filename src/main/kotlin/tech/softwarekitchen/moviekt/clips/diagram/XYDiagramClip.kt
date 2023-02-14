@@ -14,11 +14,10 @@ abstract class XYDiagramClip(
 ) {
     abstract fun getData(): List<Pair<Double,Double>>
 
-    override fun getYLegendEntries(dataScreenHeight: Int): List<YLegendEntry> {
+    override fun getYLegendEntries(dataScreenHeight: Int): List<LegendEntry> {
         val dataBounds = getDataBounds()
         val max = dataBounds.ymax
         val ceilExponent = Math.ceil(Math.log10(max)).toInt()
-
         val rel = max / (Math.pow(10.0, ceilExponent.toDouble()))
         //.2, .5 .0
         val intvRel = when{
@@ -35,7 +34,31 @@ abstract class XYDiagramClip(
                     else -> formatter(it)+configuration.yAxis.unit
                 }
                 val yPos = ((1.0 - it / rel) * dataScreenHeight).toInt()
-                YLegendEntry(yPos,legend)
+                LegendEntry(yPos,legend)
+            }
+    }
+
+    override fun getXLegendEntries(dataScreenWidth: Int): List<LegendEntry> {
+        val dataBounds = getDataBounds()
+        val max = dataBounds.xmax
+        val ceilExponent = Math.ceil(Math.log10(max)).toInt()
+        val rel = max / (Math.pow(10.0, ceilExponent.toDouble()))
+        //.2, .5 .0
+        val intvRel = when{
+            rel < .2 -> 0.05
+            rel < .5 -> 0.1
+            else -> 0.2
+        }
+
+        val formatter = getFormatFor10Exp(ceilExponent)
+        return (0 until 6).map{intvRel * it}.filter{it < rel}
+            .map{
+                val legend = when(configuration.xAxis.unit){
+                    null -> formatter(it)
+                    else -> formatter(it)+configuration.xAxis.unit
+                }
+                val yPos = ((it / rel) * dataScreenWidth).toInt()
+                LegendEntry(yPos,legend)
             }
     }
 
@@ -88,11 +111,17 @@ abstract class XYDiagramClip(
             3 -> "G"
             2 -> "M"
             1 -> "k"
-            0 -> ""
-            -1 -> "m"
-            -2 -> "µ"
-            -3 -> "n"
-            -4 -> "p"
+            0 -> {
+                if(exp10 < 0){
+                    "m"
+                }else{
+                    ""
+                }
+            }
+            -1 -> "µ"
+            -2 -> "n"
+            -3 -> "p"
+            -4 -> "f"
             else -> throw Exception()
         }
 
@@ -111,7 +140,7 @@ abstract class XYDiagramClip(
             DynamicLineDiagramBackgroundGrid.Y -> {
                 graphics.color = Color(255,255,255,128)
                 for(item in getYLegendEntries(image.height)){
-                    graphics.fillRect(0,item.yPos-1,size.x , 3)
+                    graphics.fillRect(0,item.pos-1,size.x , 3)
                 }
             }
         }
