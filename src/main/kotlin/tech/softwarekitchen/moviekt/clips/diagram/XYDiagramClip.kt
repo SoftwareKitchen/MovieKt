@@ -16,19 +16,22 @@ abstract class XYDiagramClip(
 
 
     private fun generateLinearBounds(min: Double, max: Double, pixSize: Int, invert: Boolean = false): List<LegendEntry>{
-        val ceilExponent = Math.ceil(Math.log10(max)).toInt()
-        val rel = max / (Math.pow(10.0, ceilExponent.toDouble()))
+        val ceilExponent = Math.ceil(Math.log10(max-min)).toInt()
+        val rel = (max - min) / (Math.pow(10.0, ceilExponent.toDouble()))
+        val relMax = max / (Math.pow(10.0, ceilExponent.toDouble()))
+        val relMin = min / (Math.pow(10.0, ceilExponent.toDouble()))
 
         val intvRel = when{
             rel < .2 -> 0.05
             rel < .5 -> 0.1
             else -> 0.2
         }
-        return (0 until 6).map{intvRel * it}.filter{it < rel}
+
+        return (0 until 6).map{intvRel * it}.filter{(it <= relMax) && (it >= relMin)}
             .map{
                 val pos = when(invert) {
-                    false -> ((it / rel) * pixSize).toInt()
-                    true -> ((1.0 - it / rel) * pixSize).toInt()
+                    false -> (((it - relMin) / rel) * pixSize).toInt()
+                    true -> ((1.0 - (it - relMin) / rel) * pixSize).toInt()
                 }
                 LegendEntry(pos, formatExp10(it * Math.pow(10.0,ceilExponent.toDouble())))
             }
@@ -60,7 +63,7 @@ abstract class XYDiagramClip(
         if(configuration.yAxis.mode == DiagramAxisMode.Logarithmic){
             return generateLogarithmicBounds(min,max,dataScreenHeight, invert=true).map{LegendEntry(it.pos, it.legend+unit) }
         }
-        return generateLinearBounds(.0,max,dataScreenHeight, invert=true).map{LegendEntry(it.pos, it.legend+unit)}
+        return generateLinearBounds(min,max,dataScreenHeight, invert=true).map{LegendEntry(it.pos, it.legend+unit)}
     }
 
     override fun getXLegendEntries(dataScreenWidth: Int): List<LegendEntry> {
