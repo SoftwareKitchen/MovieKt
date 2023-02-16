@@ -1,11 +1,11 @@
-package tech.softwarekitchen.moviekt.clips
+package tech.softwarekitchen.moviekt.clips.video
 
 import tech.softwarekitchen.common.vector.Vector2i
 import java.awt.Color
 import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_ARGB
 
-class StaticTextClip (base: Vector2i, size: Vector2i, text: String, fontSize: Int, color: Color, tOffset: Float = 0f, visibilityDuration: Float? = null): Clip(base,size, tOffset, visibilityDuration) {
+class StaticTextVideoClip (base: Vector2i, size: Vector2i, text: String, fontSize: Int, color: Color, tOffset: Float = 0f, visibilityDuration: Float? = null): VideoClip(base,size, tOffset, visibilityDuration) {
     private val img = BufferedImage(size.x,size.y,TYPE_INT_ARGB)
 
     init{

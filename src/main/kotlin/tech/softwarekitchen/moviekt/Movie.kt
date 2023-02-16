@@ -1,11 +1,13 @@
 package tech.softwarekitchen.moviekt
 
-import tech.softwarekitchen.common.vector.Vector2i
-import tech.softwarekitchen.moviekt.clips.Clip
+import tech.softwarekitchen.moviekt.clips.audio.AudioClip
+import tech.softwarekitchen.moviekt.clips.audio.AudioContainerClip
+import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.exception.FFMPEGDidntShutdownException
 import tech.softwarekitchen.moviekt.exception.ImageSizeMismatchException
 import tech.softwarekitchen.moviekt.exception.VideoIsClosedException
 import java.awt.image.BufferedImage
+import java.io.File
 import java.io.OutputStream
 import java.time.Duration
 import java.time.LocalDateTime
@@ -23,35 +25,11 @@ class Movie(
     private val name: String,
     private val length: Int,
     private val fps: Int,
-    private val size: Vector2i
+    private val videoRoot: VideoClip
 ) {
     private val numFrames = 1 + length * fps
-    private val process: Process
     private var framesWritten = 0
-    private val outputStream: OutputStream
-
-    init{
-        Thread(this::log).start()
-        process = ProcessBuilder("ffmpeg"
-            ,"-y"
-            ,"-f","rawvideo"
-            ,"-t","$length"
-            ,"-pix_fmt","rgb24"
-            ,"-s","${size.x}x${size.y}",
-            "-r","$fps"
-            ,"-i","pipe:0"
-            ,"-c:v","libx264"
-            ,"-profile:v","high444"
-            ,"-level:v","3"
-            ,"-crf","17"
-            ,"-preset","veryslow"
-            ,"-an",name
-        )
-            .redirectError(ProcessBuilder.Redirect.INHERIT)
-            .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-            .start()
-        outputStream = process.outputStream
-    }
+    private val audioContainer = AudioContainerClip(length.toDouble())
 
     private fun log(){
         val startTime = LocalDateTime.now()
@@ -79,55 +57,121 @@ class Movie(
      */
     @OptIn(ExperimentalUnsignedTypes::class)
     @Throws(ImageSizeMismatchException::class, VideoIsClosedException::class, FFMPEGDidntShutdownException::class)
-    fun writeFrame(image: BufferedImage){
-        if(image.width != size.x || image.height != size.y){
-            throw ImageSizeMismatchException()
-        }
+    fun writeFrame(target: OutputStream, image: BufferedImage){
 
         if(framesWritten >= numFrames){
             throw VideoIsClosedException()
         }
 
-        val buffer = IntArray(size.x*size.y)
-        image.getRGB(0, 0, size.x, size.y, buffer, 0, size.x)
+        val buffer = IntArray(image.width * image.height)
+        image.getRGB(0, 0, image.width, image.height, buffer, 0, image.width)
 
         buffer.toUIntArray().forEach { ival ->
-            outputStream.write(((ival / 65536u) % 256u).toInt())
-            outputStream.write(((ival / 256u) % 256u).toInt())
-            outputStream.write((ival  % 256u).toInt())
+            target.write(((ival / 65536u) % 256u).toInt())
+            target.write(((ival / 256u) % 256u).toInt())
+            target.write((ival  % 256u).toInt())
         }
 
         framesWritten++
-        if(framesWritten == numFrames){
-            outputStream.flush()
-            outputStream.close()
-
-            if(!process.waitFor(5, TimeUnit.SECONDS)){
-                throw FFMPEGDidntShutdownException()
-            }
-        }
     }
 
-    /**
-     * Render the entire video via callback function
-     * @param frameCallback Callback that provides a required frame with parameters (zero based number of Frames: Int, total number of frames in video: Int, frame time: Float)
-     */
-    fun render(frameCallback: (Int,Int,Float) -> BufferedImage){
+    fun getAudioContainer(): AudioContainerClip{
+        return audioContainer
+    }
+
+    fun write(){
+        Thread(this::log).start()
+
+        val rawVideoName = name+"_temp.mp4"
+        val rawAudioName = name+"_temp.m4a"
+
+        val videoProcess = ProcessBuilder("ffmpeg"
+            ,"-y"
+            ,"-f","rawvideo"
+            ,"-t","$length"
+            ,"-pix_fmt","rgb24"
+            ,"-s","${videoRoot.size.x}x${videoRoot.size.y}",
+            "-r","$fps"
+            ,"-i","pipe:0"
+            ,"-c:v","libx264"
+            ,"-profile:v","high444"
+            ,"-level:v","3"
+            ,"-crf","17"
+            ,"-preset","veryslow"
+            ,"-an",rawVideoName
+        )
+            .redirectError(ProcessBuilder.Redirect.INHERIT)
+            .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+            .start()
+
+        val videoOutputStream = videoProcess.outputStream
+
         while(framesWritten < numFrames){
-            writeFrame(frameCallback(framesWritten,numFrames,framesWritten * (1 / fps.toFloat())))
+            writeFrame(videoOutputStream, videoRoot.render(framesWritten,numFrames,framesWritten.toFloat() / fps))
         }
-    }
 
-    /**
-     * Render the entire video via root clip
-     * @param rootFrame the video's root element
-     * @throws ImageSizeMismatchException clip size doesn't match video size
-     */
-    @Throws(ImageSizeMismatchException::class)
-    fun render(rootFrame: Clip){
-        if(rootFrame.size.x != size.x || rootFrame.size.y != size.y){
-            throw ImageSizeMismatchException()
+        videoOutputStream.flush()
+        videoOutputStream.close()
+
+        if(!videoProcess.waitFor(5, TimeUnit.SECONDS)){
+            throw FFMPEGDidntShutdownException()
         }
-        render(rootFrame::render)
+
+        val audioProcess = ProcessBuilder(
+            "ffmpeg",
+            "-y",
+            "-f","u16be",
+            "-t","$length",
+            "-i","pipe:0",
+            "-ar","44100",
+            "-c:a","libfdk_aac",
+            "-vbr","5",
+            rawAudioName
+        )
+            .redirectError(ProcessBuilder.Redirect.INHERIT)
+            .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+            .start()
+
+        val audioOutputStream = audioProcess.outputStream
+        var audioFramesWritten = 0
+        val numAudioFrames = 44100 * length + 1
+        while(audioFramesWritten < numAudioFrames){
+            val t = audioFramesWritten / 44100.0
+            val v = audioContainer.getAt(t)
+            val ampTranslated = (32767.0 * (v + 1)).toInt()
+
+            audioOutputStream.write((ampTranslated / 256) % 256)
+            audioOutputStream.write(ampTranslated % 256)
+            audioFramesWritten++
+        }
+
+        audioOutputStream.flush()
+        audioOutputStream.close()
+
+        if(!audioProcess.waitFor(5, TimeUnit.SECONDS)){
+            throw FFMPEGDidntShutdownException()
+        }
+
+
+        val mergeProcess = ProcessBuilder(
+            "ffmpeg",
+            "-i",
+            rawVideoName,
+            "-i",
+            rawAudioName,
+            "-c:v",
+            "copy",
+            "-map",
+            "0:v",
+            "-map",
+            "1:a",
+            "-y",
+            "$name.mp4"
+        )
+            .inheritIO()
+            .start()
+        mergeProcess.waitFor()
+        File(rawAudioName).delete()
+        File(rawVideoName).delete()
     }
 }

@@ -1,7 +1,7 @@
-package tech.softwarekitchen.moviekt.clips.diagram
+package tech.softwarekitchen.moviekt.clips.video.diagram
 
 import tech.softwarekitchen.common.vector.Vector2i
-import tech.softwarekitchen.moviekt.clips.Clip
+import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.image.BufferedImage
@@ -22,14 +22,14 @@ data class DiagramAxisConfiguration(
     val mode: DiagramAxisMode? = DiagramAxisMode.Linear
 )
 
-abstract class DiagramClip(
+abstract class DiagramVideoClip(
     base: Vector2i,
     size: Vector2i,
     tOffset: Float = 0f,
     visibilityDuration: Float? = null,
     private val yAxis: DiagramAxisConfiguration,
     private val xAxis: DiagramAxisConfiguration
-): Clip(base,size,tOffset,visibilityDuration) {
+): VideoClip(base,size,tOffset,visibilityDuration) {
     private val padding: Padding
     private val dataDisplaySize: Vector2i
     init{
@@ -72,7 +72,7 @@ abstract class DiagramClip(
             DiagramAxisLegendMode.AxisOnly -> {
                 graphics.fillRect(0,padding.top,padding.left,dataDisplaySize.y)
             }
-            DiagramAxisLegendMode.Full-> {
+            DiagramAxisLegendMode.Full -> {
                 val yAxisEntries = getYLegendEntries(dataDisplaySize.y)
 
                 for(item in yAxisEntries){

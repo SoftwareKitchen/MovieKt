@@ -1,4 +1,4 @@
-package tech.softwarekitchen.moviekt.clips.diagram
+package tech.softwarekitchen.moviekt.clips.video.diagram
 
 import tech.softwarekitchen.common.vector.Vector2i
 import java.awt.BasicStroke
@@ -20,14 +20,14 @@ open class XYDiagramConfiguration(
     val colors: DynamicLineDiagramColorConfiguration = DynamicLineDiagramColorConfiguration()
 )
 
-class DynamicLineDiagramClip(
+class DynamicLineDiagramVideoClip(
     base: Vector2i,
     size: Vector2i,
     private val dataProvider: () -> List<Double>,
     private val configuration: XYDiagramConfiguration = XYDiagramConfiguration(),
     tOffset: Float = 0f,
     visibilityDuration: Float? = null,
-): XYDiagramClip(base, size, tOffset, visibilityDuration, yAxis = configuration.yAxis, xAxis = configuration.xAxis, configuration = configuration) {
+): XYDiagramVideoClip(base, size, tOffset, visibilityDuration, yAxis = configuration.yAxis, xAxis = configuration.xAxis, configuration = configuration) {
 
     override fun generateDataDisplay(size: Vector2i, frameNo: Int, nFrames: Int, tTotal: Float, tInternal: Float): BufferedImage {
         val image = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)

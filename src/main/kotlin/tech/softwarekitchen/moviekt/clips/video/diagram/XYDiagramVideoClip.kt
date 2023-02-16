@@ -1,15 +1,15 @@
-package tech.softwarekitchen.moviekt.clips.diagram
+package tech.softwarekitchen.moviekt.clips.video.diagram
 
 import tech.softwarekitchen.common.vector.Vector2i
 import java.awt.Color
 import java.awt.image.BufferedImage
 
-abstract class XYDiagramClip(
+abstract class XYDiagramVideoClip(
     base: Vector2i, size: Vector2i,
     tOffset: Float, visibilityDuration: Float? = null,
     yAxis: DiagramAxisConfiguration, xAxis: DiagramAxisConfiguration,
     private val configuration: XYDiagramConfiguration
-): DiagramClip(
+): DiagramVideoClip(
     base, size, tOffset, visibilityDuration, yAxis = yAxis, xAxis = xAxis
 ) {
     abstract fun getData(): List<Pair<Double,Double>>
@@ -61,9 +61,9 @@ abstract class XYDiagramClip(
             else -> v
         }
         if(configuration.yAxis.mode == DiagramAxisMode.Logarithmic){
-            return generateLogarithmicBounds(min,max,dataScreenHeight, invert=true).map{LegendEntry(it.pos, it.legend+unit) }
+            return generateLogarithmicBounds(min,max,dataScreenHeight, invert=true).map{ LegendEntry(it.pos, it.legend+unit) }
         }
-        return generateLinearBounds(min,max,dataScreenHeight, invert=true).map{LegendEntry(it.pos, it.legend+unit)}
+        return generateLinearBounds(min,max,dataScreenHeight, invert=true).map{ LegendEntry(it.pos, it.legend+unit) }
     }
 
     override fun getXLegendEntries(dataScreenWidth: Int): List<LegendEntry> {
@@ -75,13 +75,13 @@ abstract class XYDiagramClip(
             else -> v
         }
         if(configuration.xAxis.mode == DiagramAxisMode.Logarithmic){
-            return generateLogarithmicBounds(min, max, dataScreenWidth).map{LegendEntry(it.pos, it.legend+unit)}
+            return generateLogarithmicBounds(min, max, dataScreenWidth).map{ LegendEntry(it.pos, it.legend+unit) }
         }
-        return generateLinearBounds(min, max, dataScreenWidth).map{LegendEntry(it.pos, it.legend+unit)}
+        return generateLinearBounds(min, max, dataScreenWidth).map{ LegendEntry(it.pos, it.legend+unit) }
     }
 
     protected class DataBounds(val xmin: Double, val ymin: Double, val xmax: Double, val ymax: Double)
-    protected fun getDataBounds(): DataBounds{
+    protected fun getDataBounds(): DataBounds {
         val data = getData()
         val xmin = when(configuration.xAxis.min) {
             null ->

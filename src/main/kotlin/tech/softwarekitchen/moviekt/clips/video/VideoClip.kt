@@ -1,22 +1,22 @@
-package tech.softwarekitchen.moviekt.clips
+package tech.softwarekitchen.moviekt.clips.video
 
 import tech.softwarekitchen.common.vector.Vector2i
 import java.awt.image.BufferedImage
 import java.lang.Float.max
 import java.lang.Float.min
 
-abstract class Clip(
+abstract class VideoClip(
     private val base: Vector2i,
     val size: Vector2i,
     val tOffset: Float,
     val visibilityDuration: Float?
 ){
-    private val children =  ArrayList<Clip>()
+    private val children =  ArrayList<VideoClip>()
     private var dislocate: (Float, Float?, Float?) -> Vector2i = {tAbs, tTot, tRel -> Vector2i(0,0)}
     private var opacity: (Float, Float?, Float?) -> Float = {tAbs, tTot, tRel -> 1f}
     abstract fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float, tInternal: Float): BufferedImage
 
-    fun addChild(child: Clip){
+    fun addChild(child: VideoClip){
         children.add(child)
     }
 

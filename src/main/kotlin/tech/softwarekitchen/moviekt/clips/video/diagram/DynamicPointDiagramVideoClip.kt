@@ -1,8 +1,7 @@
-package tech.softwarekitchen.moviekt.clips.diagram
+package tech.softwarekitchen.moviekt.clips.video.diagram
 
 import tech.softwarekitchen.common.vector.Vector2i
 import java.awt.Color
-import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.image.BufferedImage
 
@@ -11,17 +10,16 @@ enum class DynamicPointDiagramMarker{
 }
 
 data class XYDataPoint(val x: Double, val y: Double)
-class DynamicPointDiagramClip(
+class DynamicPointDiagramVideoClip(
     base: Vector2i,
     size: Vector2i,
     tOffset: Float,
     private val dataSets: Map<DynamicPointDiagramMarker, () -> List<XYDataPoint>>,
     configuration: XYDiagramConfiguration = XYDiagramConfiguration(),
     visibilityDuration: Float? = null
-): XYDiagramClip(
+): XYDiagramVideoClip(
     base, size, tOffset, visibilityDuration,yAxis = configuration.yAxis, xAxis = configuration.xAxis,
     configuration = configuration,
-
 ) {
     override fun generateDataDisplay(
         size: Vector2i,
