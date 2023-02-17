@@ -14,7 +14,7 @@ class SingleColorVideoClip(size: Vector2i, color: Color, tOffset: Float = 0f, vi
         graphics.fillRect(0,0,size.x,size.y)
     }
 
-    override fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float, tInternal: Float): BufferedImage {
+    override fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
         return cloneImage(image)
     }
 

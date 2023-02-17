@@ -26,7 +26,7 @@ class DynamicLineDiagramVideoClip(
     visibilityDuration: Float? = null,
 ): PointBasedDiagramVideoClip(size, tOffset, visibilityDuration, yAxis = configuration.yAxis, xAxis = configuration.xAxis, configuration = configuration) {
 
-    override fun generateDataDisplay(size: Vector2i, frameNo: Int, nFrames: Int, tTotal: Float, tInternal: Float): BufferedImage {
+    override fun generateDataDisplay(size: Vector2i, frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
         val image = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)
         val data = dataProvider()
         val (xScale, yScale) = getScreenMapper(size)

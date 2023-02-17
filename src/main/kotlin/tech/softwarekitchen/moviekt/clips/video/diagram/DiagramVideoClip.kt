@@ -46,17 +46,17 @@ abstract class DiagramVideoClip(
         dataDisplaySize = Vector2i(size.x - padding.left - padding.right, size.y - padding.top - padding.bottom)
     }
 
-    abstract fun generateDataDisplay(size: Vector2i, frameNo: Int, nFrames: Int, tTotal: Float, tInternal: Float): BufferedImage
+    abstract fun generateDataDisplay(size: Vector2i, frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage
     data class LegendEntry(val pos: Int, val legend: String)
     abstract fun getYLegendEntries(dataScreenHeight: Int): List<LegendEntry>
     abstract fun getXLegendEntries(dataScreenWidth: Int): List<LegendEntry>
 
 
-    override fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float, tInternal: Float): BufferedImage {
+    override fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
         val target = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)
         val targetGraph = target.createGraphics()
 
-        val dataImage = generateDataDisplay(dataDisplaySize, frameNo, nFrames, tTotal, tInternal)
+        val dataImage = generateDataDisplay(dataDisplaySize, frameNo, nFrames, tTotal)
         targetGraph.drawImage(dataImage, padding.left, padding.top, null)
 
         drawYAxis(targetGraph)

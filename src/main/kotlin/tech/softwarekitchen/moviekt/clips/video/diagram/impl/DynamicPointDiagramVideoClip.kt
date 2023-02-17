@@ -27,8 +27,7 @@ class DynamicPointDiagramVideoClip(
         size: Vector2i,
         frameNo: Int,
         nFrames: Int,
-        tTotal: Float,
-        tInternal: Float
+        tTotal: Float
     ): BufferedImage {
         val img = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)
         drawBackgroundGrid(img)

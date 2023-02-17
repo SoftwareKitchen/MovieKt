@@ -18,7 +18,7 @@ class StaticTextVideoClip (size: Vector2i, text: String, fontSize: Int, color: C
         graphics.drawString(text,0,2*size.y/3)
     }
 
-    override fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float, tInternal: Float): BufferedImage {
+    override fun renderContent(frameNo: Int, nFrames: Int, t: Float): BufferedImage {
         return cloneImage(img)
     }
 }
