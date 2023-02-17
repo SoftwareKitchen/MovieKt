@@ -83,12 +83,13 @@ class Movie(
             }
             Thread.sleep(3000)
         }
-        println("--- Done ---")
 
         while(!mergeDone){
             println("[3/3] Merge - Waiting")
             Thread.sleep(3000)
         }
+
+        println("--- Done ---")
     }
 
     /**

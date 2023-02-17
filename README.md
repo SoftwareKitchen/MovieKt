@@ -1,7 +1,7 @@
 # MovieKt
 ## What is MovieKt
 MovieKt is a Library for Kotlin (and thereby Java) which can create Videos from
-Java Images using FFMPEG.  
+Java Images using FFMPEG - similarly to MoviePy.  
 Currently only MP4 videos are supported
 ## How does it work
 ### Create a Movie
@@ -39,8 +39,11 @@ dynamic := the value will be updated frame by frame, therefore it has to be prov
   * ContainerVideoClip - Clip container without its own content
   * SingleColorVideoClip - Single color rectangle (filled)
 * Text
-  * StaticTextVideoClip - Text with transparent background  
   * DynamicTextVideoClip - Text with transparent background
+  * StaticFormulaVideoVlip - Scientific formula
+  * StaticTextVideoClip - Text with transparent background  
+* Data
+  * DataTableVideoClip - Simple grid
 * Diagrams
   * DynamicLineDiagramVideoClip - line diagram
   * DynamicPointDiagramVideoClip - point diagram
