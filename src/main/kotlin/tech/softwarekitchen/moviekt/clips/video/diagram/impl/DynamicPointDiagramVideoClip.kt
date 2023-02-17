@@ -1,6 +1,9 @@
-package tech.softwarekitchen.moviekt.clips.video.diagram
+package tech.softwarekitchen.moviekt.clips.video.diagram.impl
 
 import tech.softwarekitchen.common.vector.Vector2i
+import tech.softwarekitchen.moviekt.clips.video.diagram.PointBasedDiagramVideoClip
+import tech.softwarekitchen.moviekt.clips.video.diagram.XYDiagramConfiguration
+import tech.softwarekitchen.moviekt.clips.video.diagram.XYDiagramVideoClip
 import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.image.BufferedImage
@@ -17,7 +20,7 @@ class DynamicPointDiagramVideoClip(
     private val dataSets: Map<DynamicPointDiagramMarker, () -> List<XYDataPoint>>,
     configuration: XYDiagramConfiguration = XYDiagramConfiguration(),
     visibilityDuration: Float? = null
-): XYDiagramVideoClip(
+): PointBasedDiagramVideoClip(
     base, size, tOffset, visibilityDuration,yAxis = configuration.yAxis, xAxis = configuration.xAxis,
     configuration = configuration,
 ) {

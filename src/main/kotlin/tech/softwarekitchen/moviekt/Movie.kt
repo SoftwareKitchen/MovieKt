@@ -1,6 +1,5 @@
 package tech.softwarekitchen.moviekt
 
-import tech.softwarekitchen.moviekt.clips.audio.AudioClip
 import tech.softwarekitchen.moviekt.clips.audio.AudioContainerClip
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.exception.FFMPEGDidntShutdownException
@@ -27,25 +26,69 @@ class Movie(
     private val fps: Int,
     private val videoRoot: VideoClip
 ) {
-    private val numFrames = 1 + length * fps
-    private var framesWritten = 0
+    private lateinit var videoStart: LocalDateTime
+    private val numVideoFrames = 1 + length * fps
+    private var videoFramesWritten = 0
+    private lateinit var audioStart: LocalDateTime
+    private var audioFramesWritten = 0
+    private val numAudioFrames = 44100 * length + 1
     private val audioContainer = AudioContainerClip(length.toDouble())
+    private var mergeDone = false
 
     private fun log(){
-        val startTime = LocalDateTime.now()
-        while(framesWritten < numFrames){
-            val now = LocalDateTime.now()
-            val elapsed = Duration.between(startTime, now)
-            val doneRatio = framesWritten.toDouble() / numFrames.toDouble()
-            val remaining = when(doneRatio){
-                0.0 -> "???"
-                else -> (elapsed.toSeconds() * (1.0 - doneRatio) / doneRatio).toInt().toString()
-            }
+        while(videoFramesWritten < numVideoFrames){
+            if(this::videoStart.isInitialized) {
+                val now = LocalDateTime.now()
+                val elapsed = Duration.between(videoStart, now)
+                val doneRatio = videoFramesWritten.toDouble() / numVideoFrames.toDouble()
+                val remaining = when (doneRatio) {
+                    0.0 -> "???"
+                    else -> (elapsed.toSeconds() * (1.0 - doneRatio) / doneRatio).toInt().toString()
+                }
 
-            println("${String.format("%.2f",doneRatio * 100)}% Elapsed ${elapsed.toSeconds()}s Left: ${remaining}s")
-            Thread.sleep(5000)
+                println(
+                    "[1/3] Video ${
+                        String.format(
+                            "%.2f",
+                            doneRatio * 100
+                        )
+                    }% Elapsed ${elapsed.toSeconds()}s Left: ${remaining}s"
+                )
+            }else{
+                println("Waiting for FFMPEG to start up")
+            }
+            Thread.sleep(3000)
+        }
+
+        while(audioFramesWritten < numAudioFrames){
+            if(this::audioStart.isInitialized) {
+                val now = LocalDateTime.now()
+                val elapsed = Duration.between(audioStart, now)
+                val doneRatio = audioFramesWritten.toDouble() / numAudioFrames.toDouble()
+                val remaining = when (doneRatio) {
+                    0.0 -> "???"
+                    else -> (elapsed.toSeconds() * (1.0 - doneRatio) / doneRatio).toInt().toString()
+                }
+
+                println(
+                    "[2/3] Audio ${
+                        String.format(
+                            "%.2f",
+                            doneRatio * 100
+                        )
+                    }% Elapsed ${elapsed.toSeconds()}s Left: ${remaining}s"
+                )
+            }else{
+                println("Waiting for FFMPEG to start up")
+            }
+            Thread.sleep(3000)
         }
         println("--- Done ---")
+
+        while(!mergeDone){
+            println("[3/3] Merge - Waiting")
+            Thread.sleep(3000)
+        }
     }
 
     /**
@@ -59,7 +102,7 @@ class Movie(
     @Throws(ImageSizeMismatchException::class, VideoIsClosedException::class, FFMPEGDidntShutdownException::class)
     fun writeFrame(target: OutputStream, image: BufferedImage){
 
-        if(framesWritten >= numFrames){
+        if(videoFramesWritten >= numVideoFrames){
             throw VideoIsClosedException()
         }
 
@@ -72,7 +115,7 @@ class Movie(
             target.write((ival  % 256u).toInt())
         }
 
-        framesWritten++
+        videoFramesWritten++
     }
 
     fun getAudioContainer(): AudioContainerClip{
@@ -80,6 +123,7 @@ class Movie(
     }
 
     fun write(){
+        videoStart = LocalDateTime.now()
         Thread(this::log).start()
 
         val rawVideoName = name+"_temp.mp4"
@@ -100,14 +144,12 @@ class Movie(
             ,"-preset","veryslow"
             ,"-an",rawVideoName
         )
-            .redirectError(ProcessBuilder.Redirect.INHERIT)
-            .redirectOutput(ProcessBuilder.Redirect.INHERIT)
             .start()
 
         val videoOutputStream = videoProcess.outputStream
 
-        while(framesWritten < numFrames){
-            writeFrame(videoOutputStream, videoRoot.render(framesWritten,numFrames,framesWritten.toFloat() / fps))
+        while(videoFramesWritten < numVideoFrames){
+            writeFrame(videoOutputStream, videoRoot.render(videoFramesWritten,numVideoFrames,videoFramesWritten.toFloat() / fps))
         }
 
         videoOutputStream.flush()
@@ -117,6 +159,7 @@ class Movie(
             throw FFMPEGDidntShutdownException()
         }
 
+        audioStart = LocalDateTime.now()
         val audioProcess = ProcessBuilder(
             "ffmpeg",
             "-y",
@@ -128,13 +171,9 @@ class Movie(
             "-vbr","5",
             rawAudioName
         )
-            .redirectError(ProcessBuilder.Redirect.INHERIT)
-            .redirectOutput(ProcessBuilder.Redirect.INHERIT)
             .start()
 
         val audioOutputStream = audioProcess.outputStream
-        var audioFramesWritten = 0
-        val numAudioFrames = 44100 * length + 1
         while(audioFramesWritten < numAudioFrames){
             val t = audioFramesWritten / 44100.0
             val v = audioContainer.getAt(t)
@@ -168,9 +207,9 @@ class Movie(
             "-y",
             "$name.mp4"
         )
-            .inheritIO()
             .start()
         mergeProcess.waitFor()
+        mergeDone = true
         File(rawAudioName).delete()
         File(rawVideoName).delete()
     }

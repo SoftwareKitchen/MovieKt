@@ -1,8 +1,15 @@
 package tech.softwarekitchen.moviekt.clips.video.diagram
 
 import tech.softwarekitchen.common.vector.Vector2i
-import java.awt.Color
-import java.awt.image.BufferedImage
+import tech.softwarekitchen.moviekt.clips.video.diagram.impl.DynamicLineDiagramBackgroundGrid
+import tech.softwarekitchen.moviekt.clips.video.diagram.impl.DynamicLineDiagramColorConfiguration
+
+open class XYDiagramConfiguration(
+    val xAxis: DiagramAxisConfiguration = DiagramAxisConfiguration(),
+    val yAxis: DiagramAxisConfiguration = DiagramAxisConfiguration(),
+    val grid: DynamicLineDiagramBackgroundGrid = DynamicLineDiagramBackgroundGrid.None,
+    val colors: DynamicLineDiagramColorConfiguration = DynamicLineDiagramColorConfiguration()
+)
 
 abstract class XYDiagramVideoClip(
     base: Vector2i, size: Vector2i,
@@ -80,48 +87,6 @@ abstract class XYDiagramVideoClip(
         return generateLinearBounds(min, max, dataScreenWidth).map{ LegendEntry(it.pos, it.legend+unit) }
     }
 
-    protected class DataBounds(val xmin: Double, val ymin: Double, val xmax: Double, val ymax: Double)
-    protected fun getDataBounds(): DataBounds {
-        val data = getData()
-        val xmin = when(configuration.xAxis.min) {
-            null ->
-                try{
-                    data.minOf { it.first }
-                }catch(ex: java.lang.Exception){
-                    0.0
-                }
-            else -> configuration.xAxis.min
-        }
-        val xmax = when(configuration.xAxis.max) {
-            null ->
-                try {
-                    data.maxOf{it.second}
-                } catch (ex: Exception) {
-                    1.0
-                }
-            else -> configuration.xAxis.max
-        }
-        val ymin = when(configuration.yAxis.min) {
-            null ->
-                try{
-                    data.minOf { it.second }
-                }catch(ex: java.lang.Exception){
-                    0.0
-                }
-            else -> configuration.yAxis.min
-        }
-        val ymax = when(configuration.yAxis.max) {
-            null ->
-                try {
-                    data.maxOf{it.second}
-                } catch (ex: Exception) {
-                    1.0
-                }
-            else -> configuration.yAxis.max
-        }
-        return DataBounds(xmin,ymin,xmax,ymax)
-    }
-
     protected fun formatExp10(v: Double): String{
         val ceilExponent = if(v == 0.0) {
             0
@@ -162,50 +127,45 @@ abstract class XYDiagramVideoClip(
         }
     }
 
-    protected fun drawBackgroundGrid(image: BufferedImage){
-        val graphics = image.createGraphics()
-        graphics.color = Color(255,255,255,128)
-        when(configuration.grid){
-            DynamicLineDiagramBackgroundGrid.None -> {}
-            DynamicLineDiagramBackgroundGrid.X -> {
-                for(item in getXLegendEntries(image.width)){
-                    graphics.fillRect(item.pos-1,0,3 , size.y)
+    protected class DataBounds(val xmin: Double, val ymin: Double, val xmax: Double, val ymax: Double)
+    protected fun getDataBounds(): DataBounds {
+        val data = getData()
+        val xmin = when(configuration.xAxis.min) {
+            null ->
+                try{
+                    data.minOf { it.first }
+                }catch(ex: java.lang.Exception){
+                    0.0
                 }
-            }
-            DynamicLineDiagramBackgroundGrid.Y -> {
-                for(item in getYLegendEntries(image.height)){
-                    graphics.fillRect(0,item.pos-1,size.x , 3)
+            else -> configuration.xAxis.min
+        }
+        val xmax = when(configuration.xAxis.max) {
+            null ->
+                try {
+                    data.maxOf{it.second}
+                } catch (ex: Exception) {
+                    1.0
                 }
-            }
+            else -> configuration.xAxis.max
         }
-    }
-
-    protected fun getScreenMapper(dataScreenSize: Vector2i): Pair<(Double) -> Int, (Double) -> Int>{
-        val dataBounds = getDataBounds()
-        val totalDeltaExpX = when(configuration.xAxis.mode){
-            DiagramAxisMode.Logarithmic -> Math.log10(dataBounds.xmax / dataBounds.xmin)
-            else -> 0.0
+        val ymin = when(configuration.yAxis.min) {
+            null ->
+                try{
+                    data.minOf { it.second }
+                }catch(ex: java.lang.Exception){
+                    0.0
+                }
+            else -> configuration.yAxis.min
         }
-        val totalDeltaExpY = when(configuration.yAxis.mode){
-            DiagramAxisMode.Logarithmic -> Math.log10(dataBounds.ymax / dataBounds.ymin)
-            else -> 0.0
+        val ymax = when(configuration.yAxis.max) {
+            null ->
+                try {
+                    data.maxOf{it.second}
+                } catch (ex: Exception) {
+                    1.0
+                }
+            else -> configuration.yAxis.max
         }
-        val xScale: (Double) -> Int = if(configuration.xAxis.mode == DiagramAxisMode.Logarithmic){
-            {
-                val deltaExp = Math.log10(it / dataBounds.xmin)
-                (dataScreenSize.x * deltaExp / totalDeltaExpX).toInt()
-            }
-        }else{
-            { (dataScreenSize.x * (it - dataBounds.xmin) / (dataBounds.xmax - dataBounds.xmin)).toInt() }
-        }
-        val yScale: (Double) -> Int = if(configuration.yAxis.mode == DiagramAxisMode.Logarithmic){
-            {
-                val deltaExp = Math.log10(it / dataBounds.ymin)
-                (dataScreenSize.y * (1 - deltaExp / totalDeltaExpY)).toInt()
-            }
-        }else{
-            { (dataScreenSize.y * (1 - (it - dataBounds.ymin) / (dataBounds.ymax - dataBounds.ymin))).toInt() }
-        }
-        return Pair(xScale, yScale)
+        return DataBounds(xmin,ymin,xmax,ymax)
     }
 }
