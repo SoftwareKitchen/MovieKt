@@ -6,12 +6,12 @@ import java.awt.Color
 import java.awt.image.BufferedImage
 
 abstract class PointBasedDiagramVideoClip(
-    base: Vector2i, size: Vector2i,
+    size: Vector2i,
     tOffset: Float, visibilityDuration: Float? = null,
     yAxis: DiagramAxisConfiguration, xAxis: DiagramAxisConfiguration,
     private val configuration: XYDiagramConfiguration
 ): XYDiagramVideoClip(
-    base, size, tOffset, visibilityDuration = visibilityDuration, yAxis = yAxis, xAxis = xAxis, configuration = configuration
+    size, tOffset, visibilityDuration = visibilityDuration, yAxis = yAxis, xAxis = xAxis, configuration = configuration
 ) {
     protected fun getScreenMapper(dataScreenSize: Vector2i): Pair<(Double) -> Int, (Double) -> Int>{
         val dataBounds = getDataBounds()

@@ -6,30 +6,23 @@ import java.lang.Float.max
 import java.lang.Float.min
 
 abstract class VideoClip(
-    private val base: Vector2i,
     val size: Vector2i,
     val tOffset: Float,
     val visibilityDuration: Float?
 ){
-    private val children =  ArrayList<VideoClip>()
-    private var dislocate: (Float, Float?, Float?) -> Vector2i = {tAbs, tTot, tRel -> Vector2i(0,0)}
+    private val children =  ArrayList<Pair<VideoClip, (Int, Int, Float) -> Vector2i>>()
     private var opacity: (Float, Float?, Float?) -> Float = {tAbs, tTot, tRel -> 1f}
     abstract fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float, tInternal: Float): BufferedImage
 
-    fun addChild(child: VideoClip){
-        children.add(child)
+    fun addChild(child: VideoClip, position: Vector2i){
+        addChild(child) { _, _, _ -> position }
+    }
+    fun addChild(child: VideoClip, position: (Int, Int, Float) -> Vector2i){
+        children.add(Pair(child, position))
     }
 
     fun setOpacity(func: (Float, Float?, Float?) -> Float){
         opacity = func
-    }
-
-    fun setDislocate(func: (Float, Float?, Float?) -> Vector2i){
-        dislocate = func
-    }
-
-    fun getPosition(tAbs: Float, tTot: Float?, tRel: Float?): Vector2i{
-        return base.plus(dislocate(tAbs, tTot, tRel))
     }
 
     fun render(frameNo: Int, nFrames: Int, t: Float): BufferedImage{
@@ -42,12 +35,12 @@ abstract class VideoClip(
         }
 
         children
-            .filter{t >= it.tOffset && (it.visibilityDuration == null || t <= it.tOffset+it.visibilityDuration)}
+            .filter{t >= it.first.tOffset && (it.first.visibilityDuration == null || t <= it.first.tOffset+it.first.visibilityDuration!!)}
             .forEach{
                 child ->
-                val childImg = child.render(frameNo, nFrames, tInternal)
-                val childPosition = child.getPosition(tInternal,visibilityDuration,tFac)
-                background.graphics.drawImage(childImg,childPosition.x,childPosition.y,child.size.x,child.size.y,null)
+                val childImg = child.first.render(frameNo, nFrames, tInternal)
+                val childPosition = child.second(frameNo, nFrames, t)
+                background.graphics.drawImage(childImg,childPosition.x,childPosition.y,child.first.size.x,child.first.size.y,null)
             }
 
         val copy = cloneImage(background)

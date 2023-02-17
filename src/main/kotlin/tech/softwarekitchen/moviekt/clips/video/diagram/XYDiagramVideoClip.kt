@@ -12,12 +12,12 @@ open class XYDiagramConfiguration(
 )
 
 abstract class XYDiagramVideoClip(
-    base: Vector2i, size: Vector2i,
+    size: Vector2i,
     tOffset: Float, visibilityDuration: Float? = null,
     yAxis: DiagramAxisConfiguration, xAxis: DiagramAxisConfiguration,
     private val configuration: XYDiagramConfiguration
 ): DiagramVideoClip(
-    base, size, tOffset, visibilityDuration, yAxis = yAxis, xAxis = xAxis
+    size, tOffset, visibilityDuration, yAxis = yAxis, xAxis = xAxis
 ) {
     abstract fun getData(): List<Pair<Double,Double>>
 

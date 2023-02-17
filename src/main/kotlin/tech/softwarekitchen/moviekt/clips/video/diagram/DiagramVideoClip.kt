@@ -23,13 +23,12 @@ data class DiagramAxisConfiguration(
 )
 
 abstract class DiagramVideoClip(
-    base: Vector2i,
     size: Vector2i,
     tOffset: Float = 0f,
     visibilityDuration: Float? = null,
     private val yAxis: DiagramAxisConfiguration,
     private val xAxis: DiagramAxisConfiguration
-): VideoClip(base,size,tOffset,visibilityDuration) {
+): VideoClip(size,tOffset,visibilityDuration) {
     private val padding: Padding
     private val dataDisplaySize: Vector2i
     init{

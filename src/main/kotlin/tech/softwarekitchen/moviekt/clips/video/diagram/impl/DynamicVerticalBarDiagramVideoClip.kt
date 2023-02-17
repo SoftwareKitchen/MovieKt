@@ -10,13 +10,12 @@ import java.awt.Polygon
 import java.awt.image.BufferedImage
 
 class DynamicVerticalBarDiagramVideoClip(
-    base: Vector2i,
     size: Vector2i,
     private val dataProvider: () -> List<Double>,
     private val configuration: BarBasedDiagramConfiguration = BarBasedDiagramConfiguration(),
     tOffset: Float = 0f,
     visibilityDuration: Float? = null,
-): BarBasedDiagramVideoClip(base, size, tOffset, visibilityDuration, yAxis = configuration.yAxis, xAxis = configuration.xAxis, configuration = configuration) {
+): BarBasedDiagramVideoClip(size, tOffset, visibilityDuration, yAxis = configuration.yAxis, xAxis = configuration.xAxis, configuration = configuration) {
 
     override fun generateDataDisplay(size: Vector2i, frameNo: Int, nFrames: Int, tTotal: Float, tInternal: Float): BufferedImage {
         val image = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)

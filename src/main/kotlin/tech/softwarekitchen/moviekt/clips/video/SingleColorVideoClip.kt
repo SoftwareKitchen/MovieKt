@@ -5,7 +5,7 @@ import java.awt.Color
 import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_ARGB
 
-class SingleColorVideoClip(base: Vector2i, size: Vector2i, color: Color, tOffset: Float = 0f, visibilityDuration: Float? = null): VideoClip(base,size,tOffset,visibilityDuration) {
+class SingleColorVideoClip(size: Vector2i, color: Color, tOffset: Float = 0f, visibilityDuration: Float? = null): VideoClip(size,tOffset,visibilityDuration) {
     private val image = BufferedImage(size.x,size.y,TYPE_INT_ARGB)
     init{
         val graphics = image.createGraphics()

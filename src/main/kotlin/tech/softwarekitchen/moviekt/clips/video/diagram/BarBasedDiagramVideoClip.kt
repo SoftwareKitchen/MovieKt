@@ -12,12 +12,12 @@ class BarBasedDiagramConfiguration(
 ): XYDiagramConfiguration(xAxis, yAxis, grid=DynamicLineDiagramBackgroundGrid.None, colors)
 
 abstract class BarBasedDiagramVideoClip(
-    base: Vector2i, size: Vector2i,
+    size: Vector2i,
     tOffset: Float, visibilityDuration: Float? = null,
     yAxis: DiagramAxisConfiguration, xAxis: DiagramAxisConfiguration,
     private val configuration: XYDiagramConfiguration
 ): XYDiagramVideoClip(
-    base, size, tOffset, visibilityDuration = visibilityDuration, yAxis = yAxis, xAxis = xAxis, configuration = configuration
+    size, tOffset, visibilityDuration = visibilityDuration, yAxis = yAxis, xAxis = xAxis, configuration = configuration
 ) {
     protected fun getScreenMapper(dataScreenSize: Vector2i): (Double) -> Int{
         val dataBounds = getDataBounds()

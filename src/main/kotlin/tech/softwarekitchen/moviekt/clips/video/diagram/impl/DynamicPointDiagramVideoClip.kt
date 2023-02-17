@@ -14,14 +14,13 @@ enum class DynamicPointDiagramMarker{
 
 data class XYDataPoint(val x: Double, val y: Double)
 class DynamicPointDiagramVideoClip(
-    base: Vector2i,
     size: Vector2i,
     tOffset: Float,
     private val dataSets: Map<DynamicPointDiagramMarker, () -> List<XYDataPoint>>,
     configuration: XYDiagramConfiguration = XYDiagramConfiguration(),
     visibilityDuration: Float? = null
 ): PointBasedDiagramVideoClip(
-    base, size, tOffset, visibilityDuration,yAxis = configuration.yAxis, xAxis = configuration.xAxis,
+    size, tOffset, visibilityDuration,yAxis = configuration.yAxis, xAxis = configuration.xAxis,
     configuration = configuration,
 ) {
     override fun generateDataDisplay(
