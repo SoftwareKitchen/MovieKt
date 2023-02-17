@@ -1,6 +1,7 @@
-package tech.softwarekitchen.moviekt.clips.video
+package tech.softwarekitchen.moviekt.clips.video.text
 
 import tech.softwarekitchen.common.vector.Vector2i
+import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import java.awt.Color
 import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_ARGB

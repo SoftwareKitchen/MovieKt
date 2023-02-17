@@ -36,6 +36,7 @@ dynamic := the value will be updated frame by frame, therefore it has to be prov
 
 ### Video
 * Basic
+  * ContainerVideoClip - Clip container without its own content
   * SingleColorVideoClip - Single color rectangle (filled)
 * Text
   * StaticTextVideoClip - Text with transparent background  
@@ -43,6 +44,7 @@ dynamic := the value will be updated frame by frame, therefore it has to be prov
 * Diagrams
   * DynamicLineDiagramVideoClip - line diagram
   * DynamicPointDiagramVideoClip - point diagram
+  * DynamicVerticalBarDiagramVideoClip - vertical bar diagram
 
 ### Audio
 * AudioContainerClip - combination of other AudioClips, currently used for organizing sound in a video
