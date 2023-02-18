@@ -38,6 +38,9 @@ dynamic := the value will be updated frame by frame, therefore it has to be prov
 * Basic
   * ContainerVideoClip - Clip container without its own content
   * SingleColorVideoClip - Single color rectangle (filled)
+* Image
+  * ImageSlideshowVideoClip - Clip with multiple images switching
+  * StaticImageVideoClip - Clip with a single image
 * Text
   * DynamicTextVideoClip - Text with transparent background
   * StaticFormulaVideoVlip - Scientific formula
