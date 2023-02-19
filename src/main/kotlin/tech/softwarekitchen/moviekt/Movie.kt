@@ -34,8 +34,8 @@ class Movie(
     private val numAudioFrames = 44100 * length + 1
     private val audioContainer = AudioContainerClip(length.toDouble())
     private var mergeDone = false
-    private val beforeFrameCallbacks = ArrayList<() -> Unit>()
-    private val afterFrameCallbacks = ArrayList<() -> Unit>()
+    private val frameCallbacks = ArrayList<RenderCallback>()
+    private val onceCallbacks = ArrayList<OnceCallback>()
 
     private fun log(){
         while(videoFramesWritten < numVideoFrames){
@@ -103,8 +103,12 @@ class Movie(
      */
     @OptIn(ExperimentalUnsignedTypes::class)
     @Throws(ImageSizeMismatchException::class, VideoIsClosedException::class, FFMPEGDidntShutdownException::class)
-    fun writeFrame(target: OutputStream, image: BufferedImage){
-        beforeFrameCallbacks.forEach{it()}
+    fun writeFrame(target: OutputStream, image: BufferedImage, t: Float){
+        val toExecute = onceCallbacks.filter{it.at <= t}.toSet()
+        toExecute.forEach{it.action()}
+        onceCallbacks.removeAll(toExecute)
+
+        frameCallbacks.forEach{it.execute(RenderCallbackTiming.Pre)}
 
         if(videoFramesWritten >= numVideoFrames){
             throw VideoIsClosedException()
@@ -121,19 +125,40 @@ class Movie(
 
         videoFramesWritten++
 
-        afterFrameCallbacks.forEach{it()}
+        frameCallbacks.forEach{it.execute(RenderCallbackTiming.Post)}
     }
 
     fun getAudioContainer(): AudioContainerClip{
         return audioContainer
     }
 
-    fun addPreFrameCallback(callback: () -> Unit){
-        beforeFrameCallbacks.add(callback)
+    enum class RenderCallbackTiming{
+        Pre, Post
+    }
+    class RenderCallback(private val action: () -> Unit, private val timing: RenderCallbackTiming, private var isActive: Boolean = true){
+        fun suspend(){
+            isActive = false
+        }
+        fun resume(){
+            isActive = true
+        }
+
+        fun execute(timing: RenderCallbackTiming){
+            if(isActive && timing == this.timing){
+                action()
+            }
+        }
     }
 
-    fun addPostFrameCallback(callback: () -> Unit){
-        afterFrameCallbacks.add(callback)
+    fun addCallback(timing: RenderCallbackTiming, action: () -> Unit): RenderCallback{
+        val cb = RenderCallback(action, timing)
+        frameCallbacks.add(cb)
+        return cb
+    }
+
+    data class OnceCallback(val action: () -> Unit, val at: Float)
+    fun addOnceCallback(action: () -> Unit, at: Float){
+        onceCallbacks.add(OnceCallback(action, at))
     }
 
     fun write(){
