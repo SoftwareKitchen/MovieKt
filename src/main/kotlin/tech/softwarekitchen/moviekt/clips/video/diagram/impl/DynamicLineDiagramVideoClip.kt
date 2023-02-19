@@ -1,6 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video.diagram.impl
 
 import tech.softwarekitchen.common.vector.Vector2i
+import tech.softwarekitchen.moviekt.animation.position.SizeProvider
 import tech.softwarekitchen.moviekt.clips.video.diagram.DiagramAxisConfiguration
 import tech.softwarekitchen.moviekt.clips.video.diagram.PointBasedDiagramVideoClip
 import tech.softwarekitchen.moviekt.clips.video.diagram.XYDiagramConfiguration
@@ -19,7 +20,7 @@ data class DynamicLineDiagramColorConfiguration(
 )
 
 class DynamicLineDiagramVideoClip(
-    size: Vector2i,
+    size: SizeProvider,
     private val dataProvider: () -> List<Double>,
     private val configuration: XYDiagramConfiguration = XYDiagramConfiguration(),
     tOffset: Float = 0f,
@@ -36,7 +37,7 @@ class DynamicLineDiagramVideoClip(
 
         val graphics = image.createGraphics()
 
-        drawBackgroundGrid(image)
+        drawBackgroundGrid(image, size)
 
         graphics.color = Color(255,0,0,64)
         graphics.stroke = BasicStroke(1f)

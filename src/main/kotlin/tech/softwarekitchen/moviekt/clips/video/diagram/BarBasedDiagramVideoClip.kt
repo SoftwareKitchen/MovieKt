@@ -1,6 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video.diagram
 
 import tech.softwarekitchen.common.vector.Vector2i
+import tech.softwarekitchen.moviekt.animation.position.SizeProvider
 import tech.softwarekitchen.moviekt.clips.video.diagram.impl.DynamicLineDiagramBackgroundGrid
 import tech.softwarekitchen.moviekt.clips.video.diagram.impl.DynamicLineDiagramColorConfiguration
 
@@ -12,7 +13,7 @@ class BarBasedDiagramConfiguration(
 ): XYDiagramConfiguration(xAxis, yAxis, grid=DynamicLineDiagramBackgroundGrid.None, colors)
 
 abstract class BarBasedDiagramVideoClip(
-    size: Vector2i,
+    size: SizeProvider,
     tOffset: Float, visibilityDuration: Float? = null,
     yAxis: DiagramAxisConfiguration, xAxis: DiagramAxisConfiguration,
     private val configuration: XYDiagramConfiguration

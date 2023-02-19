@@ -1,6 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video.diagram.impl
 
 import tech.softwarekitchen.common.vector.Vector2i
+import tech.softwarekitchen.moviekt.animation.position.SizeProvider
 import tech.softwarekitchen.moviekt.clips.video.diagram.BarBasedDiagramConfiguration
 import tech.softwarekitchen.moviekt.clips.video.diagram.BarBasedDiagramVideoClip
 import tech.softwarekitchen.moviekt.clips.video.diagram.XYDiagramVideoClip
@@ -10,7 +11,7 @@ import java.awt.Polygon
 import java.awt.image.BufferedImage
 
 class DynamicVerticalBarDiagramVideoClip(
-    size: Vector2i,
+    size: SizeProvider,
     private val dataProvider: () -> List<Double>,
     private val configuration: BarBasedDiagramConfiguration = BarBasedDiagramConfiguration(),
     tOffset: Float = 0f,

@@ -1,12 +1,13 @@
 package tech.softwarekitchen.moviekt.clips.video.diagram
 
 import tech.softwarekitchen.common.vector.Vector2i
+import tech.softwarekitchen.moviekt.animation.position.SizeProvider
 import tech.softwarekitchen.moviekt.clips.video.diagram.impl.DynamicLineDiagramBackgroundGrid
 import java.awt.Color
 import java.awt.image.BufferedImage
 
 abstract class PointBasedDiagramVideoClip(
-    size: Vector2i,
+    size: SizeProvider,
     tOffset: Float, visibilityDuration: Float? = null,
     yAxis: DiagramAxisConfiguration, xAxis: DiagramAxisConfiguration,
     private val configuration: XYDiagramConfiguration
@@ -42,19 +43,19 @@ abstract class PointBasedDiagramVideoClip(
         return Pair(xScale, yScale)
     }
 
-    protected fun drawBackgroundGrid(image: BufferedImage){
+    protected fun drawBackgroundGrid(image: BufferedImage, totSize: Vector2i){
         val graphics = image.createGraphics()
         graphics.color = Color(255,255,255,128)
         when(configuration.grid){
             DynamicLineDiagramBackgroundGrid.None -> {}
             DynamicLineDiagramBackgroundGrid.X -> {
                 for(item in getXLegendEntries(image.width)){
-                    graphics.fillRect(item.pos-1,0,3 , size.y)
+                    graphics.fillRect(item.pos-1,0,3 , totSize.y)
                 }
             }
             DynamicLineDiagramBackgroundGrid.Y -> {
                 for(item in getYLegendEntries(image.height)){
-                    graphics.fillRect(0,item.pos-1,size.x , 3)
+                    graphics.fillRect(0,item.pos-1,totSize.x , 3)
                 }
             }
         }

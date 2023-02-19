@@ -1,6 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video.text
 
 import tech.softwarekitchen.common.vector.Vector2i
+import tech.softwarekitchen.moviekt.animation.position.SizeProvider
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import java.awt.Graphics2D
 import java.awt.image.BufferedImage
@@ -152,18 +153,19 @@ fun FormulaElement.sub(other: FormulaElement): FormulaSubElement{
 }
 
 class StaticFormulaVideoClip(
-    size: Vector2i,
+    size: SizeProvider,
     private val formula: FormulaElement,
     tOffset: Float = 0f,
     private val configuration: StaticFormulaVideoClipConfiguration = StaticFormulaVideoClipConfiguration(),
     visibilityDuration: Float? = null
 ): VideoClip(size, tOffset, visibilityDuration) {
     override fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
-        val img = generateEmptyImage()
+        val curSize = size(frameNo, nFrames, tTotal)
+        val img = generateEmptyImage(frameNo, nFrames, tTotal)
 
         val graphics = img.createGraphics()
 
-        val lmAnchor = Vector2i(0,size.y / 2)
+        val lmAnchor = Vector2i(0,curSize.y / 2)
         formula.render(lmAnchor, graphics, configuration.baseFontSize, configuration.fontSizeDecreasePerLevel)
 
         return img

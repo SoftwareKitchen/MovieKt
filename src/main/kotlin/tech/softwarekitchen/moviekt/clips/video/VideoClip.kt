@@ -1,6 +1,9 @@
 package tech.softwarekitchen.moviekt.clips.video
 
 import tech.softwarekitchen.common.vector.Vector2i
+import tech.softwarekitchen.moviekt.animation.position.PositionProvider
+import tech.softwarekitchen.moviekt.animation.position.SizeProvider
+import tech.softwarekitchen.moviekt.animation.position.toStaticPositionProvider
 import tech.softwarekitchen.moviekt.clips.video.basic.ContainerVideoClip
 import tech.softwarekitchen.moviekt.clips.video.basic.SingleColorVideoClip
 import tech.softwarekitchen.moviekt.clips.video.table.DataTableVideoClip
@@ -9,23 +12,27 @@ import java.lang.Float.max
 import java.lang.Float.min
 
 abstract class VideoClip(
-    val size: Vector2i,
+    val size: SizeProvider,
     val tOffset: Float,
     val visibilityDuration: Float?
 ){
-    private val children =  ArrayList<Pair<VideoClip, (Int, Int, Float) -> Vector2i>>()
+    private val children =  ArrayList<Pair<VideoClip, PositionProvider>>()
     private var opacity: (Float, Float?, Float?) -> Float = {tAbs, tTot, tRel -> 1f}
     abstract fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage
 
     fun addChild(child: VideoClip, position: Vector2i){
-        addChild(child) { _, _, _ -> position }
+        addChild(child, position.toStaticPositionProvider())
     }
-    fun addChild(child: VideoClip, position: (Int, Int, Float) -> Vector2i){
+    fun addChild(child: VideoClip, position: PositionProvider){
         children.add(Pair(child, position))
     }
 
     fun setOpacity(func: (Float, Float?, Float?) -> Float){
         opacity = func
+    }
+
+    fun getSize(cur: Int, tot: Int, t: Float): Vector2i{
+        return size(cur, tot, t)
     }
 
     fun render(frameNo: Int, nFrames: Int, t: Float): BufferedImage{
@@ -42,7 +49,7 @@ abstract class VideoClip(
                 child ->
                 val childImg = child.first.render(frameNo, nFrames, t - child.first.tOffset)
                 val childPosition = child.second(frameNo, nFrames, t)
-                background.graphics.drawImage(childImg,childPosition.x,childPosition.y,child.first.size.x,child.first.size.y,null)
+                background.graphics.drawImage(childImg,childPosition.x,childPosition.y,child.first.size(frameNo,nFrames,t).x,child.first.size(frameNo,nFrames,t).y,null)
             }
 
         val copy = cloneImage(background)
@@ -68,8 +75,8 @@ abstract class VideoClip(
         return BufferedImage(src.colorModel, src.copyData(null),src.isAlphaPremultiplied,null)
     }
 
-    protected fun generateEmptyImage(): BufferedImage{
-        return BufferedImage(size.x, size.y, BufferedImage.TYPE_INT_ARGB)
+    protected fun generateEmptyImage(cur: Int, tot: Int, t: Float): BufferedImage{
+        val curSize = size(cur, tot, t)
+        return BufferedImage(curSize.x, curSize.y, BufferedImage.TYPE_INT_ARGB)
     }
 }
-

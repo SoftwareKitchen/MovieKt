@@ -3,6 +3,8 @@ package tech.softwarekitchen.moviekt.clips.audio
 import java.io.File
 
 class FileAudioClip(f: File): AudioClip() {
+    constructor(path: String): this(File(path))
+
     private val data: ByteArray
 
     init{

@@ -1,25 +1,24 @@
 package tech.softwarekitchen.moviekt.clips.video.image
 
 import tech.softwarekitchen.common.vector.Vector2i
+import tech.softwarekitchen.moviekt.animation.position.SizeProvider
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 
 class StaticImageVideoClip(
-    size: Vector2i,
+    size: SizeProvider,
     imageFile: File,
     tOffset: Float = 0f,
     visibilityDuration: Float? = null
 ): VideoClip(size, tOffset, visibilityDuration) {
-    private val cachedImage = generateEmptyImage()
-    init{
-        val image = ImageIO.read(imageFile)
-        val graphics = cachedImage.createGraphics()
-        graphics.drawImage(image,0,0,null)
-    }
+    val toDraw = ImageIO.read(imageFile)
 
     override fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
-        return cloneImage(cachedImage)
+        val img = generateEmptyImage(frameNo, nFrames, tTotal)
+        val graphics = img.createGraphics()
+        graphics.drawImage(toDraw,0,0,null)
+        return img
     }
 }

@@ -1,6 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video.diagram.impl
 
 import tech.softwarekitchen.common.vector.Vector2i
+import tech.softwarekitchen.moviekt.animation.position.SizeProvider
 import tech.softwarekitchen.moviekt.clips.video.diagram.PointBasedDiagramVideoClip
 import tech.softwarekitchen.moviekt.clips.video.diagram.XYDiagramConfiguration
 import tech.softwarekitchen.moviekt.clips.video.diagram.XYDiagramVideoClip
@@ -14,7 +15,7 @@ enum class DynamicPointDiagramMarker{
 
 data class XYDataPoint(val x: Double, val y: Double)
 class DynamicPointDiagramVideoClip(
-    size: Vector2i,
+    size: SizeProvider,
     tOffset: Float,
     private val dataSets: Map<DynamicPointDiagramMarker, () -> List<XYDataPoint>>,
     configuration: XYDiagramConfiguration = XYDiagramConfiguration(),
@@ -30,7 +31,7 @@ class DynamicPointDiagramVideoClip(
         tTotal: Float
     ): BufferedImage {
         val img = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)
-        drawBackgroundGrid(img)
+        drawBackgroundGrid(img, size)
 
         val graphics = img.createGraphics()
         val (xScale, yScale) = getScreenMapper(size)

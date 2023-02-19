@@ -34,6 +34,8 @@ class Movie(
     private val numAudioFrames = 44100 * length + 1
     private val audioContainer = AudioContainerClip(length.toDouble())
     private var mergeDone = false
+    private val beforeFrameCallbacks = ArrayList<() -> Unit>()
+    private val afterFrameCallbacks = ArrayList<() -> Unit>()
 
     private fun log(){
         while(videoFramesWritten < numVideoFrames){
@@ -102,6 +104,7 @@ class Movie(
     @OptIn(ExperimentalUnsignedTypes::class)
     @Throws(ImageSizeMismatchException::class, VideoIsClosedException::class, FFMPEGDidntShutdownException::class)
     fun writeFrame(target: OutputStream, image: BufferedImage){
+        beforeFrameCallbacks.forEach{it()}
 
         if(videoFramesWritten >= numVideoFrames){
             throw VideoIsClosedException()
@@ -117,10 +120,20 @@ class Movie(
         }
 
         videoFramesWritten++
+
+        afterFrameCallbacks.forEach{it()}
     }
 
     fun getAudioContainer(): AudioContainerClip{
         return audioContainer
+    }
+
+    fun addPreFrameCallback(callback: () -> Unit){
+        beforeFrameCallbacks.add(callback)
+    }
+
+    fun addPostFrameCallback(callback: () -> Unit){
+        afterFrameCallbacks.add(callback)
     }
 
     fun write(){
@@ -135,7 +148,7 @@ class Movie(
             ,"-f","rawvideo"
             ,"-t","$length"
             ,"-pix_fmt","rgb24"
-            ,"-s","${videoRoot.size.x}x${videoRoot.size.y}",
+            ,"-s","${videoRoot.getSize(0,0,0f).x}x${videoRoot.getSize(0,0,0f).y}",
             "-r","$fps"
             ,"-i","pipe:0"
             ,"-c:v","libx264"
@@ -145,6 +158,8 @@ class Movie(
             ,"-preset","veryslow"
             ,"-an",rawVideoName
         )
+            .redirectError(ProcessBuilder.Redirect.DISCARD)
+            .redirectOutput(ProcessBuilder.Redirect.DISCARD)
             .start()
 
         val videoOutputStream = videoProcess.outputStream
@@ -172,6 +187,8 @@ class Movie(
             "-vbr","5",
             rawAudioName
         )
+            .redirectError(ProcessBuilder.Redirect.DISCARD)
+            .redirectOutput(ProcessBuilder.Redirect.DISCARD)
             .start()
 
         val audioOutputStream = audioProcess.outputStream
@@ -208,6 +225,8 @@ class Movie(
             "-y",
             "$name.mp4"
         )
+            .redirectError(ProcessBuilder.Redirect.DISCARD)
+            .redirectOutput(ProcessBuilder.Redirect.DISCARD)
             .start()
         mergeProcess.waitFor()
         mergeDone = true

@@ -1,13 +1,14 @@
 package tech.softwarekitchen.moviekt.clips.video.basic
 
 import tech.softwarekitchen.common.vector.Vector2i
+import tech.softwarekitchen.moviekt.animation.position.SizeProvider
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.exception.ChainedClipRequiresVisibilityDurationException
 import tech.softwarekitchen.moviekt.exception.ClipSizeMismatchException
 import java.awt.image.BufferedImage
 
 fun VideoClip.chain(other: VideoClip): ContainerVideoClip{
-    if(this.size.x != other.size.x || this.size.y != other.size.y){
+    if(this.size(0,0,0f).x != other.size(0,0,0f).x || this.size(0,0,0f).y != other.size(0,0,0f).y){
         throw ClipSizeMismatchException()
     }
     val c1Length = this.visibilityDuration ?: throw ChainedClipRequiresVisibilityDurationException()
@@ -26,14 +27,14 @@ fun VideoClip.chain(other: VideoClip): ContainerVideoClip{
 }
 
 class ContainerVideoClip(
-    size: Vector2i,
+    size: SizeProvider,
     tOffset: Float,
     visibilityDuration: Float?
 ): VideoClip(
     size, tOffset, visibilityDuration
 ) {
     override fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
-        val img = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)
+        val img = BufferedImage(size(frameNo, nFrames, tTotal).x,size(frameNo, nFrames, tTotal).y,BufferedImage.TYPE_INT_ARGB)
         return img
     }
 }
