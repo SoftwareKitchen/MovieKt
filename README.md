@@ -20,6 +20,9 @@ fun main(args: Array<String>) {
 
 ```
 
+## Examples
+There are examples in src/main/examples folder
+
 ## Clips 
 Everything that resembles an object in a video is a Clip, a Video or AudioClip.  
 VideoClips are organized in a tree structure, AudioClips can be merged via an AudioContainerClip.

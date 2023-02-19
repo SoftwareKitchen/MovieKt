@@ -28,8 +28,8 @@ fun VideoClip.chain(other: VideoClip): ContainerVideoClip{
 
 class ContainerVideoClip(
     size: SizeProvider,
-    tOffset: Float,
-    visibilityDuration: Float?
+    tOffset: Float = 0f,
+    visibilityDuration: Float? = null
 ): VideoClip(
     size, tOffset, visibilityDuration
 ) {

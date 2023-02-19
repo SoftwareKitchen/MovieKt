@@ -1,4 +1,4 @@
-package tech.softwarekitchen.moviekt.examples
+package kotlin.tech.softwarekitchen.moviekt.examples
 
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.Movie
