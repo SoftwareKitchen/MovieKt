@@ -1,6 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video.diagram
 
 import tech.softwarekitchen.common.vector.Vector2i
+import tech.softwarekitchen.moviekt.animation.position.SizeProvider
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import java.awt.Color
 import java.awt.Graphics2D
@@ -23,14 +24,13 @@ data class DiagramAxisConfiguration(
 )
 
 abstract class DiagramVideoClip(
-    size: Vector2i,
+    size: SizeProvider,
     tOffset: Float = 0f,
     visibilityDuration: Float? = null,
     private val yAxis: DiagramAxisConfiguration,
     private val xAxis: DiagramAxisConfiguration
 ): VideoClip(size,tOffset,visibilityDuration) {
     private val padding: Padding
-    private val dataDisplaySize: Vector2i
     init{
         val bottomPadding = when(xAxis.legendMode){
             DiagramAxisLegendMode.None -> 0
@@ -43,7 +43,6 @@ abstract class DiagramVideoClip(
             DiagramAxisLegendMode.Full -> 70
         }
         padding = Padding(leftPadding,0,0,bottomPadding)
-        dataDisplaySize = Vector2i(size.x - padding.left - padding.right, size.y - padding.top - padding.bottom)
     }
 
     abstract fun generateDataDisplay(size: Vector2i, frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage
@@ -53,18 +52,20 @@ abstract class DiagramVideoClip(
 
 
     override fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
-        val target = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)
+        val curSize = size(frameNo, nFrames, tTotal)
+        val dataDisplaySize = Vector2i(curSize.x - padding.left - padding.right, curSize.y - padding.top - padding.bottom)
+        val target = generateEmptyImage(frameNo, nFrames, tTotal)
         val targetGraph = target.createGraphics()
 
         val dataImage = generateDataDisplay(dataDisplaySize, frameNo, nFrames, tTotal)
         targetGraph.drawImage(dataImage, padding.left, padding.top, null)
 
-        drawYAxis(targetGraph)
-        drawXAxis(targetGraph)
+        drawYAxis(targetGraph, dataDisplaySize, curSize)
+        drawXAxis(targetGraph, dataDisplaySize, curSize)
         return target
     }
 
-    private fun drawYAxis(graphics: Graphics2D){
+    private fun drawYAxis(graphics: Graphics2D, dataDisplaySize: Vector2i, totSize: Vector2i){
         graphics.color = Color.WHITE
         when(yAxis.legendMode){
             DiagramAxisLegendMode.None -> {}
@@ -83,20 +84,20 @@ abstract class DiagramVideoClip(
         }
     }
 
-    private fun drawXAxis(graphics: Graphics2D){
+    private fun drawXAxis(graphics: Graphics2D, dataDisplaySize: Vector2i, totSize: Vector2i){
         graphics.color = Color.WHITE
         when(xAxis.legendMode){
             DiagramAxisLegendMode.None -> {}
             DiagramAxisLegendMode.AxisOnly -> {
-                graphics.fillRect(padding.left,size.y - padding.bottom,dataDisplaySize.x-padding.right,size.y)
+                graphics.fillRect(padding.left,totSize.y - padding.bottom,dataDisplaySize.x-padding.right,totSize.y)
             }
             DiagramAxisLegendMode.Full -> {
                 val xAxisEntries = getXLegendEntries(dataDisplaySize.x)
                 for(item in xAxisEntries){
-                    graphics.fillRect(padding.left+item.pos-2,size.y - padding.bottom,5,7)
-                    graphics.drawString(item.legend,padding.left + item.pos-20,size.y - padding.bottom + 20)
+                    graphics.fillRect(padding.left+item.pos-2,totSize.y - padding.bottom,5,7)
+                    graphics.drawString(item.legend,padding.left + item.pos-20,totSize.y - padding.bottom + 20)
                 }
-                graphics.fillRect(padding.left,size.y - padding.bottom,dataDisplaySize.x,3)
+                graphics.fillRect(padding.left,totSize.y - padding.bottom,dataDisplaySize.x,3)
             }
         }
     }
