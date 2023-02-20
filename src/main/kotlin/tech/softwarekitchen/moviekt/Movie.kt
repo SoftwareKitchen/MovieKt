@@ -190,7 +190,8 @@ class Movie(
         val videoOutputStream = videoProcess.outputStream
 
         while(videoFramesWritten < numVideoFrames){
-            writeFrame(videoOutputStream, videoRoot.render(videoFramesWritten,numVideoFrames,videoFramesWritten.toFloat() / fps))
+            val t = videoFramesWritten / fps.toFloat()
+            writeFrame(videoOutputStream, videoRoot.render(videoFramesWritten,numVideoFrames,videoFramesWritten.toFloat() / fps),t)
         }
 
         videoOutputStream.flush()
