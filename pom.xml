@@ -34,6 +34,11 @@
             <artifactId>Common-Vector</artifactId>
             <version>1.0</version>
         </dependency>
+        <dependency>
+            <groupId>tech.softwarekitchen.tsr</groupId>
+            <artifactId>TSR</artifactId>
+            <version>0.1</version>
+        </dependency>
     </dependencies>
 
     <build>
