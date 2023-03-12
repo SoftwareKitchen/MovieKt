@@ -104,12 +104,6 @@ class Movie(
     @OptIn(ExperimentalUnsignedTypes::class)
     @Throws(ImageSizeMismatchException::class, VideoIsClosedException::class, FFMPEGDidntShutdownException::class)
     fun writeFrame(target: OutputStream, image: BufferedImage, t: Float){
-        val toExecute = onceCallbacks.filter{it.at <= t}.toSet()
-        toExecute.forEach{it.action()}
-        onceCallbacks.removeAll(toExecute)
-
-        frameCallbacks.forEach{it.execute(RenderCallbackTiming.Pre)}
-
         if(videoFramesWritten >= numVideoFrames){
             throw VideoIsClosedException()
         }
@@ -124,8 +118,6 @@ class Movie(
         }
 
         videoFramesWritten++
-
-        frameCallbacks.forEach{it.execute(RenderCallbackTiming.Post)}
     }
 
     fun getAudioContainer(): AudioContainerClip{
@@ -191,7 +183,16 @@ class Movie(
 
         while(videoFramesWritten < numVideoFrames){
             val t = videoFramesWritten / fps.toFloat()
+
+            val toExecute = onceCallbacks.filter{it.at <= t}.toSet()
+            toExecute.forEach{it.action()}
+            onceCallbacks.removeAll(toExecute)
+
+            frameCallbacks.forEach{it.execute(RenderCallbackTiming.Pre)}
+
             writeFrame(videoOutputStream, videoRoot.render(videoFramesWritten,numVideoFrames,videoFramesWritten.toFloat() / fps),t)
+
+            frameCallbacks.forEach{it.execute(RenderCallbackTiming.Post)}
         }
 
         videoOutputStream.flush()

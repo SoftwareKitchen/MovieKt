@@ -143,7 +143,7 @@ abstract class XYDiagramVideoClip(
         val xmax = when(configuration.xAxis.max) {
             null ->
                 try {
-                    data.maxOf{it.second}
+                    data.maxOf{it.first}
                 } catch (ex: Exception) {
                     1.0
                 }
