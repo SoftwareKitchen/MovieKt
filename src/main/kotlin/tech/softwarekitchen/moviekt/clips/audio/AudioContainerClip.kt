@@ -4,17 +4,17 @@ import java.lang.Double.max
 import java.lang.Double.min
 
 class AudioContainerClip(private val length: Double): AudioClip() {
-    private data class AudioClipEntry(val clip: AudioClip, val offset: Double)
+    private data class AudioClipEntry(val clip: AudioClip, val offset: Double, val volume: Double)
     private val clips = ArrayList<AudioClipEntry>()
 
-    fun addClip(clip: AudioClip, offset: Double = 0.0){
-        clips.add(AudioClipEntry(clip, offset))
+    fun addClip(clip: AudioClip, offset: Double = 0.0, volume: Double = 1.0){
+        clips.add(AudioClipEntry(clip, offset, volume))
     }
 
     override fun getAt(t: Double): Double {
         val raw = clips
             .filter { t >= it.offset && t < it.offset + it.clip.getLength() }
-            .sumOf { it.clip.getAt(t - it.offset) }
+            .sumOf { it.volume * it.clip.getAt(t - it.offset) }
 
         return max(-1.0, min(1.0, raw))
     }
