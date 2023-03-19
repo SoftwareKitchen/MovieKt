@@ -35,7 +35,6 @@ class ArrowVideoClip(
         val halfVector = Vector2(Math.sin(configuration.angle) * configuration.length / 2, Math.cos(configuration.angle) * configuration.length / 2)
         val halfSideVector = Vector2(Math.cos(configuration.angle) * configuration.width / 2, -Math.sin(configuration.angle) * configuration.width / 2)
 
-
         val arrowHeadLen = 0.2
         val arrowRelWidth = 0.3
 

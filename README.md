@@ -44,6 +44,9 @@ dynamic := the value will be updated frame by frame, therefore it has to be prov
 * Image
   * ImageSlideshowVideoClip - Clip with multiple images switching
   * StaticImageVideoClip - Clip with a single image
+* Shape
+  * ArrowVideoClip - An arrow
+  * Dynamic2DSceneVideoClip - 2D animations
 * Text
   * DynamicTextVideoClip - Text with transparent background
   * StaticFormulaVideoVlip - Scientific formula
