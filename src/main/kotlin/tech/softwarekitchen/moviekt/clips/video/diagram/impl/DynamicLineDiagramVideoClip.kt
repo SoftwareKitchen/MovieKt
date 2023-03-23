@@ -5,13 +5,12 @@ import tech.softwarekitchen.moviekt.animation.position.SizeProvider
 import tech.softwarekitchen.moviekt.clips.video.diagram.DiagramAxisConfiguration
 import tech.softwarekitchen.moviekt.clips.video.diagram.PointBasedDiagramVideoClip
 import tech.softwarekitchen.moviekt.clips.video.diagram.XYDiagramConfiguration
-import tech.softwarekitchen.moviekt.clips.video.diagram.XYDiagramVideoClip
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.Polygon
 import java.awt.image.BufferedImage
 
-enum class DynamicLineDiagramBackgroundGrid{
+enum class DynamicDiagramBackgroundGrid{
     None, X, Y
 }
 
@@ -19,13 +18,20 @@ data class DynamicLineDiagramColorConfiguration(
     val underGraphColor: Color? = null
 )
 
+data class DynamicLineDiagramVideoClipConfiguration(
+    override val xAxis: DiagramAxisConfiguration = DiagramAxisConfiguration(),
+    override val yAxis: DiagramAxisConfiguration = DiagramAxisConfiguration(),
+    override val grid: DynamicDiagramBackgroundGrid = DynamicDiagramBackgroundGrid.None,
+    override val colors: DynamicLineDiagramColorConfiguration = DynamicLineDiagramColorConfiguration()
+): XYDiagramConfiguration
+
 class DynamicLineDiagramVideoClip(
     size: SizeProvider,
     private val dataProvider: () -> List<Double>,
-    private val configuration: XYDiagramConfiguration = XYDiagramConfiguration(),
+    private val configuration: DynamicLineDiagramVideoClipConfiguration = DynamicLineDiagramVideoClipConfiguration(),
     tOffset: Float = 0f,
     visibilityDuration: Float? = null,
-): PointBasedDiagramVideoClip(size, tOffset, visibilityDuration, yAxis = configuration.yAxis, xAxis = configuration.xAxis, configuration = configuration) {
+): PointBasedDiagramVideoClip(size, tOffset, visibilityDuration, configuration = configuration) {
 
     override fun generateDataDisplay(size: Vector2i, frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
         val image = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)

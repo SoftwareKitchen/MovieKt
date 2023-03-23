@@ -2,25 +2,25 @@ package tech.softwarekitchen.moviekt.clips.video.diagram
 
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.animation.position.SizeProvider
-import tech.softwarekitchen.moviekt.clips.video.diagram.impl.DynamicLineDiagramBackgroundGrid
+import tech.softwarekitchen.moviekt.clips.video.diagram.impl.DynamicDiagramBackgroundGrid
 import tech.softwarekitchen.moviekt.clips.video.diagram.impl.DynamicLineDiagramColorConfiguration
 
 class BarBasedDiagramConfiguration(
-    xAxis: DiagramAxisConfiguration = DiagramAxisConfiguration(),
-    yAxis: DiagramAxisConfiguration = DiagramAxisConfiguration(),
-    colors: DynamicLineDiagramColorConfiguration = DynamicLineDiagramColorConfiguration(),
+    override val xAxis: DiagramAxisConfiguration = DiagramAxisConfiguration(),
+    override val yAxis: DiagramAxisConfiguration = DiagramAxisConfiguration(),
+    override val grid: DynamicDiagramBackgroundGrid = DynamicDiagramBackgroundGrid.None,
+    override val colors: DynamicLineDiagramColorConfiguration = DynamicLineDiagramColorConfiguration(),
     barWidth: Double = 1.0
-): XYDiagramConfiguration(xAxis, yAxis, grid=DynamicLineDiagramBackgroundGrid.None, colors)
+): XYDiagramConfiguration
 
 abstract class BarBasedDiagramVideoClip(
     size: SizeProvider,
     tOffset: Float, visibilityDuration: Float? = null,
-    yAxis: DiagramAxisConfiguration, xAxis: DiagramAxisConfiguration,
     private val configuration: XYDiagramConfiguration
 ): XYDiagramVideoClip(
-    size, tOffset, visibilityDuration = visibilityDuration, yAxis = yAxis, xAxis = xAxis, configuration = configuration
+    size, tOffset, visibilityDuration = visibilityDuration, configuration = configuration
 ) {
-    protected fun getScreenMapper(dataScreenSize: Vector2i): (Double) -> Int{
+    protected fun getYScreenMapper(dataScreenSize: Vector2i): (Double) -> Int{
         val dataBounds = getDataBounds()
         val totalDeltaExpY = when(configuration.yAxis.mode){
             DiagramAxisMode.Logarithmic -> Math.log10(dataBounds.ymax / dataBounds.ymin)
