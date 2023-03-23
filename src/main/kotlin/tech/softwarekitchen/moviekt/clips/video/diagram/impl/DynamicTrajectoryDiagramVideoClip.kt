@@ -26,7 +26,7 @@ class DynamicTrajectoryDiagramVideoClip(
     configuration
 ) {
     companion object{
-        val colors = listOf(Color.BLUE, Color.YELLOW)
+        val colors = listOf(Color.YELLOW, Color.BLUE)
     }
 
     override fun getData(): List<Pair<Double, Double>> {
@@ -43,13 +43,14 @@ class DynamicTrajectoryDiagramVideoClip(
 
 
         for(i in 1 ..maxIndex){
-            data.forEach{
+            data.forEachIndexed{
+                index, it ->
                 if(it.size > i){
-                    val col = colors[i % colors.size]
+                    val col = colors[index % colors.size]
                     val srcX = xScale(it[i-1].first)
-                    val srcY = xScale(it[i-1].first)
+                    val srcY = yScale(it[i-1].second)
                     val tgtX = xScale(it[i].first)
-                    val tgtY = xScale(it[i].first)
+                    val tgtY = yScale(it[i].second)
                     graphics.color = col
                     graphics.drawLine(srcX, srcY, tgtX, tgtY)
                 }
