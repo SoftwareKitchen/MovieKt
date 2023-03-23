@@ -17,9 +17,10 @@ data class DynamicTrajectoryDiagramVideoClipConfiguration(
 ): XYDiagramConfiguration
 
 class DynamicTrajectoryDiagramVideoClip(
+    size: SizeProvider,
     private val providers: List<() -> List<Pair<Double, Double>>>,
-    private val configuration: DynamicTrajectoryDiagramVideoClipConfiguration,
-    size: SizeProvider, tOffset: Float = 0f, visibilityDuration: Float? = null
+    private val configuration: DynamicTrajectoryDiagramVideoClipConfiguration = DynamicTrajectoryDiagramVideoClipConfiguration(),
+     tOffset: Float = 0f, visibilityDuration: Float? = null
 ): XYDiagramVideoClip(
     size, tOffset, visibilityDuration,
     configuration
