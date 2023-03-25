@@ -7,9 +7,9 @@ import java.awt.image.BufferedImage
 
 class Dynamic2DSceneVideoClip(
     size: SizeProvider,
+    private val shapeProvider: (Int, Int, Float) -> List<Shape>,
     tOffset: Float = 0f,
-    visibilityDuration: Float? = null,
-    private val shapeProvider: (Int, Int, Float) -> List<Shape>
+    visibilityDuration: Float? = null
 ) : VideoClip(size,tOffset,visibilityDuration){
     override fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
         val img = generateEmptyImage(frameNo, nFrames, tTotal)
