@@ -127,7 +127,7 @@ class Movie(
     enum class RenderCallbackTiming{
         Pre, Post
     }
-    class RenderCallback(private val action: () -> Unit, private val timing: RenderCallbackTiming, private var isActive: Boolean = true){
+    class RenderCallback(private val action: (Int, Int, Float) -> Unit, private val timing: RenderCallbackTiming, private var isActive: Boolean = true){
         fun suspend(){
             isActive = false
         }
@@ -135,14 +135,14 @@ class Movie(
             isActive = true
         }
 
-        fun execute(timing: RenderCallbackTiming){
+        fun execute(timing: RenderCallbackTiming, frameNo: Int, frameCt: Int, t: Float){
             if(isActive && timing == this.timing){
-                action()
+                action(frameNo, frameCt, t)
             }
         }
     }
 
-    fun addCallback(timing: RenderCallbackTiming, action: () -> Unit): RenderCallback{
+    fun addCallback(timing: RenderCallbackTiming, action: (Int, Int, Float) -> Unit): RenderCallback{
         val cb = RenderCallback(action, timing)
         frameCallbacks.add(cb)
         return cb
@@ -188,11 +188,11 @@ class Movie(
             toExecute.forEach{it.action()}
             onceCallbacks.removeAll(toExecute)
 
-            frameCallbacks.forEach{it.execute(RenderCallbackTiming.Pre)}
+            frameCallbacks.forEach{it.execute(RenderCallbackTiming.Pre, videoFramesWritten, numVideoFrames, t)}
 
             writeFrame(videoOutputStream, videoRoot.render(videoFramesWritten,numVideoFrames,videoFramesWritten.toFloat() / fps),t)
 
-            frameCallbacks.forEach{it.execute(RenderCallbackTiming.Post)}
+            frameCallbacks.forEach{it.execute(RenderCallbackTiming.Post, videoFramesWritten, numVideoFrames, t)}
         }
 
         videoOutputStream.flush()
