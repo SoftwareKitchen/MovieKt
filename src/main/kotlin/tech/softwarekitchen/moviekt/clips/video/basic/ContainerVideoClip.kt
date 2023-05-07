@@ -8,6 +8,7 @@ import tech.softwarekitchen.moviekt.exception.ClipSizeMismatchException
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.image.BufferedImage
+import kotlin.math.roundToInt
 
 fun VideoClip.chain(other: VideoClip): ContainerVideoClip{
     if(this.size(0,0,0f).x != other.size(0,0,0f).x || this.size(0,0,0f).y != other.size(0,0,0f).y){
@@ -36,7 +37,7 @@ data class ContainerVideoClipConfiguration(
     val border: ContainerBorderConfiguration = ContainerBorderConfiguration()
 )
 
-class ContainerVideoClip(
+open class ContainerVideoClip(
     size: SizeProvider,
     tOffset: Float = 0f,
     visibilityDuration: Float? = null,
@@ -50,9 +51,10 @@ class ContainerVideoClip(
         if(configuration.border.width > 0){
             val size = getSize(frameNo, nFrames, tTotal)
             val graphics = img.createGraphics()
-            graphics.stroke = BasicStroke(configuration.border.width.toFloat())
+            val borderWidth = configuration.border.width.toFloat()
+            graphics.stroke = BasicStroke(borderWidth)
             graphics.color = configuration.border.color
-            graphics.drawRect(0,0, size.x, size.y)
+            graphics.drawRect((0 + borderWidth / 2).roundToInt(),(0 + borderWidth / 2).roundToInt(), (size.x - 2 * borderWidth).roundToInt(), (size.y - 2 * borderWidth).roundToInt())
         }
 
         return img

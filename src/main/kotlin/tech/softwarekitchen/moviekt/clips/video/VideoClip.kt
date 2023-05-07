@@ -35,6 +35,10 @@ abstract class VideoClip(
         return size(cur, tot, t)
     }
 
+    open fun getTranslationOffset(cur: Int, tot: Int, t: Float): Vector2i{
+        return Vector2i(0,0)
+    }
+
     fun render(frameNo: Int, nFrames: Int, t: Float): BufferedImage{
         val background = renderContent(frameNo, nFrames, t)
 
@@ -48,7 +52,8 @@ abstract class VideoClip(
             .forEach{
                 child ->
                 val childImg = child.first.render(frameNo, nFrames, t - child.first.tOffset)
-                val childPosition = child.second(frameNo, nFrames, t)
+                val childPosition = child.second(frameNo, nFrames, t).plus(child.first.getTranslationOffset(frameNo, nFrames, t - child.first.tOffset))
+
                 background.graphics.drawImage(childImg,childPosition.x,childPosition.y,child.first.size(frameNo,nFrames,t).x,child.first.size(frameNo,nFrames,t).y,null)
             }
 
