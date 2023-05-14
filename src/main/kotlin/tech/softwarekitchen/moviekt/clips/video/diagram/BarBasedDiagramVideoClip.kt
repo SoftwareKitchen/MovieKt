@@ -20,10 +20,15 @@ abstract class BarBasedDiagramVideoClip(
 ): XYDiagramVideoClip(
     size, tOffset, visibilityDuration = visibilityDuration, configuration = configuration
 ) {
-    protected fun getYScreenMapper(dataScreenSize: Vector2i): (Double) -> Int{
+    protected fun getYScreenMapper(dataScreenSize: Vector2i, addOne: Boolean = false): (Double) -> Int{
         val dataBounds = getDataBounds()
+        val yAdd = when(addOne){
+            true -> 1.0
+            else -> 0.0
+        }
+
         val totalDeltaExpY = when(configuration.yAxis.mode){
-            DiagramAxisMode.Logarithmic -> Math.log10(dataBounds.ymax / dataBounds.ymin)
+            DiagramAxisMode.Logarithmic -> Math.log10((yAdd+dataBounds.ymax) / dataBounds.ymin)
             else -> 0.0
         }
         val yScale: (Double) -> Int = if(configuration.yAxis.mode == DiagramAxisMode.Logarithmic){
@@ -32,7 +37,7 @@ abstract class BarBasedDiagramVideoClip(
                 (dataScreenSize.y * (1 - deltaExp / totalDeltaExpY)).toInt()
             }
         }else{
-            { (dataScreenSize.y * (1 - (it - dataBounds.ymin) / (dataBounds.ymax - dataBounds.ymin))).toInt() }
+            { (dataScreenSize.y * (1 - (it - dataBounds.ymin) / (yAdd + dataBounds.ymax - dataBounds.ymin))).toInt() }
         }
         return yScale
     }

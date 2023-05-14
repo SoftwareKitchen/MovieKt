@@ -8,9 +8,9 @@ import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.image.BufferedImage
 
-class DynamicHorizontalBarDiagramVideoClip(
+class DynamicHorizontalSpanDiagramVideoClip(
     size: SizeProvider,
-    private val dataProvider: () -> List<Double>,
+    private val dataProvider: () -> List<Pair<Double, Double>>,
     private val configuration: BarBasedDiagramConfiguration = BarBasedDiagramConfiguration(),
     tOffset: Float = 0f,
     visibilityDuration: Float? = null,
@@ -20,18 +20,17 @@ class DynamicHorizontalBarDiagramVideoClip(
         val image = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)
         val data = dataProvider()
         val xScale = getXScreenMapper(size)
-        val dataMapped = data.map(xScale)
+        val yScale = getYScreenMapper(size, true)
+        val dataMapped = data.map{Pair(xScale(it.first), xScale(it.second))}
 
         val graphics = image.createGraphics()
 
         graphics.color = Color(255,0,0,64)
 
-        val widthPerBar = size.y.toDouble() / dataMapped.size.toDouble()
-
         dataMapped.forEachIndexed{
             i, v ->
             graphics.fillRect(
-                0,(size.y - (i + 1)*widthPerBar).toInt(),v,widthPerBar.toInt()
+                v.first,(yScale(i+1.0)),v.second - v.first,(yScale(i+0.0) - yScale(i+1.0))
             )
         }
 
@@ -41,7 +40,7 @@ class DynamicHorizontalBarDiagramVideoClip(
         dataMapped.forEachIndexed{
             i,v ->
             graphics.drawRect(
-                0,(size.y - (i + 1)*widthPerBar).toInt(),v,widthPerBar.toInt()
+                v.first,(yScale(i+1.0)),v.second - v.first,(yScale(i+0.0) - yScale(i+1.0))
             )
         }
 
@@ -49,6 +48,6 @@ class DynamicHorizontalBarDiagramVideoClip(
     }
 
     override fun getData(): List<Pair<Double, Double>> {
-        return dataProvider().mapIndexed{i,v -> Pair(i.toDouble(),v)}
+        return dataProvider().mapIndexed{i,v -> listOf(Pair(i.toDouble(),v.first), Pair(i.toDouble(), v.second))}.flatten()
     }
 }
