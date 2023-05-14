@@ -37,4 +37,21 @@ abstract class BarBasedDiagramVideoClip(
         return yScale
     }
 
+    //For vertical diagrams
+    protected fun getXScreenMapper(dataScreenSize: Vector2i): (Double) -> Int{
+        val dataBounds = getDataBounds()
+        val totalDeltaExpX = when(configuration.xAxis.mode){
+            DiagramAxisMode.Logarithmic -> Math.log10(dataBounds.xmax / dataBounds.xmin)
+            else -> 0.0
+        }
+        val xScale: (Double) -> Int = if(configuration.xAxis.mode == DiagramAxisMode.Logarithmic){
+            {
+                val deltaExp = Math.log10(it / dataBounds.xmin)
+                (dataScreenSize.x * (deltaExp / totalDeltaExpX)).toInt()
+            }
+        }else{
+            { (dataScreenSize.x * (it - dataBounds.xmin) / (dataBounds.xmax - dataBounds.xmin)).toInt() }
+        }
+        return xScale
+    }
 }
