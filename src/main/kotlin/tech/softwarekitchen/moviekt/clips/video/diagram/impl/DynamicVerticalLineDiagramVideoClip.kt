@@ -2,9 +2,7 @@ package tech.softwarekitchen.moviekt.clips.video.diagram.impl
 
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.animation.position.SizeProvider
-import tech.softwarekitchen.moviekt.clips.video.diagram.DiagramAxisConfiguration
 import tech.softwarekitchen.moviekt.clips.video.diagram.PointBasedDiagramVideoClip
-import tech.softwarekitchen.moviekt.clips.video.diagram.XYDiagramConfiguration
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.Polygon
@@ -26,14 +24,14 @@ class DynamicVerticalLineDiagramVideoClip(
         val image = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)
 
         val data = dataProviders.map{it()}
-        val (xScale, yScale) = getScreenMapper(size)
+        val (xScale, yScale) = getScreenMapper(frameNo, nFrames,tTotal, size)
 
         val longest = data.maxOf{it.size}
         val yMapped = (0..longest).map{yScale(it.toDouble() + 0.5)}
 
         val graphics = image.createGraphics()
 
-        drawBackgroundGrid(image, size)
+        drawBackgroundGrid(frameNo, nFrames, tTotal, image, size)
 
         graphics.stroke = BasicStroke(1f)
 

@@ -36,14 +36,14 @@ class DynamicLineDiagramVideoClip(
     override fun generateDataDisplay(size: Vector2i, frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
         val image = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)
         val data = dataProvider()
-        val (xScale, yScale) = getScreenMapper(size)
+        val (xScale, yScale) = getScreenMapper(frameNo,nFrames,tTotal, size)
 
         val xMapped = data.indices.map{xScale(it.toDouble())}
         val dataMapped = data.map(yScale)
 
         val graphics = image.createGraphics()
 
-        drawBackgroundGrid(image, size)
+        drawBackgroundGrid(frameNo, nFrames, tTotal, image, size)
 
         graphics.color = Color(255,0,0,64)
         graphics.stroke = BasicStroke(1f)

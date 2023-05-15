@@ -11,15 +11,22 @@ import java.awt.image.BufferedImage
 class DynamicHorizontalBarDiagramVideoClip(
     size: SizeProvider,
     private val dataProvider: () -> List<Double>,
-    private val configuration: BarBasedDiagramConfiguration = BarBasedDiagramConfiguration(),
+    private val configuration: (Int, Int, Float) -> BarBasedDiagramConfiguration,
     tOffset: Float = 0f,
     visibilityDuration: Float? = null,
 ): BarBasedDiagramVideoClip(size, tOffset, visibilityDuration, configuration = configuration) {
 
+    constructor(
+        size: SizeProvider,
+        dataProvider: () -> List<Double>,
+        configuration: BarBasedDiagramConfiguration = BarBasedDiagramConfiguration(),
+        tOffset: Float = 0f,
+        visibilityDuration: Float? = null,
+    ) :this(size, dataProvider, {_,_,_ -> configuration}, tOffset, visibilityDuration)
     override fun generateDataDisplay(size: Vector2i, frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
         val image = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)
         val data = dataProvider()
-        val xScale = getXScreenMapper(size)
+        val xScale = getXScreenMapper(frameNo, nFrames, tTotal, size)
         val dataMapped = data.map(xScale)
 
         val graphics = image.createGraphics()

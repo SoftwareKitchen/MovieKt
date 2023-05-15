@@ -5,7 +5,6 @@ import tech.softwarekitchen.moviekt.animation.position.SizeProvider
 import tech.softwarekitchen.moviekt.clips.video.diagram.DiagramAxisConfiguration
 import tech.softwarekitchen.moviekt.clips.video.diagram.PointBasedDiagramVideoClip
 import tech.softwarekitchen.moviekt.clips.video.diagram.XYDiagramConfiguration
-import tech.softwarekitchen.moviekt.clips.video.diagram.XYDiagramVideoClip
 import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.image.BufferedImage
@@ -39,10 +38,10 @@ class DynamicPointDiagramVideoClip(
         tTotal: Float
     ): BufferedImage {
         val img = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)
-        drawBackgroundGrid(img, size)
+        drawBackgroundGrid(frameNo, nFrames, tTotal, img, size)
 
         val graphics = img.createGraphics()
-        val (xScale, yScale) = getScreenMapper(size)
+        val (xScale, yScale) = getScreenMapper(frameNo,nFrames,tTotal, size)
 
 
         graphics.color = Color.WHITE
