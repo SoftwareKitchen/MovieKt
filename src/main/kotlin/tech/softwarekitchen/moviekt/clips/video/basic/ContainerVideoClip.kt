@@ -20,7 +20,7 @@ fun VideoClip.chain(other: VideoClip): ContainerVideoClip{
         else -> c1Length + c2Length
     }
 
-    val c2AppearWrapper = ContainerVideoClip(other.size, c1Length,null) //Visibility duration can be set to 0 since it is limited by outer container visibilityDuration
+    val c2AppearWrapper = ContainerVideoClip(other.size, c1Length,null) //Visibility duration can be set to null since it is limited by outer container visibilityDuration
     c2AppearWrapper.addChild(other, Vector2i(0,0))
 
     val container = ContainerVideoClip(this.size,0f,totalLength)
