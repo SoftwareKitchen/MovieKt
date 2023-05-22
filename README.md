@@ -44,6 +44,7 @@ dynamic := the value will be updated frame by frame, therefore it has to be prov
 * Image
   * ImageSlideshowVideoClip - Clip with multiple images switching
   * StaticImageVideoClip - Clip with a single image
+  * SVGVideoClip - Clip that paints a SVG
 * Shape
   * ArrowVideoClip - An arrow
   * Dynamic2DSceneVideoClip - 2D animations
@@ -54,9 +55,12 @@ dynamic := the value will be updated frame by frame, therefore it has to be prov
 * Data
   * DataTableVideoClip - Simple grid
 * Diagrams
+  * DynamicHorizontalBarDiagramVideoClip - horizontal bar diagram
+  * DynamicHorizontalSpanDiagramVideoClip - horizontal bar diagram without origin at 0
   * DynamicLineDiagramVideoClip - line diagram
   * DynamicPointDiagramVideoClip - point diagram
   * DynamicVerticalBarDiagramVideoClip - vertical bar diagram
+  * DynamicTrajectoryDiagramVideoClip - trajectory diagram
 
 ### Audio
 * AudioContainerClip - combination of other AudioClips, currently used for organizing sound in a video
