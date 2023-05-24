@@ -32,10 +32,6 @@ A clip provides image information for a rectangle and needs to extend tech.softw
 A clip can contain subclips, children will be rendered in the same order as they were added -> the last clip added will be on top
 
 Current implementations:  
-  
-Definitions:  
-static := a fixed value will be used for the entire duration  
-dynamic := the value will be updated frame by frame, therefore it has to be provided via a callback
 
 ### Video
 * Basic
@@ -49,9 +45,8 @@ dynamic := the value will be updated frame by frame, therefore it has to be prov
   * ArrowVideoClip - An arrow
   * Dynamic2DSceneVideoClip - 2D animations
 * Text
-  * DynamicTextVideoClip - Text with transparent background
+  * TextVideoClip - Text with transparent background
   * StaticFormulaVideoVlip - Scientific formula
-  * StaticTextVideoClip - Text with transparent background  
 * Data
   * DataTableVideoClip - Simple grid
 * Diagrams
@@ -61,6 +56,10 @@ dynamic := the value will be updated frame by frame, therefore it has to be prov
   * DynamicPointDiagramVideoClip - point diagram
   * DynamicVerticalBarDiagramVideoClip - vertical bar diagram
   * DynamicTrajectoryDiagramVideoClip - trajectory diagram
+
+### Animations
+Animations reflect all changes in the video. Each animation will change a node's property
+and therefore trigger a redraw.
 
 ### Audio
 * AudioContainerClip - combination of other AudioClips, currently used for organizing sound in a video
