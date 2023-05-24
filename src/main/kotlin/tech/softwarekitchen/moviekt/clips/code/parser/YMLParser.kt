@@ -26,7 +26,7 @@ class YMLParser: CodePrettifier {
             }
             val rest = it.trim()
             val rest2 = if(rest.startsWith("-")){
-                lineElements.add(TextCodeSnippet("-",CodeSnippetType.Normal))
+                lineElements.add(TextCodeSnippet("- ",CodeSnippetType.Normal))
                 rest.substring(1, rest.length).trim()
             }else{
                 rest

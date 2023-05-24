@@ -40,8 +40,10 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i){
         visibleProperty
     )
 
-    protected fun registerProperty(property: VideoClipProperty<*>){
-        properties.add(property)
+    protected fun registerProperty(vararg property: VideoClipProperty<*>){
+        property.forEach{
+            properties.add(it)
+        }
     }
 
     fun getProperty(id: String): VideoClipProperty<*>{

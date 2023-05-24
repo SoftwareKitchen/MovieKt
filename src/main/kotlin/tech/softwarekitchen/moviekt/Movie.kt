@@ -97,6 +97,7 @@ class Movie(
     }
 
     private val buffer = IntArray(videoRoot.getSize().x * videoRoot.getSize().y)
+    private val byteBuffer = ByteArray(videoRoot.getSize().x * videoRoot.getSize().y * 3)
     /**
      * Write an image as frame into the video
      * @param image the image
@@ -112,6 +113,14 @@ class Movie(
         }
 
         image.getRGB(0, 0, image.width, image.height, buffer, 0, image.width)
+
+        buffer.forEachIndexed { i, ival ->
+            val uival = ival.toUInt()
+            byteBuffer[i * 3] = ((uival / 65536u) % 256u).toByte()
+            byteBuffer[i*3+1] = ((uival / 256u) % 256u).toByte()
+            byteBuffer[i*3+2] = (uival % 256u).toByte()
+        }
+
         sendFrame(target)
     }
 
@@ -120,13 +129,7 @@ class Movie(
     }
 
     private fun sendFrame(target: OutputStream){
-        buffer.forEach { ival ->
-            val uival = ival.toUInt()
-            target.write(((uival / 65536u) % 256u).toInt())
-            target.write(((uival / 256u) % 256u).toInt())
-            target.write((uival  % 256u).toInt())
-        }
-
+        target.write(byteBuffer)
         videoFramesWritten++
     }
 
