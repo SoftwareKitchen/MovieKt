@@ -155,12 +155,12 @@ private class SVGReader(private val path: String){
 }
 
 class SVGVideoClip(
+    id: String,
+    size: Vector2i,
+    position: Vector2i,
     private val configuration: SVGVideoClipConfiguration,
-    size: SizeProvider,
-    tOffset: Float = 0f,
-    visibilityDuration: Float? = null
 ): VideoClip(
-    size, tOffset, visibilityDuration
+    id, size, position
 ) {
     private val basePos: Pair<Int, Int>
     private val canvasSize: Pair<Int, Int>
@@ -175,8 +175,9 @@ class SVGVideoClip(
         canvasSize = Pair(viewBase[2].toInt(), viewBase[3].toInt())
         content = SVGReader((parsed["path"] as Map<String, Any>)["d"]!! as String)
     }
-    override fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
-        val size = getSize(frameNo, nFrames, tTotal)
+
+    override fun renderContent(img: BufferedImage) {
+        val size = Vector2i(img.width, img.height)
         val coordinateMapper: (Double, Double) -> Pair<Double, Double> = {
             x, y ->
             Pair(
@@ -185,7 +186,6 @@ class SVGVideoClip(
             )
         }
 
-        val img = generateEmptyImage(frameNo, nFrames, tTotal)
         val g = img.createGraphics()
         var path = GeneralPath()
 
@@ -359,8 +359,6 @@ class SVGVideoClip(
                 }
             }
         }
-
-        return img
     }
 }
 

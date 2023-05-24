@@ -7,15 +7,11 @@ import java.awt.Color
 import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_ARGB
 
-class SingleColorVideoClip(size: SizeProvider, private val color: Color, tOffset: Float = 0f, visibilityDuration: Float? = null): VideoClip(size,tOffset,visibilityDuration) {
-    override fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
-        val image = generateEmptyImage(frameNo, nFrames, tTotal)
-
-        val graphics = image.createGraphics()
+class SingleColorVideoClip(id: String, size: Vector2i, position: Vector2i, private val color: Color): VideoClip(id, size,position) {
+    override fun renderContent(img: BufferedImage) {
+        val graphics = img.createGraphics()
         graphics.color = color
-        graphics.fillRect(0,0,size(frameNo, nFrames, tTotal).x,size(frameNo, nFrames, tTotal).y)
-
-        return cloneImage(image)
+        graphics.fillRect(0,0,img.width, img.height)
     }
 
 }

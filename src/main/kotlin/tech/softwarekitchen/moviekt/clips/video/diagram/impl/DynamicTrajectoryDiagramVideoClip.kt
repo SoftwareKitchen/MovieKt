@@ -16,31 +16,26 @@ data class DynamicTrajectoryDiagramVideoClipConfiguration(
 ): XYDiagramConfiguration
 
 class DynamicTrajectoryDiagramVideoClip(
-    size: SizeProvider,
+    id: String,
+    size: Vector2i,
+    position: Vector2i,
     private val providers: List<() -> List<Pair<Double, Double>>>,
-    private val configuration: (Int, Int, Float) -> DynamicTrajectoryDiagramVideoClipConfiguration,
+    private val configuration: DynamicTrajectoryDiagramVideoClipConfiguration,
      tOffset: Float = 0f, visibilityDuration: Float? = null
 ): XYDiagramVideoClip(
-    size, tOffset, visibilityDuration,
+    id, size, position,
     configuration
 ) {
     companion object{
         val colors = listOf(Color.YELLOW, Color.BLUE)
     }
 
-    constructor(
-        size: SizeProvider,
-        providers: List<() -> List<Pair<Double, Double>>>,
-        configuration: DynamicTrajectoryDiagramVideoClipConfiguration = DynamicTrajectoryDiagramVideoClipConfiguration(),
-        tOffset: Float = 0f, visibilityDuration: Float? = null
-    ): this(size, providers, {_,_,_ -> configuration}, tOffset, visibilityDuration)
-
     override fun getData(): List<Pair<Double, Double>> {
         return providers.map{it()}.flatten()
     }
 
-    override fun generateDataDisplay(size: Vector2i, frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
-        val (xScale, yScale) = getScreenMapper(frameNo,nFrames,tTotal, size)
+    override fun generateDataDisplay(size: Vector2i): BufferedImage {
+        val (xScale, yScale) = getScreenMapper(size)
         val data = providers.map{it()}
         val maxIndex = data.maxOf { it.size }
         val image = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)

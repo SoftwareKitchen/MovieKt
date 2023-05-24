@@ -9,26 +9,20 @@ import java.awt.Color
 import java.awt.image.BufferedImage
 
 class DynamicHorizontalSpanDiagramVideoClip(
-    size: SizeProvider,
+    id: String,
+    size: Vector2i,
+    position: Vector2i,
     private val dataProvider: () -> List<Pair<Double, Double>>,
-    private val configuration: (Int, Int, Float) -> BarBasedDiagramConfiguration = {cur, tot, t -> BarBasedDiagramConfiguration()},
+    private val configuration: BarBasedDiagramConfiguration = BarBasedDiagramConfiguration(),
     tOffset: Float = 0f,
     visibilityDuration: Float? = null,
-): BarBasedDiagramVideoClip(size, tOffset, visibilityDuration, configuration = configuration) {
+): BarBasedDiagramVideoClip(id, size, position, configuration = configuration) {
 
-    constructor(
-        size: SizeProvider,
-        dataProvider: () -> List<Pair<Double, Double>>,
-        configuration: BarBasedDiagramConfiguration = BarBasedDiagramConfiguration(),
-        tOffset: Float = 0f,
-        visibilityDuration: Float? = null,
-    ): this(size, dataProvider, {_,_,_ -> configuration}, tOffset, visibilityDuration)
-
-    override fun generateDataDisplay(size: Vector2i, frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
+    override fun generateDataDisplay(size: Vector2i): BufferedImage {
         val image = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)
         val data = dataProvider()
-        val xScale = getXScreenMapper(frameNo, nFrames, tTotal, size)
-        val yScale = getYScreenMapper(frameNo, nFrames, tTotal, size, true)
+        val xScale = getXScreenMapper(size)
+        val yScale = getYScreenMapper(size, true)
         val dataMapped = data.map{Pair(xScale(it.first), xScale(it.second))}
 
         val graphics = image.createGraphics()

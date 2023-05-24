@@ -1,7 +1,6 @@
 package tech.softwarekitchen.moviekt.clips.video.diagram
 
 import tech.softwarekitchen.common.vector.Vector2i
-import tech.softwarekitchen.moviekt.animation.position.SizeProvider
 import tech.softwarekitchen.moviekt.clips.video.diagram.impl.DynamicDiagramBackgroundGrid
 import tech.softwarekitchen.moviekt.clips.video.diagram.impl.DynamicLineDiagramColorConfiguration
 
@@ -14,26 +13,25 @@ class BarBasedDiagramConfiguration(
 ): XYDiagramConfiguration
 
 abstract class BarBasedDiagramVideoClip(
-    size: SizeProvider,
-    tOffset: Float, visibilityDuration: Float? = null,
-    private val configuration: (Int, Int, Float) -> XYDiagramConfiguration
+    id: String,
+    size: Vector2i,
+    position: Vector2i,
+    private val configuration: XYDiagramConfiguration
 ): XYDiagramVideoClip(
-    size, tOffset, visibilityDuration = visibilityDuration, configuration = configuration
+    id, size, position, configuration
 ) {
-    protected fun getYScreenMapper(cur: Int, tot: Int, t: Float, dataScreenSize: Vector2i, addOne: Boolean = false): (Double) -> Int{
-        val dataBounds = getDataBounds(cur,tot,t)
+    protected fun getYScreenMapper(dataScreenSize: Vector2i, addOne: Boolean = false): (Double) -> Int{
+        val dataBounds = getDataBounds()
         val yAdd = when(addOne){
             true -> 1.0
             else -> 0.0
         }
 
-        val config = configuration(cur, tot, t)
-
-        val totalDeltaExpY = when(config.yAxis.mode){
+        val totalDeltaExpY = when(configuration.yAxis.mode){
             DiagramAxisMode.Logarithmic -> Math.log10((yAdd+dataBounds.ymax) / dataBounds.ymin)
             else -> 0.0
         }
-        val yScale: (Double) -> Int = if(config.yAxis.mode == DiagramAxisMode.Logarithmic){
+        val yScale: (Double) -> Int = if(configuration.yAxis.mode == DiagramAxisMode.Logarithmic){
             {
                 val deltaExp = Math.log10(it / dataBounds.ymin)
                 (dataScreenSize.y * (1 - deltaExp / totalDeltaExpY)).toInt()
@@ -45,14 +43,13 @@ abstract class BarBasedDiagramVideoClip(
     }
 
     //For vertical diagrams
-    protected fun getXScreenMapper(cur: Int, tot: Int, t: Float, dataScreenSize: Vector2i): (Double) -> Int{
-        val config = configuration(cur, tot, t)
-        val dataBounds = getDataBounds(cur,tot,t)
-        val totalDeltaExpX = when(config.xAxis.mode){
+    protected fun getXScreenMapper(dataScreenSize: Vector2i): (Double) -> Int{
+        val dataBounds = getDataBounds()
+        val totalDeltaExpX = when(configuration.xAxis.mode){
             DiagramAxisMode.Logarithmic -> Math.log10(dataBounds.xmax / dataBounds.xmin)
             else -> 0.0
         }
-        val xScale: (Double) -> Int = if(config.xAxis.mode == DiagramAxisMode.Logarithmic){
+        val xScale: (Double) -> Int = if(configuration.xAxis.mode == DiagramAxisMode.Logarithmic){
             {
                 val deltaExp = Math.log10(it / dataBounds.xmin)
                 (dataScreenSize.x * (deltaExp / totalDeltaExpX)).toInt()

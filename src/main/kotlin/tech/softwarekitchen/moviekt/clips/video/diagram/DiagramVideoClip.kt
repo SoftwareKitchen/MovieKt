@@ -1,7 +1,6 @@
 package tech.softwarekitchen.moviekt.clips.video.diagram
 
 import tech.softwarekitchen.common.vector.Vector2i
-import tech.softwarekitchen.moviekt.animation.position.SizeProvider
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import java.awt.Color
 import java.awt.Graphics2D
@@ -24,53 +23,50 @@ data class DiagramAxisConfiguration(
 )
 
 abstract class DiagramVideoClip(
-    size: SizeProvider,
-    tOffset: Float = 0f,
-    visibilityDuration: Float? = null,
-    private val yAxis: (Int, Int, Float) -> DiagramAxisConfiguration,
-    private val xAxis: (Int, Int, Float) -> DiagramAxisConfiguration
-): VideoClip(size,tOffset,visibilityDuration) {
-    abstract fun generateDataDisplay(size: Vector2i, frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage
+    id: String,
+    size: Vector2i,
+    position: Vector2i,
+    private val yAxis: DiagramAxisConfiguration,
+    private val xAxis: DiagramAxisConfiguration
+): VideoClip(id, size,position) {
+    abstract fun generateDataDisplay(size: Vector2i): BufferedImage
     data class LegendEntry(val pos: Int, val legend: String)
-    abstract fun getYLegendEntries(cur: Int, tot: Int, t: Float, dataScreenHeight: Int): List<LegendEntry>
-    abstract fun getXLegendEntries(cur: Int, tot: Int, t: Float, dataScreenWidth: Int): List<LegendEntry>
+    abstract fun getYLegendEntries(dataScreenHeight: Int): List<LegendEntry>
+    abstract fun getXLegendEntries(dataScreenWidth: Int): List<LegendEntry>
 
-
-    override fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
-        val bottomPadding = when(xAxis(frameNo, nFrames, tTotal).legendMode){
+    override fun renderContent(img: BufferedImage) {
+        val bottomPadding = when(xAxis.legendMode){
             DiagramAxisLegendMode.None -> 0
             DiagramAxisLegendMode.AxisOnly -> 3
             DiagramAxisLegendMode.Full -> 30
         }
-        val leftPadding = when(yAxis(frameNo, nFrames, tTotal).legendMode){
+        val leftPadding = when(yAxis.legendMode){
             DiagramAxisLegendMode.None -> 0
             DiagramAxisLegendMode.AxisOnly -> 3
             DiagramAxisLegendMode.Full -> 70
         }
         val padding = Padding(leftPadding,0,0,bottomPadding)
 
-        val curSize = size(frameNo, nFrames, tTotal)
+        val curSize = Vector2i(img.width, img.height)
         val dataDisplaySize = Vector2i(curSize.x - padding.left - padding.right, curSize.y - padding.top - padding.bottom)
-        val target = generateEmptyImage(frameNo, nFrames, tTotal)
-        val targetGraph = target.createGraphics()
+        val targetGraph = img.createGraphics()
 
-        val dataImage = generateDataDisplay(dataDisplaySize, frameNo, nFrames, tTotal)
+        val dataImage = generateDataDisplay(dataDisplaySize)
         targetGraph.drawImage(dataImage, padding.left, padding.top, null)
 
-        drawYAxis(frameNo, nFrames, tTotal, padding, targetGraph, dataDisplaySize, curSize)
-        drawXAxis(frameNo, nFrames, tTotal, padding, targetGraph, dataDisplaySize, curSize)
-        return target
+        drawYAxis(padding, targetGraph, dataDisplaySize, curSize)
+        drawXAxis(padding, targetGraph, dataDisplaySize, curSize)
     }
 
-    private fun drawYAxis(cur: Int, tot: Int, t: Float, padding: Padding, graphics: Graphics2D, dataDisplaySize: Vector2i, totSize: Vector2i){
+    private fun drawYAxis(padding: Padding, graphics: Graphics2D, dataDisplaySize: Vector2i, totSize: Vector2i){
         graphics.color = Color.WHITE
-        when(yAxis(cur, tot, t).legendMode){
+        when(yAxis.legendMode){
             DiagramAxisLegendMode.None -> {}
             DiagramAxisLegendMode.AxisOnly -> {
                 graphics.fillRect(0,padding.top,padding.left,dataDisplaySize.y)
             }
             DiagramAxisLegendMode.Full -> {
-                val yAxisEntries = getYLegendEntries(cur,tot,t, dataDisplaySize.y)
+                val yAxisEntries = getYLegendEntries(dataDisplaySize.y)
 
                 for(item in yAxisEntries){
                     graphics.fillRect(padding.left-7,padding.top + item.pos-2,7,5)
@@ -81,15 +77,15 @@ abstract class DiagramVideoClip(
         }
     }
 
-    private fun drawXAxis(cur: Int, tot: Int, t: Float, padding: Padding, graphics: Graphics2D, dataDisplaySize: Vector2i, totSize: Vector2i){
+    private fun drawXAxis(padding: Padding, graphics: Graphics2D, dataDisplaySize: Vector2i, totSize: Vector2i){
         graphics.color = Color.WHITE
-        when(xAxis(cur, tot, t).legendMode){
+        when(xAxis.legendMode){
             DiagramAxisLegendMode.None -> {}
             DiagramAxisLegendMode.AxisOnly -> {
                 graphics.fillRect(padding.left,totSize.y - padding.bottom,dataDisplaySize.x-padding.right,totSize.y)
             }
             DiagramAxisLegendMode.Full -> {
-                val xAxisEntries = getXLegendEntries(cur,tot,t, dataDisplaySize.x)
+                val xAxisEntries = getXLegendEntries(dataDisplaySize.x)
                 for(item in xAxisEntries){
                     graphics.fillRect(padding.left+item.pos-2,totSize.y - padding.bottom,5,7)
                     graphics.drawString(item.legend,padding.left + item.pos-20,totSize.y - padding.bottom + 20)

@@ -1,5 +1,6 @@
 package tech.softwarekitchen.moviekt
 
+import tech.softwarekitchen.moviekt.animation.MovieKtAnimation
 import tech.softwarekitchen.moviekt.clips.audio.AudioContainerClip
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.exception.FFMPEGDidntShutdownException
@@ -8,6 +9,7 @@ import tech.softwarekitchen.moviekt.exception.VideoIsClosedException
 import java.awt.image.BufferedImage
 import java.io.File
 import java.io.OutputStream
+import java.nio.IntBuffer
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
@@ -36,7 +38,7 @@ class Movie(
     private var mergeDone = false
     private val frameCallbacks = ArrayList<RenderCallback>()
     private val onceCallbacks = ArrayList<OnceCallback>()
-
+    private val animations = ArrayList<MovieKtAnimation<*>>()
     private fun log(){
         while(videoFramesWritten < numVideoFrames){
             if(this::videoStart.isInitialized) {
@@ -94,6 +96,7 @@ class Movie(
         println("--- Done ---")
     }
 
+    private val buffer = IntArray(videoRoot.getSize().x * videoRoot.getSize().y)
     /**
      * Write an image as frame into the video
      * @param image the image
@@ -103,18 +106,25 @@ class Movie(
      */
     @OptIn(ExperimentalUnsignedTypes::class)
     @Throws(ImageSizeMismatchException::class, VideoIsClosedException::class, FFMPEGDidntShutdownException::class)
-    fun writeFrame(target: OutputStream, image: BufferedImage, t: Float){
+    fun writeFrame(target: OutputStream, image: BufferedImage){
         if(videoFramesWritten >= numVideoFrames){
             throw VideoIsClosedException()
         }
 
-        val buffer = IntArray(image.width * image.height)
         image.getRGB(0, 0, image.width, image.height, buffer, 0, image.width)
+        sendFrame(target)
+    }
 
-        buffer.toUIntArray().forEach { ival ->
-            target.write(((ival / 65536u) % 256u).toInt())
-            target.write(((ival / 256u) % 256u).toInt())
-            target.write((ival  % 256u).toInt())
+    fun repeatFrame(target: OutputStream){
+        sendFrame(target)
+    }
+
+    private fun sendFrame(target: OutputStream){
+        buffer.forEach { ival ->
+            val uival = ival.toUInt()
+            target.write(((uival / 65536u) % 256u).toInt())
+            target.write(((uival / 256u) % 256u).toInt())
+            target.write((uival  % 256u).toInt())
         }
 
         videoFramesWritten++
@@ -165,7 +175,7 @@ class Movie(
             ,"-f","rawvideo"
             ,"-t","$length"
             ,"-pix_fmt","rgb24"
-            ,"-s","${videoRoot.getSize(0,0,0f).x}x${videoRoot.getSize(0,0,0f).y}",
+            ,"-s","${videoRoot.getSize().x}x${videoRoot.getSize().y}",
             "-r","$fps"
             ,"-i","pipe:0"
             ,"-c:v","libx264"
@@ -181,6 +191,10 @@ class Movie(
 
         val videoOutputStream = videoProcess.outputStream
 
+        var mappedAnimations = animations.associateWith{
+            videoRoot.findById(it.nodeId)
+        }
+
         while(videoFramesWritten < numVideoFrames){
             val t = videoFramesWritten / fps.toFloat()
 
@@ -188,9 +202,27 @@ class Movie(
             toExecute.forEach{it.action()}
             onceCallbacks.removeAll(toExecute)
 
+            mappedAnimations.forEach{
+                animData ->
+                if(animData.key.isApplicable(t)){
+                    animData.value.forEach{
+                        target ->
+                        target.set(animData.key.property, animData.key.get(t))
+                    }
+                }
+            }
+
+            mappedAnimations = mappedAnimations.filterKeys {
+                !it.isFinished(t)
+            }
+
             frameCallbacks.forEach{it.execute(RenderCallbackTiming.Pre, videoFramesWritten, numVideoFrames, t)}
 
-            writeFrame(videoOutputStream, videoRoot.render(videoFramesWritten,numVideoFrames,videoFramesWritten.toFloat() / fps),t)
+            if(videoRoot.needsRepaint()){
+                writeFrame(videoOutputStream, videoRoot.get())
+            }else{
+                repeatFrame(videoOutputStream)
+            }
 
             frameCallbacks.forEach{it.execute(RenderCallbackTiming.Post, videoFramesWritten, numVideoFrames, t)}
         }
@@ -259,5 +291,9 @@ class Movie(
         mergeDone = true
         File(rawAudioName).delete()
         File(rawVideoName).delete()
+    }
+
+    fun addAnimation(anim: MovieKtAnimation<*>){
+        animations.add(anim)
     }
 }

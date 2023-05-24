@@ -22,26 +22,23 @@ data class DynamicPointDiagramVideoClipConfiguration(
     override val colors: DynamicLineDiagramColorConfiguration = DynamicLineDiagramColorConfiguration()
 ): XYDiagramConfiguration
 class DynamicPointDiagramVideoClip(
-    size: SizeProvider,
+    id: String,
+    size: Vector2i,
+    position: Vector2i,
     tOffset: Float,
     private val dataSets: Map<DynamicPointDiagramMarker, () -> List<XYDataPoint>>,
     configuration: DynamicPointDiagramVideoClipConfiguration = DynamicPointDiagramVideoClipConfiguration(),
     visibilityDuration: Float? = null
 ): PointBasedDiagramVideoClip(
-    size, tOffset, visibilityDuration,
+    id, size,position,
     configuration = configuration,
 ) {
-    override fun generateDataDisplay(
-        size: Vector2i,
-        frameNo: Int,
-        nFrames: Int,
-        tTotal: Float
-    ): BufferedImage {
+    override fun generateDataDisplay(size: Vector2i): BufferedImage {
         val img = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)
-        drawBackgroundGrid(frameNo, nFrames, tTotal, img, size)
+        drawBackgroundGrid(img, size)
 
         val graphics = img.createGraphics()
-        val (xScale, yScale) = getScreenMapper(frameNo,nFrames,tTotal, size)
+        val (xScale, yScale) = getScreenMapper(size)
 
 
         graphics.color = Color.WHITE

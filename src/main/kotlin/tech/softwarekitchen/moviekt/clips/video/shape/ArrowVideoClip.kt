@@ -19,17 +19,15 @@ data class ArrowVideoClipConfiguration(
 )
 
 class ArrowVideoClip(
+    id: String,
+    position: Vector2i,
     private val configuration: ArrowVideoClipConfiguration = ArrowVideoClipConfiguration(),
-    tOffset: Float = 0f,
-    visibilityDuration: Float? = null
-): VideoClip(Vector2i(
+): VideoClip(id, Vector2i(
     (Math.abs(Math.cos(configuration.angle)) * (configuration.width + configuration.outlineWidth * 2) + Math.abs(Math.sin(configuration.angle)) * (configuration.length + configuration.outlineWidth * 2)).toInt(),
     (Math.abs(Math.cos(configuration.angle)) * (configuration.length + configuration.outlineWidth * 2) + Math.abs(Math.sin(configuration.angle)) * (configuration.width + configuration.outlineWidth * 2)).toInt()
-).toStaticSizeProvider()
-    ,tOffset, visibilityDuration) {
-    override fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
-        val img = generateEmptyImage(frameNo, nFrames, tTotal)
-        val size = size(frameNo, nFrames, tTotal)
+), position) {
+    override fun renderContent(img: BufferedImage) {
+        val size = Vector2i(img.width, img.height)
 
         val center = Vector2(size.x / 2.0, size.y / 2.0)
         val halfVector = Vector2(Math.sin(configuration.angle) * configuration.length / 2, Math.cos(configuration.angle) * configuration.length / 2)
@@ -61,7 +59,5 @@ class ArrowVideoClip(
         graphics.color = configuration.outlineColor
         graphics.stroke = BasicStroke(configuration.outlineWidth)
         graphics.drawPolygon(arrowShape)
-
-        return img
     }
 }

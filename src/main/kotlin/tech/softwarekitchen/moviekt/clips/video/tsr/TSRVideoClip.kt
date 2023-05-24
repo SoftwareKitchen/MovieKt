@@ -1,6 +1,6 @@
 package tech.softwarekitchen.moviekt.clips.video.tsr
 
-import tech.softwarekitchen.moviekt.animation.position.SizeProvider
+import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.tsr.camera.Camera
 import tech.softwarekitchen.tsr.scene.Scene
@@ -8,9 +8,12 @@ import java.awt.image.BufferedImage
 
 data class TSRSceneDescriptor(val scene: Scene, val camera: Camera)
 
-class TSRVideoClip(size: SizeProvider, private val sceneProvider: (Int, Int, Float) -> TSRSceneDescriptor, tOffset: Float = 0f, visibilityDuration: Float? = null): VideoClip(size, tOffset, visibilityDuration) {
-    override fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
-        val toRender = sceneProvider(frameNo, nFrames, tTotal)
-        return toRender.camera.render(toRender.scene)
+class TSRVideoClip(
+    id: String, size: Vector2i, position: Vector2i, private val scene: TSRSceneDescriptor
+): VideoClip(id, size, position) {
+    override fun renderContent(img: BufferedImage) {
+        val rendered = scene.camera.render(scene.scene)
+        val g = img.createGraphics()
+        g.drawImage(rendered,0,0,null)
     }
 }

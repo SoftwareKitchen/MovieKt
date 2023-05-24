@@ -9,24 +9,19 @@ import java.awt.Color
 import java.awt.image.BufferedImage
 
 class DynamicHorizontalBarDiagramVideoClip(
-    size: SizeProvider,
+    id: String,
+    size: Vector2i,
+    position: Vector2i,
     private val dataProvider: () -> List<Double>,
-    private val configuration: (Int, Int, Float) -> BarBasedDiagramConfiguration,
+    private val configuration: BarBasedDiagramConfiguration,
     tOffset: Float = 0f,
     visibilityDuration: Float? = null,
-): BarBasedDiagramVideoClip(size, tOffset, visibilityDuration, configuration = configuration) {
+): BarBasedDiagramVideoClip(id, size,position, configuration) {
 
-    constructor(
-        size: SizeProvider,
-        dataProvider: () -> List<Double>,
-        configuration: BarBasedDiagramConfiguration = BarBasedDiagramConfiguration(),
-        tOffset: Float = 0f,
-        visibilityDuration: Float? = null,
-    ) :this(size, dataProvider, {_,_,_ -> configuration}, tOffset, visibilityDuration)
-    override fun generateDataDisplay(size: Vector2i, frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
+    override fun generateDataDisplay(size: Vector2i): BufferedImage {
         val image = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)
         val data = dataProvider()
-        val xScale = getXScreenMapper(frameNo, nFrames, tTotal, size)
+        val xScale = getXScreenMapper(size)
         val dataMapped = data.map(xScale)
 
         val graphics = image.createGraphics()

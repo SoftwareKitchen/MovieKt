@@ -17,12 +17,10 @@ data class DarkenBackgroundVideoClipConfiguration(
 )
 
 class DarkenBackgroundVideoClip(
-    size: SizeProvider, private val configuration: DarkenBackgroundVideoClipConfiguration,
-    tOffset: Float = 0f, visibilityDuration: Float? = null
-): VideoClip(size, tOffset, visibilityDuration) {
-    override fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
-        val img = generateEmptyImage(frameNo, nFrames, tTotal)
-        val currentSize = size(frameNo, nFrames, tTotal)
+    id: String, size: Vector2i, position: Vector2i, private val configuration: DarkenBackgroundVideoClipConfiguration
+): VideoClip(id, size, position) {
+    override fun renderContent(img: BufferedImage) {
+        val currentSize = Vector2i(img.width, img.height)
 
         val graphics = img.createGraphics()
         graphics.color = Color(0,0,0,(255 * configuration.opacity).toInt())
@@ -32,7 +30,5 @@ class DarkenBackgroundVideoClip(
         graphics.fillRect(0,configuration.base.y + configuration.windowSize.y, currentSize.x, currentSize.y - configuration.base.y - configuration.windowSize.y)
         graphics.fillRect(0,configuration.base.y, configuration.base.x,configuration.windowSize.y)
         graphics.fillRect(configuration.base.x + configuration.windowSize.x, configuration.base.y, currentSize.x - configuration.base.x - configuration.windowSize.x, configuration.windowSize.y)
-
-        return img
     }
 }

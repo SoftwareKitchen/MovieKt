@@ -16,23 +16,19 @@ data class StaticImageVideoClipConfiguration(
 )
 
 class StaticImageVideoClip(
-    size: SizeProvider,
+    id: String,
+    size: Vector2i,
+    position: Vector2i,
     imageFile: File,
     private val configuration: StaticImageVideoClipConfiguration = StaticImageVideoClipConfiguration(),
-    tOffset: Float = 0f,
-    visibilityDuration: Float? = null
-): VideoClip(size, tOffset, visibilityDuration) {
+): VideoClip(id, size, position) {
     val toDraw = ImageIO.read(imageFile)
 
-    override fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
-        val img = generateEmptyImage(frameNo, nFrames, tTotal)
-
+    override fun renderContent(img: BufferedImage) {
         val graphics = img.createGraphics()
         when(configuration.mode){
             StaticImageMode.KeepSize -> graphics.drawImage(toDraw,0,0,null)
             StaticImageMode.Stretch -> graphics.drawImage(toDraw.getScaledInstance(img.width,img.height, Image.SCALE_SMOOTH),0,0,null)
         }
-
-        return img
     }
 }

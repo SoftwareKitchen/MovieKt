@@ -152,22 +152,19 @@ fun FormulaElement.sub(other: FormulaElement): FormulaSubElement{
     return FormulaSubElement(this, other)
 }
 
-class StaticFormulaVideoClip(
-    size: SizeProvider,
+class FormulaVideoClip(
+    id: String,
+    size: Vector2i,
+    position: Vector2i,
     private val formula: FormulaElement,
-    tOffset: Float = 0f,
-    private val configuration: StaticFormulaVideoClipConfiguration = StaticFormulaVideoClipConfiguration(),
-    visibilityDuration: Float? = null
-): VideoClip(size, tOffset, visibilityDuration) {
-    override fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
-        val curSize = size(frameNo, nFrames, tTotal)
-        val img = generateEmptyImage(frameNo, nFrames, tTotal)
+    private val configuration: StaticFormulaVideoClipConfiguration = StaticFormulaVideoClipConfiguration()
+): VideoClip(id, size, position) {
+    override fun renderContent(img: BufferedImage) {
+        val curSize = Vector2i(img.width, img.height)
 
         val graphics = img.createGraphics()
 
         val lmAnchor = Vector2i(0,curSize.y / 2)
         formula.render(lmAnchor, graphics, configuration.baseFontSize, configuration.fontSizeDecreasePerLevel)
-
-        return img
     }
 }

@@ -10,14 +10,13 @@ class DataTableVideoClipConfiguration(
 )
 
 class DataTableVideoClip(
-    size: SizeProvider, tOffset: Float,
+    id: String, size: Vector2i,position: Vector2i,
     private val data: Array<Array<String>>,
-    private val configuration: DataTableVideoClipConfiguration = DataTableVideoClipConfiguration(),
-    visibilityDuration: Float? = null,
-): VideoClip(size, tOffset, visibilityDuration) {
-    override fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
-        val curSize = size(frameNo, nFrames, tTotal)
-        val img = generateEmptyImage(frameNo,nFrames, tTotal)
+    private val configuration: DataTableVideoClipConfiguration = DataTableVideoClipConfiguration()
+): VideoClip(id, size, position) {
+
+    override fun renderContent(img: BufferedImage) {
+        val curSize = Vector2i(img.width, img.height)
 
         val numRows = data.size
         val numColumns = data.maxOf{it.size}
@@ -44,7 +43,5 @@ class DataTableVideoClip(
                 graphics.drawString(data[y][x], centerX - (fontRect.width / 2).toInt(), centerY + (fontRect.height / 2).toInt())
             }
         }
-
-        return img
     }
 }

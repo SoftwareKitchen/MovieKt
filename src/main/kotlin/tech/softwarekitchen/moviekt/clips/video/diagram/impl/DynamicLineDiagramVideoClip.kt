@@ -26,24 +26,26 @@ data class DynamicLineDiagramVideoClipConfiguration(
 ): XYDiagramConfiguration
 
 class DynamicLineDiagramVideoClip(
-    size: SizeProvider,
+    id: String,
+    size: Vector2i,
+    position: Vector2i,
     private val dataProvider: () -> List<Double>,
     private val configuration: DynamicLineDiagramVideoClipConfiguration = DynamicLineDiagramVideoClipConfiguration(),
     tOffset: Float = 0f,
     visibilityDuration: Float? = null,
-): PointBasedDiagramVideoClip(size, tOffset, visibilityDuration, configuration = configuration) {
+): PointBasedDiagramVideoClip(id, size, position, configuration = configuration) {
 
-    override fun generateDataDisplay(size: Vector2i, frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
+    override fun generateDataDisplay(size: Vector2i): BufferedImage {
         val image = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)
         val data = dataProvider()
-        val (xScale, yScale) = getScreenMapper(frameNo,nFrames,tTotal, size)
+        val (xScale, yScale) = getScreenMapper(size)
 
         val xMapped = data.indices.map{xScale(it.toDouble())}
         val dataMapped = data.map(yScale)
 
         val graphics = image.createGraphics()
 
-        drawBackgroundGrid(frameNo, nFrames, tTotal, image, size)
+        drawBackgroundGrid(image, size)
 
         graphics.color = Color(255,0,0,64)
         graphics.stroke = BasicStroke(1f)

@@ -1,87 +1,134 @@
 package tech.softwarekitchen.moviekt.clips.video
 
 import tech.softwarekitchen.common.vector.Vector2i
-import tech.softwarekitchen.moviekt.animation.position.PositionProvider
-import tech.softwarekitchen.moviekt.animation.position.SizeProvider
-import tech.softwarekitchen.moviekt.animation.position.toStaticPositionProvider
-import tech.softwarekitchen.moviekt.clips.video.basic.ContainerVideoClip
-import tech.softwarekitchen.moviekt.clips.video.basic.SingleColorVideoClip
-import tech.softwarekitchen.moviekt.clips.video.table.DataTableVideoClip
 import java.awt.image.BufferedImage
+import java.awt.image.BufferedImage.TYPE_INT_ARGB
 import java.lang.Float.max
 import java.lang.Float.min
 
-abstract class VideoClip(
-    val size: SizeProvider,
-    val tOffset: Float,
-    val visibilityDuration: Float?
-){
-    private val children =  ArrayList<Pair<VideoClip, PositionProvider>>()
-    private var opacity: (Float, Float?, Float?) -> Float = {tAbs, tTot, tRel -> 1f}
-    abstract fun renderContent(frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage
 
-    fun addChild(child: VideoClip, position: Vector2i){
-        addChild(child, position.toStaticPositionProvider())
+abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i){
+    companion object{
+        val PropertyKey_Offset = "Offset"
+        val PropertyKey_Opacity = "Opacity"
+        val PropertyKey_Position = "Position"
+        val PropertyKey_Size = "Size"
+        val PropertyKey_Visible = "Visible"
     }
-    fun addChild(child: VideoClip, position: PositionProvider){
-        children.add(Pair(child, position))
-    }
-
-    fun setOpacity(func: (Float, Float?, Float?) -> Float){
-        opacity = func
-    }
-
-    fun getSize(cur: Int, tot: Int, t: Float): Vector2i{
-        return size(cur, tot, t)
+    class VideoClipProperty<T>(val name: String, initialValue: T, private val onChange: () -> Unit){
+        private var value: T = initialValue
+        val v: T
+            get(){return value}
+        fun set(nv: Any){
+            value = nv as T
+            onChange()
+        }
     }
 
-    open fun getTranslationOffset(cur: Int, tot: Int, t: Float): Vector2i{
-        return Vector2i(0,0)
+    private val children =  ArrayList<VideoClip>()
+
+    private val offsetProperty = VideoClipProperty(PropertyKey_Offset, Vector2i(0,0), this::markPseudoDirty)
+    private val opacityProperty = VideoClipProperty(PropertyKey_Opacity, 1f, this::markDirty)
+    private val positionProperty = VideoClipProperty(PropertyKey_Position, position, this::markPseudoDirty)
+    private val sizeProperty = VideoClipProperty(PropertyKey_Size, size, this::markDirty)
+    private val visibleProperty = VideoClipProperty(PropertyKey_Visible, true, this::markPseudoDirty)
+    private val properties: MutableList<VideoClipProperty<*>> = arrayListOf(
+        offsetProperty,
+        opacityProperty,
+        positionProperty,
+        sizeProperty,
+        visibleProperty
+    )
+
+    protected fun registerProperty(property: VideoClipProperty<*>){
+        properties.add(property)
     }
 
-    fun render(frameNo: Int, nFrames: Int, t: Float): BufferedImage{
-        val background = renderContent(frameNo, nFrames, t)
+    fun getProperty(id: String): VideoClipProperty<*>{
+        return properties.first{it.name == id}
+    }
 
-        val tFac = when(visibilityDuration){
-            null -> null
-            else -> t / visibilityDuration
+    abstract fun renderContent(img: BufferedImage)
+
+    fun addChild(child: VideoClip){
+        children.add(child)
+    }
+
+    fun getPosition(): Vector2i{
+        return positionProperty.v.plus(offsetProperty.v)
+    }
+
+    fun getSize(): Vector2i{
+        return sizeProperty.v
+    }
+
+    fun isVisible(): Boolean{
+        return visibleProperty.v
+    }
+
+    private fun render(): BufferedImage{
+        val size = sizeProperty.v
+        val content = BufferedImage(size.x, size.y, TYPE_INT_ARGB)
+        renderContent(content)
+
+        val g = content.createGraphics()
+        children.filter{it.isVisible()}.forEach{
+            val img = it.get()
+            val pos = it.getPosition()
+            g.drawImage(img, pos.x, pos.y, null)
         }
 
-        children
-            .filter{t >= it.first.tOffset && (it.first.visibilityDuration == null || t <= it.first.tOffset+it.first.visibilityDuration!!)}
-            .forEach{
-                child ->
-                val childImg = child.first.render(frameNo, nFrames, t - child.first.tOffset)
-                val childPosition = child.second(frameNo, nFrames, t).plus(child.first.getTranslationOffset(frameNo, nFrames, t - child.first.tOffset))
-
-                background.graphics.drawImage(childImg,childPosition.x,childPosition.y,child.first.size(frameNo,nFrames,t).x,child.first.size(frameNo,nFrames,t).y,null)
-            }
-
-        val copy = cloneImage(background)
-        val alpha = opacity(t, visibilityDuration, tFac)
-
-        if(alpha < 1f) {
-            for (x in 0 until copy.width) {
-                for (y in 0 until copy.height) {
-                    val argb = copy.getRGB(x, y).toUInt()
+        if(opacityProperty.v < 1f) {
+            for (x in 0 until content.width) {
+                for (y in 0 until content.height) {
+                    val argb = content.getRGB(x, y).toUInt()
                     val rgb = argb % 16777216u
                     val a = argb / 16777216u
-                    val aCorrected = min(max(a.toFloat() * alpha, 0f), 255f).toUInt()
+                    val aCorrected = min(max(a.toFloat() * opacityProperty.v, 0f), 255f).toUInt()
                     val argbCorrected = aCorrected * 16777216u + rgb
-                    copy.setRGB(x,y,argbCorrected.toInt())
+                    content.setRGB(x,y,argbCorrected.toInt())
                 }
             }
         }
 
-        return copy
+        return content
     }
 
-    protected fun cloneImage(src: BufferedImage): BufferedImage{
+    private lateinit var cache: BufferedImage
+    private var cacheDirty = true
+    private var pseudoDirty = false
+    protected fun markDirty(){
+        cacheDirty = true
+    }
+    protected fun markPseudoDirty(){
+        pseudoDirty = true
+    }
+    fun get(): BufferedImage{
+        pseudoDirty = false
+        if(!needsRepaint()){
+            return cache
+        }
+        cache = render()
+        cacheDirty = false
+        return cache
+    }
+
+    fun needsRepaint(): Boolean{
+        return cacheDirty || pseudoDirty || children.any{it.needsRepaint()}
+    }
+
+    fun findById(id: String): List<VideoClip>{
+        return when(this.id == id){
+            true -> children.map{it.findById(id)}.flatten() + this
+            false -> children.map{it.findById(id)}.flatten()
+        }
+    }
+
+    fun set(id: String, value: Any){
+        properties.first{it.name == id}.set(value)
+    }
+
+    /*protected fun cloneImage(src: BufferedImage): BufferedImage{
         return BufferedImage(src.colorModel, src.copyData(null),src.isAlphaPremultiplied,null)
-    }
-
-    protected fun generateEmptyImage(cur: Int, tot: Int, t: Float): BufferedImage{
-        val curSize = size(cur, tot, t)
-        return BufferedImage(curSize.x, curSize.y, BufferedImage.TYPE_INT_ARGB)
-    }
+    }*/
 }

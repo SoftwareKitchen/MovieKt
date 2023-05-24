@@ -9,29 +9,29 @@ import java.awt.Polygon
 import java.awt.image.BufferedImage
 
 class DynamicVerticalLineDiagramVideoClip(
-    size: SizeProvider,
+    id: String,
+    size: Vector2i,
+    position: Vector2i,
     private val dataProviders: List<() -> List<Double>>,
     private val configuration: DynamicLineDiagramVideoClipConfiguration = DynamicLineDiagramVideoClipConfiguration(),
-    tOffset: Float = 0f,
-    visibilityDuration: Float? = null,
-): PointBasedDiagramVideoClip(size, tOffset, visibilityDuration, configuration = configuration) {
+): PointBasedDiagramVideoClip(id, size, position, configuration = configuration) {
     companion object{
         val colors = listOf(Color.YELLOW, Color.BLUE)
         val fillColors = listOf(Color(255,255,0,64), Color(0,0,255,64))
     }
 
-    override fun generateDataDisplay(size: Vector2i, frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
+    override fun generateDataDisplay(size: Vector2i): BufferedImage {
         val image = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)
 
         val data = dataProviders.map{it()}
-        val (xScale, yScale) = getScreenMapper(frameNo, nFrames,tTotal, size)
+        val (xScale, yScale) = getScreenMapper(size)
 
         val longest = data.maxOf{it.size}
         val yMapped = (0..longest).map{yScale(it.toDouble() + 0.5)}
 
         val graphics = image.createGraphics()
 
-        drawBackgroundGrid(frameNo, nFrames, tTotal, image, size)
+        drawBackgroundGrid(image, size)
 
         graphics.stroke = BasicStroke(1f)
 

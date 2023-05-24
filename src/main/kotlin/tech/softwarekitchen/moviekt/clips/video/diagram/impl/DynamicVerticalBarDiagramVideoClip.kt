@@ -11,25 +11,19 @@ import java.awt.Polygon
 import java.awt.image.BufferedImage
 
 class DynamicVerticalBarDiagramVideoClip(
-    size: SizeProvider,
+    id: String,
+    size: Vector2i,
+    position: Vector2i,
     private val dataProvider: () -> List<Double>,
-    private val configuration: (Int, Int, Float) -> BarBasedDiagramConfiguration,
+    private val configuration: BarBasedDiagramConfiguration,
     tOffset: Float = 0f,
     visibilityDuration: Float? = null,
-): BarBasedDiagramVideoClip(size, tOffset, visibilityDuration, configuration = configuration) {
+): BarBasedDiagramVideoClip(id, size, position, configuration = configuration) {
 
-    constructor(
-        size: SizeProvider,
-        dataProvider: () -> List<Double>,
-        configuration: BarBasedDiagramConfiguration = BarBasedDiagramConfiguration(),
-        tOffset: Float = 0f,
-        visibilityDuration: Float? = null,
-    ): this(size, dataProvider, {_,_,_ -> configuration}, tOffset, visibilityDuration)
-
-    override fun generateDataDisplay(size: Vector2i, frameNo: Int, nFrames: Int, tTotal: Float): BufferedImage {
+    override fun generateDataDisplay(size: Vector2i): BufferedImage {
         val image = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)
         val data = dataProvider()
-        val yScale = getYScreenMapper(frameNo, nFrames, tTotal, size)
+        val yScale = getYScreenMapper(size)
         val dataMapped = data.map(yScale)
 
         val graphics = image.createGraphics()
