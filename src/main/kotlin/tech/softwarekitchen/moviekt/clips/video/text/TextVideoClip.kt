@@ -52,3 +52,7 @@ class TextVideoClip (
         graphics.drawString(configuration.text,0,2*curSize.y/3)
     }
 }
+
+fun String.getTextSize(f: Font): Rectangle2D{
+    return f.getStringBounds(this, FontRenderContext(AffineTransform(), true, true))
+}
