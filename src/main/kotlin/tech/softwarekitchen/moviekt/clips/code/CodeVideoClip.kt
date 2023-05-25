@@ -1,6 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.code
 
 import tech.softwarekitchen.common.vector.Vector2i
+import tech.softwarekitchen.moviekt.clips.code.parser.KotlinParser
 import tech.softwarekitchen.moviekt.clips.code.parser.YMLParser
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.text.getTextSize
@@ -13,12 +14,15 @@ import kotlin.math.roundToInt
 data class CodeVideoClipTheme(
     val normColor: Color = Color.WHITE,
     val keywordColor: Color = Color.ORANGE,
-    val highlightColor: Color = Color(100,120,0)
+    val highlightColor: Color = Color(100,120,0),
+    val textConstantColor: Color = Color(0,120,0),
+    val commentColor: Color = Color(128,128,128),
+    val numericColor: Color = Color(0,200,200)
 )
 data class CodeVideoClipConfiguration(val format: String, val file: File, val lineNumbers: Boolean = true, val theme: CodeVideoClipTheme = CodeVideoClipTheme())
 
 enum class CodeSnippetType{
-    Normal, Keyword
+    Normal, Keyword, TextConstant, Comment, NumericConstant
 }
 interface CodeSnippet
 data class TextCodeSnippet(val text: String, val type: CodeSnippetType): CodeSnippet
@@ -42,7 +46,8 @@ class CodeVideoClip(
         val PropertyKey_HighlightEnd = "HighlightEnd"
 
         val formatters = mapOf(
-            "YML" to YMLParser()
+            "YML" to YMLParser(),
+            "Kotlin" to KotlinParser()
         )
     }
 
@@ -107,6 +112,9 @@ class CodeVideoClip(
                         when(sn.type){
                             CodeSnippetType.Normal -> g.color = configuration.theme.normColor
                             CodeSnippetType.Keyword -> g.color = configuration.theme.keywordColor
+                            CodeSnippetType.TextConstant -> g.color = configuration.theme.textConstantColor
+                            CodeSnippetType.Comment -> g.color = configuration.theme.commentColor
+                            CodeSnippetType.NumericConstant -> g.color = configuration.theme.numericColor
                         }
                         g.drawString(sn.text, x, y)
                         x += ceil(sn.text.getTextSize(g.font).width).toInt()
