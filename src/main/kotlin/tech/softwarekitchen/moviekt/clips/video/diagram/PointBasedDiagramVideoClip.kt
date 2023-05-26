@@ -10,9 +10,10 @@ abstract class PointBasedDiagramVideoClip(
     id: String,
     size: Vector2i,
     position: Vector2i,
+    visible: Boolean,
     private val configuration: XYDiagramConfiguration
 ): XYDiagramVideoClip(
-    id, size, position, configuration
+    id, size, position, visible, configuration
 ) {
     protected fun drawBackgroundGrid(image: BufferedImage, totSize: Vector2i){
         val graphics = image.createGraphics()

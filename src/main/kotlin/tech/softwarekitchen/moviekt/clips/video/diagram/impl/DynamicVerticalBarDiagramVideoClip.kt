@@ -14,11 +14,10 @@ class DynamicVerticalBarDiagramVideoClip(
     id: String,
     size: Vector2i,
     position: Vector2i,
+    visible: Boolean,
     private val dataProvider: () -> List<Double>,
-    private val configuration: BarBasedDiagramConfiguration,
-    tOffset: Float = 0f,
-    visibilityDuration: Float? = null,
-): BarBasedDiagramVideoClip(id, size, position, configuration = configuration) {
+    private val configuration: BarBasedDiagramConfiguration
+): BarBasedDiagramVideoClip(id, size, position, visible, configuration = configuration) {
 
     override fun generateDataDisplay(size: Vector2i): BufferedImage {
         val image = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)

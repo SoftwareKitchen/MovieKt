@@ -45,10 +45,10 @@ interface CodePrettifier{
 }
 
 class CodeVideoClip(
-    id: String, size: Vector2i, position: Vector2i,
+    id: String, size: Vector2i, position: Vector2i,visible: Boolean,
     private val configuration: CodeVideoClipConfiguration
 ): VideoClip(
-    id, size, position
+    id, size, position, visible
 ) {
     companion object{
         val PropertyKey_LineOffset = "LineOffset"

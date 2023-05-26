@@ -19,11 +19,12 @@ class DynamicTrajectoryDiagramVideoClip(
     id: String,
     size: Vector2i,
     position: Vector2i,
+    visible: Boolean,
     private val providers: List<() -> List<Pair<Double, Double>>>,
     private val configuration: DynamicTrajectoryDiagramVideoClipConfiguration,
      tOffset: Float = 0f, visibilityDuration: Float? = null
 ): XYDiagramVideoClip(
-    id, size, position,
+    id, size, position, visible,
     configuration
 ) {
     companion object{

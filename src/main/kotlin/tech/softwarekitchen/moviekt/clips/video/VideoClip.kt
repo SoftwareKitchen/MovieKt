@@ -1,13 +1,14 @@
 package tech.softwarekitchen.moviekt.clips.video
 
 import tech.softwarekitchen.common.vector.Vector2i
+import tech.softwarekitchen.moviekt.clips.video.text.TextVideoClip
 import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_ARGB
 import java.lang.Float.max
 import java.lang.Float.min
 
 
-abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i){
+abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, visible: Boolean){
     companion object{
         val PropertyKey_Offset = "Offset"
         val PropertyKey_Opacity = "Opacity"
@@ -20,7 +21,11 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i){
         val v: T
             get(){return value}
         fun set(nv: Any){
-            value = nv as T
+            val x = nv as T
+            if(x == value){
+                return
+            }
+            value = x
             onChange()
         }
     }
@@ -31,7 +36,7 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i){
     private val opacityProperty = VideoClipProperty(PropertyKey_Opacity, 1f, this::markDirty)
     private val positionProperty = VideoClipProperty(PropertyKey_Position, position, this::markPseudoDirty)
     private val sizeProperty = VideoClipProperty(PropertyKey_Size, size, this::markDirty)
-    private val visibleProperty = VideoClipProperty(PropertyKey_Visible, true, this::markPseudoDirty)
+    private val visibleProperty = VideoClipProperty(PropertyKey_Visible, visible, this::markPseudoDirty)
     private val properties: MutableList<VideoClipProperty<*>> = arrayListOf(
         offsetProperty,
         opacityProperty,

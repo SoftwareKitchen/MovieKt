@@ -25,12 +25,11 @@ class DynamicPointDiagramVideoClip(
     id: String,
     size: Vector2i,
     position: Vector2i,
-    tOffset: Float,
+    visible: Boolean,
     private val dataSets: Map<DynamicPointDiagramMarker, () -> List<XYDataPoint>>,
     configuration: DynamicPointDiagramVideoClipConfiguration = DynamicPointDiagramVideoClipConfiguration(),
-    visibilityDuration: Float? = null
 ): PointBasedDiagramVideoClip(
-    id, size,position,
+    id, size,position, visible,
     configuration = configuration,
 ) {
     override fun generateDataDisplay(size: Vector2i): BufferedImage {

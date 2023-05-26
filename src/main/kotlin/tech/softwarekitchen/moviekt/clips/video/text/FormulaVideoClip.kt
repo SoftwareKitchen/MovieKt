@@ -156,9 +156,10 @@ class FormulaVideoClip(
     id: String,
     size: Vector2i,
     position: Vector2i,
+    visible: Boolean,
     private val formula: FormulaElement,
     private val configuration: StaticFormulaVideoClipConfiguration = StaticFormulaVideoClipConfiguration()
-): VideoClip(id, size, position) {
+): VideoClip(id, size, position, visible) {
     override fun renderContent(img: BufferedImage) {
         val curSize = Vector2i(img.width, img.height)
 

@@ -21,11 +21,12 @@ data class ArrowVideoClipConfiguration(
 class ArrowVideoClip(
     id: String,
     position: Vector2i,
+    visible: Boolean,
     private val configuration: ArrowVideoClipConfiguration = ArrowVideoClipConfiguration(),
 ): VideoClip(id, Vector2i(
     (Math.abs(Math.cos(configuration.angle)) * (configuration.width + configuration.outlineWidth * 2) + Math.abs(Math.sin(configuration.angle)) * (configuration.length + configuration.outlineWidth * 2)).toInt(),
     (Math.abs(Math.cos(configuration.angle)) * (configuration.length + configuration.outlineWidth * 2) + Math.abs(Math.sin(configuration.angle)) * (configuration.width + configuration.outlineWidth * 2)).toInt()
-), position) {
+), position, visible) {
     override fun renderContent(img: BufferedImage) {
         val size = Vector2i(img.width, img.height)
 

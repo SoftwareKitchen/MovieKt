@@ -17,8 +17,8 @@ data class DarkenBackgroundVideoClipConfiguration(
 )
 
 class DarkenBackgroundVideoClip(
-    id: String, size: Vector2i, position: Vector2i, private val configuration: DarkenBackgroundVideoClipConfiguration
-): VideoClip(id, size, position) {
+    id: String, size: Vector2i, position: Vector2i, visible: Boolean, private val configuration: DarkenBackgroundVideoClipConfiguration
+): VideoClip(id, size, position, visible) {
     override fun renderContent(img: BufferedImage) {
         val currentSize = Vector2i(img.width, img.height)
 

@@ -12,9 +12,10 @@ class DynamicVerticalLineDiagramVideoClip(
     id: String,
     size: Vector2i,
     position: Vector2i,
+    visible: Boolean,
     private val dataProviders: List<() -> List<Double>>,
     private val configuration: DynamicLineDiagramVideoClipConfiguration = DynamicLineDiagramVideoClipConfiguration(),
-): PointBasedDiagramVideoClip(id, size, position, configuration = configuration) {
+): PointBasedDiagramVideoClip(id, size, position, visible, configuration = configuration) {
     companion object{
         val colors = listOf(Color.YELLOW, Color.BLUE)
         val fillColors = listOf(Color(255,255,0,64), Color(0,0,255,64))

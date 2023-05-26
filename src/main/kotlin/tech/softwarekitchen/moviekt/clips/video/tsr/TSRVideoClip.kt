@@ -9,8 +9,8 @@ import java.awt.image.BufferedImage
 data class TSRSceneDescriptor(val scene: Scene, val camera: Camera)
 
 class TSRVideoClip(
-    id: String, size: Vector2i, position: Vector2i, private val scene: TSRSceneDescriptor
-): VideoClip(id, size, position) {
+    id: String, size: Vector2i, position: Vector2i, visible: Boolean, private val scene: TSRSceneDescriptor
+): VideoClip(id, size, position, visible) {
     override fun renderContent(img: BufferedImage) {
         val rendered = scene.camera.render(scene.scene)
         val g = img.createGraphics()

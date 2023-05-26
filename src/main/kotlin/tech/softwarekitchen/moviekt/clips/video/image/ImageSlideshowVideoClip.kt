@@ -10,9 +10,9 @@ class ImageSlideshowVideoClip(
     id: String,
     size: Vector2i,
     position: Vector2i,
+    visible: Boolean,
     private val imageFiles: List<File>,
-    private val timePerImage: Float
-): VideoClip(id, size, position) {
+): VideoClip(id, size, position, visible) {
     companion object{
         val PropertyKey_ImageIndex = "ImageIndex"
     }

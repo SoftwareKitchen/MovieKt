@@ -19,9 +19,10 @@ class StaticImageVideoClip(
     id: String,
     size: Vector2i,
     position: Vector2i,
+    visible: Boolean,
     imageFile: File,
     private val configuration: StaticImageVideoClipConfiguration = StaticImageVideoClipConfiguration(),
-): VideoClip(id, size, position) {
+): VideoClip(id, size, position, visible) {
     val toDraw = ImageIO.read(imageFile)
 
     override fun renderContent(img: BufferedImage) {

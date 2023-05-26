@@ -158,9 +158,10 @@ class SVGVideoClip(
     id: String,
     size: Vector2i,
     position: Vector2i,
+    visible: Boolean,
     private val configuration: SVGVideoClipConfiguration,
 ): VideoClip(
-    id, size, position
+    id, size, position, visible
 ) {
     private val basePos: Pair<Int, Int>
     private val canvasSize: Pair<Int, Int>

@@ -12,11 +12,10 @@ class DynamicHorizontalSpanDiagramVideoClip(
     id: String,
     size: Vector2i,
     position: Vector2i,
+    visible: Boolean,
     private val dataProvider: () -> List<Pair<Double, Double>>,
     private val configuration: BarBasedDiagramConfiguration = BarBasedDiagramConfiguration(),
-    tOffset: Float = 0f,
-    visibilityDuration: Float? = null,
-): BarBasedDiagramVideoClip(id, size, position, configuration = configuration) {
+): BarBasedDiagramVideoClip(id, size, position, visible, configuration = configuration) {
 
     override fun generateDataDisplay(size: Vector2i): BufferedImage {
         val image = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)

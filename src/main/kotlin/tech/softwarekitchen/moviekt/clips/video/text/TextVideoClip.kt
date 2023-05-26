@@ -21,8 +21,9 @@ class TextVideoClip (
     id: String,
     size: Vector2i,
     position: Vector2i,
+    visible: Boolean,
     private val configuration: StaticTextVideoClipConfiguration
-) : VideoClip(id, size, position) {
+) : VideoClip(id, size, position, visible) {
     private val font: Font?
 
     init{

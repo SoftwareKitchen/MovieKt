@@ -22,9 +22,10 @@ open class ContainerVideoClip(
     id: String,
     size: Vector2i,
     position: Vector2i,
+    visible: Boolean,
     private val configuration: ContainerVideoClipConfiguration = ContainerVideoClipConfiguration()
 ): VideoClip(
-    id, size, position
+    id, size, position, visible
 ) {
     override fun renderContent(img: BufferedImage) {
         if(configuration.border.width > 0){

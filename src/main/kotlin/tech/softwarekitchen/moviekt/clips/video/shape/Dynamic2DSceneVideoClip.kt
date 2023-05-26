@@ -13,8 +13,9 @@ class Dynamic2DSceneVideoClip(
     id: String,
     size: Vector2i,
     position: Vector2i,
+    visible: Boolean,
     private val shapeProvider: List<ShapePaintConfiguration>,
-) : VideoClip(id, size, position){
+) : VideoClip(id, size, position, visible){
     override fun renderContent(img: BufferedImage) {
         val graphics = img.createGraphics()
         shapeProvider.forEach{

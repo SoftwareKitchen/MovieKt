@@ -7,7 +7,7 @@ import java.awt.Color
 import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_ARGB
 
-class SingleColorVideoClip(id: String, size: Vector2i, position: Vector2i, private val color: Color): VideoClip(id, size,position) {
+class SingleColorVideoClip(id: String, size: Vector2i, position: Vector2i, visible: Boolean, private val color: Color): VideoClip(id, size,position, visible) {
     override fun renderContent(img: BufferedImage) {
         val graphics = img.createGraphics()
         graphics.color = color
