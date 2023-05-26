@@ -6,6 +6,7 @@ import tech.softwarekitchen.moviekt.clips.code.parser.YMLParser
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.text.getTextSize
 import java.awt.Color
+import java.awt.Font
 import java.awt.image.BufferedImage
 import java.io.File
 import kotlin.math.ceil
@@ -19,8 +20,17 @@ data class CodeVideoClipTheme(
     val commentColor: Color = Color(128,128,128),
     val numericColor: Color = Color(0,200,200)
 )
-data class CodeVideoClipConfiguration(val format: String, val file: File, val lineNumbers: Boolean = true, val theme: CodeVideoClipTheme = CodeVideoClipTheme())
-
+enum class CodeVideoClipAnchor{
+    Top, Center
+}
+data class CodeVideoClipConfiguration(
+    val format: String,
+    val file: File,
+    val lineNumbers: Boolean = true,
+    val theme: CodeVideoClipTheme = CodeVideoClipTheme(),
+    val ttFont: File? = null,
+    val anchor: CodeVideoClipAnchor = CodeVideoClipAnchor.Top
+)
 enum class CodeSnippetType{
     Normal, Keyword, TextConstant, Comment, NumericConstant
 }
@@ -55,7 +65,13 @@ class CodeVideoClip(
     private val highlightStart = VideoClipProperty(PropertyKey_HighlightStart, 0.0, this::markDirty)
     private val highlightEnd = VideoClipProperty(PropertyKey_HighlightEnd, 0.0, this::markDirty)
     private val offsetProperty = VideoClipProperty(PropertyKey_LineOffset, 0.0, this::markDirty)
+    private val font: Font?
+
     init{
+        font = configuration.ttFont?.let{
+            Font.createFont(Font.TRUETYPE_FONT, it)
+        }
+
         val code = configuration.file.readText()
         formatted = formatters[configuration.format]!!.prettify(code)
 
@@ -67,12 +83,17 @@ class CodeVideoClip(
         val lineHeight = 22
         val indentWidth = 15
 
+        val yOffset = when(configuration.anchor){
+            CodeVideoClipAnchor.Top -> 0
+            CodeVideoClipAnchor.Center -> img.height / 2 - lineHeight / 2
+        }
+
         val g = img.createGraphics()
-        g.font = g.font.deriveFont(fontSize.toFloat())
+        g.font = (font ?: g.font).deriveFont(fontSize.toFloat())
 
         if(highlightEnd.v > highlightStart.v){
-            val y0 = ((highlightStart.v - offsetProperty.v) * lineHeight).roundToInt()
-            val y1 = ((highlightEnd.v - offsetProperty.v) * lineHeight).roundToInt()
+            val y0 = ((highlightStart.v - offsetProperty.v) * lineHeight).roundToInt() + yOffset
+            val y1 = ((highlightEnd.v - offsetProperty.v) * lineHeight).roundToInt() + yOffset
             g.color = configuration.theme.highlightColor
             g.fillRect(0,y0,img.width,y1-y0)
         }
@@ -93,7 +114,7 @@ class CodeVideoClip(
 
         formatted.lines.forEachIndexed{
             i, cl ->
-            val y = ((3 * (i - offsetProperty.v) + 2) * lineHeight / 3).roundToInt()
+            val y = ((3 * (i - offsetProperty.v) + 2) * lineHeight / 3).roundToInt() + yOffset
             if(configuration.lineNumbers){
                 val req = ceil("$i".getTextSize(g.font).width).toInt()
                 val lnx = lineNumberAlignRight - req
