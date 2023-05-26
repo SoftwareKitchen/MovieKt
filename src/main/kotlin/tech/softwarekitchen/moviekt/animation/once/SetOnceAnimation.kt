@@ -1,23 +1,17 @@
 package tech.softwarekitchen.moviekt.animation.once
 
-import tech.softwarekitchen.moviekt.animation.MovieKtAnimation
+import tech.softwarekitchen.moviekt.animation.MKTOnceAnimation
 
 class SetOnceAnimation<T: Any>(
-    override val nodeId: String,
-    override val property: String,
-    private val at: Float,
+    nodeId: String,
+    property: String,
+    at: Float,
     private val value: T
-): MovieKtAnimation<T> {
+): MKTOnceAnimation<T>(
+    nodeId, property, at
+) {
     override fun get(t: Float): T {
         return value
-    }
-
-    override fun isApplicable(t: Float): Boolean {
-        return t >= at
-    }
-
-    override fun isFinished(t: Float): Boolean {
-        return t >= at
     }
 }
 

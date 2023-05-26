@@ -1,19 +1,24 @@
 package tech.softwarekitchen.moviekt.animation.continous
 
 import tech.softwarekitchen.moviekt.animation.MKTTimerangeAnimation
+import tech.softwarekitchen.moviekt.animation.MovieKtAnimation
+import kotlin.math.PI
+import kotlin.math.sin
 
-class LinearAnimation(
+class SineAnimation(
     nodeId: String,
     property: String,
     start: Float,
     duration: Float,
-    val from: Double = 0.0,
-    val to: Double = 1.0
+    val offset: Double,
+    val halfAmp: Double,
+    val frequency: Double
 ): MKTTimerangeAnimation<Double>(
     nodeId, property, start, duration
 ){
     override fun get(t: Float): Double {
-        val ratio = (t - start) / duration
-        return to * ratio + (1 - ratio) * from
+        val off = t - start
+        val angle = 2 * PI * frequency * off
+        return offset + halfAmp * sin(angle)
     }
 }

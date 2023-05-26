@@ -79,10 +79,12 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
         renderContent(content)
 
         val g = content.createGraphics()
-        children.filter{it.isVisible()}.forEach{
-            val img = it.get()
-            val pos = it.getPosition()
-            g.drawImage(img, pos.x, pos.y, null)
+        children.forEach{
+            val img = it.get()  //Need to clear pseudoDirty on visibility change!
+            if(it.isVisible()){
+                val pos = it.getPosition()
+                g.drawImage(img, pos.x, pos.y, null)
+            }
         }
 
         if(opacityProperty.v < 1f) {

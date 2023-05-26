@@ -1,23 +1,15 @@
 package tech.softwarekitchen.moviekt.animation.discrete
 
-import tech.softwarekitchen.moviekt.animation.MovieKtAnimation
+import tech.softwarekitchen.moviekt.animation.MKTPerpetualAnimation
 import kotlin.math.floor
 
 class RepeatingIteratorAnimation(
-    override val nodeId: String,
-    override val property: String,
+    nodeId: String,
+    property: String,
     private val frequency: Float,
     private val limit: Int
-): MovieKtAnimation<Int> {
+): MKTPerpetualAnimation<Int>(nodeId, property) {
     override fun get(t: Float): Int {
         return floor(t * frequency).toInt() % limit
-    }
-
-    override fun isApplicable(t: Float): Boolean {
-        return true
-    }
-
-    override fun isFinished(t: Float): Boolean {
-        return false
     }
 }

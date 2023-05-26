@@ -100,7 +100,7 @@ class CodeVideoClip(
 
         val lineNumberPadding = 3
         val separatorWidth = 2
-        val lineNumberSpace = 2 * lineNumberPadding + ceil(formatted.lines.indices.map{"$it".getTextSize(g.font).width}.max()).toInt()
+        val lineNumberSpace = 2 * lineNumberPadding + ceil(formatted.lines.indices.map{"${it+1}".getTextSize(g.font).width}.max()).toInt()
         val lineNumberAlignRight = lineNumberSpace - lineNumberPadding
         val textBase = when(configuration.lineNumbers){
             false -> 0
@@ -119,7 +119,7 @@ class CodeVideoClip(
                 val req = ceil("$i".getTextSize(g.font).width).toInt()
                 val lnx = lineNumberAlignRight - req
                 g.color = configuration.theme.normColor
-                g.drawString("$i",lnx, y)
+                g.drawString("${i+1}",lnx, y)
             }
 
             var x = textBase

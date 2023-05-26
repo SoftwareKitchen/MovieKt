@@ -1,26 +1,20 @@
 package tech.softwarekitchen.moviekt.animation.switchanim
 
-import tech.softwarekitchen.moviekt.animation.MovieKtAnimation
+import tech.softwarekitchen.moviekt.animation.MKTTimerangeAnimation
 
 class SetWithResetAnimation(
-    override val nodeId: String,
-    override val property: String,
-    private val setAt: Float,
-    private val resetAt: Float
-): MovieKtAnimation<Boolean> {
-    override fun isFinished(t: Float): Boolean {
-        return t >= resetAt
-    }
-
+    nodeId: String,
+    property: String,
+    setAt: Float,
+    resetAt: Float
+): MKTTimerangeAnimation<Boolean>(
+    nodeId, property, setAt, resetAt - setAt
+) {
     override fun get(t: Float): Boolean {
         return when{
-            t < setAt -> false
-            t < resetAt -> true
+            t < start -> false
+            t < start + duration -> true
             else -> false
         }
-    }
-
-    override fun isApplicable(t: Float): Boolean {
-        return t >= setAt
     }
 }
