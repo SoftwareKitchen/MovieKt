@@ -1,5 +1,6 @@
 package tech.softwarekitchen.moviekt.clips.video.text
 
+import com.fasterxml.jackson.databind.annotation.JsonAppend.Prop
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import java.awt.Color
@@ -26,10 +27,18 @@ class TextVideoClip (
 ) : VideoClip(id, size, position, visible) {
     private val font: Font?
 
+    companion object{
+        val PropertyKey_Text = "Text"
+    }
+
+    private val textProperty = VideoClipProperty(PropertyKey_Text, configuration.text, this::markDirty)
+
     init{
         font = configuration.ttFont?.let{
             Font.createFont(Font.TRUETYPE_FONT, it)
         }
+
+        registerProperty(textProperty)
     }
 
     fun getTextSize(text: String): Rectangle2D {
@@ -50,7 +59,7 @@ class TextVideoClip (
         graphics.color = Color(0,0,0,0)
         graphics.fillRect(0,0,curSize.x,curSize.y)
         graphics.color = configuration.color
-        graphics.drawString(configuration.text,0,2*curSize.y/3)
+        graphics.drawString(textProperty.v,0,2*curSize.y/3)
     }
 }
 

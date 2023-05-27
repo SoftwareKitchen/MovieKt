@@ -136,8 +136,4 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
     fun set(id: String, value: Any){
         properties.first{it.name == id}.set(value)
     }
-
-    /*protected fun cloneImage(src: BufferedImage): BufferedImage{
-        return BufferedImage(src.colorModel, src.copyData(null),src.isAlphaPremultiplied,null)
-    }*/
 }
