@@ -1,10 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video.basic
 
 import tech.softwarekitchen.common.vector.Vector2i
-import tech.softwarekitchen.moviekt.animation.position.SizeProvider
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
-import tech.softwarekitchen.moviekt.exception.ChainedClipRequiresVisibilityDurationException
-import tech.softwarekitchen.moviekt.exception.ClipSizeMismatchException
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.image.BufferedImage

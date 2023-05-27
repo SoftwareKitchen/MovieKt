@@ -5,6 +5,7 @@ import tech.softwarekitchen.moviekt.clips.code.parser.KotlinParser
 import tech.softwarekitchen.moviekt.clips.code.parser.YMLParser
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.text.getTextSize
+import tech.softwarekitchen.moviekt.util.DoubleRange
 import java.awt.Color
 import java.awt.Font
 import java.awt.image.BufferedImage
@@ -25,11 +26,13 @@ enum class CodeVideoClipAnchor{
 }
 data class CodeVideoClipConfiguration(
     val format: String,
-    val file: File,
+    val file: String,
     val lineNumbers: Boolean = true,
     val theme: CodeVideoClipTheme = CodeVideoClipTheme(),
-    val ttFont: File? = null,
-    val anchor: CodeVideoClipAnchor = CodeVideoClipAnchor.Top
+    val ttFont: String? = null,
+    val anchor: CodeVideoClipAnchor = CodeVideoClipAnchor.Top,
+    val highlight: DoubleRange? = null,
+    val lineOffset: Double = 0.0
 )
 enum class CodeSnippetType{
     Normal, Keyword, TextConstant, Comment, NumericConstant
@@ -51,9 +54,11 @@ class CodeVideoClip(
     id, size, position, visible
 ) {
     companion object{
+        val PropertyKey_Anchor = "Anchor"
+        val PropertyKey_Font = "Font"
         val PropertyKey_LineOffset = "LineOffset"
-        val PropertyKey_HighlightStart = "HighlightStart"
-        val PropertyKey_HighlightEnd = "HighlightEnd"
+        val PropertyKey_Highlight = "Highlight"
+        val PropertyKey_Source = "Source"
 
         val formatters = mapOf(
             "YML" to YMLParser(),
@@ -61,21 +66,64 @@ class CodeVideoClip(
         )
     }
 
-    private val formatted: Code
-    private val highlightStart = VideoClipProperty(PropertyKey_HighlightStart, 0.0, this::markDirty)
-    private val highlightEnd = VideoClipProperty(PropertyKey_HighlightEnd, 0.0, this::markDirty)
-    private val offsetProperty = VideoClipProperty(PropertyKey_LineOffset, 0.0, this::markDirty)
-    private val font: Font?
+    private var formatted: Code
+    private val anchorProperty =
+        VideoClipProperty(
+            PropertyKey_Anchor,
+            configuration.anchor,
+            this::markDirty,
+            converter = {CodeVideoClipAnchor.valueOf(it as String)}
+        )
+    private val fontProperty =
+        VideoClipProperty(
+            PropertyKey_Font,
+            configuration.ttFont,
+            {
+                font = loadFont()
+                markDirty()
+            }
+        )
+    private val sourceProperty =
+        VideoClipProperty(
+            PropertyKey_Source,
+            configuration.file,
+            {
+                formatted = loadCode()
+                markDirty()
+            }
+        )
+    private val highlight =
+        VideoClipProperty(
+            PropertyKey_Highlight,
+            configuration.highlight,
+            this::markDirty,
+            converter = {
+                val conv = it as Map<String, Any>
+                val from = conv["from"] as Double
+                val to = conv["to"] as Double
+                DoubleRange(from, to)
+            }
+        )
+    private val offsetProperty = VideoClipProperty(PropertyKey_LineOffset, configuration.lineOffset, this::markDirty)
+    private var font: Font?
 
     init{
-        font = configuration.ttFont?.let{
-            Font.createFont(Font.TRUETYPE_FONT, it)
+        font = loadFont()
+
+        formatted = loadCode()
+
+        registerProperty(offsetProperty, highlight, anchorProperty, sourceProperty, fontProperty)
+    }
+
+    private fun loadCode(): Code{
+        val code = File(sourceProperty.v).readText()
+        return formatters[configuration.format]!!.prettify(code)
+    }
+
+    private fun loadFont(): Font?{
+        return fontProperty.v?.let{
+            Font.createFont(Font.TRUETYPE_FONT, File(it))
         }
-
-        val code = configuration.file.readText()
-        formatted = formatters[configuration.format]!!.prettify(code)
-
-        registerProperty(offsetProperty, highlightStart, highlightEnd)
     }
 
     override fun renderContent(img: BufferedImage) {
@@ -83,7 +131,7 @@ class CodeVideoClip(
         val lineHeight = 22
         val indentWidth = 15
 
-        val yOffset = when(configuration.anchor){
+        val yOffset = when(anchorProperty.v){
             CodeVideoClipAnchor.Top -> 0
             CodeVideoClipAnchor.Center -> img.height / 2 - lineHeight / 2
         }
@@ -91,9 +139,11 @@ class CodeVideoClip(
         val g = img.createGraphics()
         g.font = (font ?: g.font).deriveFont(fontSize.toFloat())
 
-        if(highlightEnd.v > highlightStart.v){
-            val y0 = ((highlightStart.v - offsetProperty.v) * lineHeight).roundToInt() + yOffset
-            val y1 = ((highlightEnd.v - offsetProperty.v) * lineHeight).roundToInt() + yOffset
+        val hl = highlight.v
+        if(hl != null){
+            //-1 accounts for the one-based line numbers
+            val y0 = ((hl.from - 1 - offsetProperty.v) * lineHeight).roundToInt() + yOffset
+            val y1 = ((hl.to - 1 - offsetProperty.v) * lineHeight).roundToInt() + yOffset
             g.color = configuration.theme.highlightColor
             g.fillRect(0,y0,img.width,y1-y0)
         }
@@ -116,7 +166,7 @@ class CodeVideoClip(
             i, cl ->
             val y = ((3 * (i - offsetProperty.v) + 2) * lineHeight / 3).roundToInt() + yOffset
             if(configuration.lineNumbers){
-                val req = ceil("$i".getTextSize(g.font).width).toInt()
+                val req = ceil("${i+1}".getTextSize(g.font).width).toInt()
                 val lnx = lineNumberAlignRight - req
                 g.color = configuration.theme.normColor
                 g.drawString("${i+1}",lnx, y)

@@ -1,13 +1,9 @@
 package tech.softwarekitchen.moviekt.clips.video.focus
 
 import tech.softwarekitchen.common.vector.Vector2i
-import tech.softwarekitchen.moviekt.animation.position.SizeProvider
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import java.awt.Color
 import java.awt.image.BufferedImage
-import java.io.File
-import javax.imageio.ImageIO
-import kotlin.system.exitProcess
 
 data class DarkenBackgroundVideoClipConfiguration(
     val base: Vector2i,

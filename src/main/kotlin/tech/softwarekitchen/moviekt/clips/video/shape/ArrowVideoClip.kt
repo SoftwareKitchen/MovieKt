@@ -2,7 +2,6 @@ package tech.softwarekitchen.moviekt.clips.video.shape
 
 import tech.softwarekitchen.common.vector.Vector2
 import tech.softwarekitchen.common.vector.Vector2i
-import tech.softwarekitchen.moviekt.animation.position.toStaticSizeProvider
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import java.awt.BasicStroke
 import java.awt.Color

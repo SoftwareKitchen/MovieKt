@@ -4,8 +4,6 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import tech.softwarekitchen.common.matrix.Matrix22
 import tech.softwarekitchen.common.vector.Vector2
 import tech.softwarekitchen.common.vector.Vector2i
-import tech.softwarekitchen.moviekt.animation.position.SizeProvider
-import tech.softwarekitchen.moviekt.animation.position.toStaticSizeProvider
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import java.awt.BasicStroke
 import java.awt.Color
@@ -13,7 +11,6 @@ import java.awt.Stroke
 import java.awt.geom.GeneralPath
 import java.awt.image.BufferedImage
 import java.io.File
-import javax.imageio.ImageIO
 import kotlin.math.*
 
 data class SVGVideoClipConfiguration(

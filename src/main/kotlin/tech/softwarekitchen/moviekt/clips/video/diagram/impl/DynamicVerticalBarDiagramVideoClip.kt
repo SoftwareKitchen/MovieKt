@@ -1,13 +1,10 @@
 package tech.softwarekitchen.moviekt.clips.video.diagram.impl
 
 import tech.softwarekitchen.common.vector.Vector2i
-import tech.softwarekitchen.moviekt.animation.position.SizeProvider
 import tech.softwarekitchen.moviekt.clips.video.diagram.BarBasedDiagramConfiguration
 import tech.softwarekitchen.moviekt.clips.video.diagram.BarBasedDiagramVideoClip
-import tech.softwarekitchen.moviekt.clips.video.diagram.XYDiagramVideoClip
 import java.awt.BasicStroke
 import java.awt.Color
-import java.awt.Polygon
 import java.awt.image.BufferedImage
 
 class DynamicVerticalBarDiagramVideoClip(

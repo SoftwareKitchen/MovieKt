@@ -1,7 +1,6 @@
 package tech.softwarekitchen.moviekt.animation.continous
 
 import tech.softwarekitchen.moviekt.animation.MKTTimerangeAnimation
-import tech.softwarekitchen.moviekt.animation.MovieKtAnimation
 import kotlin.math.PI
 import kotlin.math.sin
 

@@ -1,7 +1,6 @@
 package tech.softwarekitchen.moviekt.clips.video.diagram.impl
 
 import tech.softwarekitchen.common.vector.Vector2i
-import tech.softwarekitchen.moviekt.animation.position.SizeProvider
 import tech.softwarekitchen.moviekt.clips.video.diagram.DiagramAxisConfiguration
 import tech.softwarekitchen.moviekt.clips.video.diagram.XYDiagramConfiguration
 import tech.softwarekitchen.moviekt.clips.video.diagram.XYDiagramVideoClip

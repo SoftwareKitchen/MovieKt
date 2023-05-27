@@ -16,12 +16,12 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
         val PropertyKey_Size = "Size"
         val PropertyKey_Visible = "Visible"
     }
-    class VideoClipProperty<T>(val name: String, initialValue: T, private val onChange: () -> Unit){
+    class VideoClipProperty<T>(val name: String, initialValue: T, private val onChange: () -> Unit, private val converter: (Any) -> T = {it as T}){
         private var value: T = initialValue
         val v: T
             get(){return value}
         fun set(nv: Any){
-            val x = nv as T
+            val x = converter(nv)
             if(x == value){
                 return
             }
