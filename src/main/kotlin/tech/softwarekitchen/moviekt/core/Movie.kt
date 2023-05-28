@@ -1,4 +1,4 @@
-package tech.softwarekitchen.moviekt
+package tech.softwarekitchen.moviekt.core
 
 import tech.softwarekitchen.moviekt.animation.MovieKtAnimation
 import tech.softwarekitchen.moviekt.clips.audio.AudioContainerClip
@@ -9,7 +9,6 @@ import tech.softwarekitchen.moviekt.exception.VideoIsClosedException
 import java.awt.image.BufferedImage
 import java.io.File
 import java.io.OutputStream
-import java.nio.IntBuffer
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
@@ -96,8 +95,6 @@ class Movie(
         println("--- Done ---")
     }
 
-    private val buffer = IntArray(videoRoot.getSize().x * videoRoot.getSize().y)
-    private val byteBuffer = ByteArray(videoRoot.getSize().x * videoRoot.getSize().y * 3)
     /**
      * Write an image as frame into the video
      * @param image the image
@@ -105,31 +102,12 @@ class Movie(
      * @throws VideoIsClosedException the video is already closed due to enough frames provided (1 + length\[s\] * fps)
      * @throws FFMPEGDidntShutdownException enough frames were provided, but FFMPEG didn't shutdown itself
      */
-    @OptIn(ExperimentalUnsignedTypes::class)
     @Throws(ImageSizeMismatchException::class, VideoIsClosedException::class, FFMPEGDidntShutdownException::class)
-    fun writeFrame(target: OutputStream, image: BufferedImage){
+    fun writeFrame(target: OutputStream, image: ByteArray){
         if(videoFramesWritten >= numVideoFrames){
             throw VideoIsClosedException()
         }
-
-        image.getRGB(0, 0, image.width, image.height, buffer, 0, image.width)
-
-        buffer.forEachIndexed { i, ival ->
-            val uival = ival.toUInt()
-            byteBuffer[i * 3] = ((uival / 65536u) % 256u).toByte()
-            byteBuffer[i*3+1] = ((uival / 256u) % 256u).toByte()
-            byteBuffer[i*3+2] = (uival % 256u).toByte()
-        }
-
-        sendFrame(target)
-    }
-
-    fun repeatFrame(target: OutputStream){
-        sendFrame(target)
-    }
-
-    private fun sendFrame(target: OutputStream){
-        target.write(byteBuffer)
+        target.write(image)
         videoFramesWritten++
     }
 
@@ -155,7 +133,7 @@ class Movie(
         }
     }
 
-    fun addCallback(timing: RenderCallbackTiming, action: (Int, Int, Float) -> Unit): RenderCallback{
+    fun addCallback(timing: RenderCallbackTiming, action: (Int, Int, Float) -> Unit): RenderCallback {
         val cb = RenderCallback(action, timing)
         frameCallbacks.add(cb)
         return cb
@@ -198,6 +176,8 @@ class Movie(
             videoRoot.findById(it.nodeId)
         }
 
+        val renderBuffer = RenderBuffer(videoRoot)
+
         while(videoFramesWritten < numVideoFrames){
             val t = videoFramesWritten / fps.toFloat()
 
@@ -221,11 +201,8 @@ class Movie(
 
             frameCallbacks.forEach{it.execute(RenderCallbackTiming.Pre, videoFramesWritten, numVideoFrames, t)}
 
-            if(videoRoot.needsRepaint()){
-                writeFrame(videoOutputStream, videoRoot.get())
-            }else{
-                repeatFrame(videoOutputStream)
-            }
+            renderBuffer.update()
+            writeFrame(videoOutputStream, renderBuffer.resultBuffer)
 
             frameCallbacks.forEach{it.execute(RenderCallbackTiming.Post, videoFramesWritten, numVideoFrames, t)}
         }

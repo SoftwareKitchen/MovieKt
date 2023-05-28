@@ -6,7 +6,7 @@ Currently only MP4 videos are supported
 ## How does it work
 ### Create a Movie
 ``` kotlin
-import tech.softwarekitchen.moviekt.Movie
+import tech.softwarekitchen.moviekt.core.Movie
 import tech.softwarekitchen.moviekt.Vector2i
 import tech.softwarekitchen.moviekt.clips.SingleColorClip
 import tech.softwarekitchen.moviekt.clips.TextClip

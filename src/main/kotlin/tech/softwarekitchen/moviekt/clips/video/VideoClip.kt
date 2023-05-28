@@ -1,12 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video
 
 import tech.softwarekitchen.common.vector.Vector2i
-import tech.softwarekitchen.moviekt.clips.video.text.TextVideoClip
 import java.awt.image.BufferedImage
-import java.awt.image.BufferedImage.TYPE_INT_ARGB
-import java.lang.Float.max
-import java.lang.Float.min
-
 
 abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, visible: Boolean){
     companion object{
@@ -33,10 +28,10 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
     private val children =  ArrayList<VideoClip>()
 
     private val offsetProperty = VideoClipProperty(PropertyKey_Offset, Vector2i(0,0), this::markPseudoDirty)
-    private val opacityProperty = VideoClipProperty(PropertyKey_Opacity, 1f, this::markDirty)
+    private val opacityProperty = VideoClipProperty(PropertyKey_Opacity, 1f, this::markOpacityChanged)
     private val positionProperty = VideoClipProperty(PropertyKey_Position, position, this::markPseudoDirty)
     private val sizeProperty = VideoClipProperty(PropertyKey_Size, size, this::markDirty)
-    private val visibleProperty = VideoClipProperty(PropertyKey_Visible, visible, this::markPseudoDirty)
+    private val visibleProperty = VideoClipProperty(PropertyKey_Visible, visible, this::markOpacityChanged)
     private val properties: MutableList<VideoClipProperty<*>> = arrayListOf(
         offsetProperty,
         opacityProperty,
@@ -61,6 +56,10 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
         children.add(child)
     }
 
+    fun getChildren(): List<VideoClip>{
+        return children
+    }
+
     fun getPosition(): Vector2i{
         return positionProperty.v.plus(offsetProperty.v)
     }
@@ -73,57 +72,32 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
         return visibleProperty.v
     }
 
-    private fun render(): BufferedImage{
-        val size = sizeProperty.v
-        val content = BufferedImage(size.x, size.y, TYPE_INT_ARGB)
-        renderContent(content)
-
-        val g = content.createGraphics()
-        children.forEach{
-            val img = it.get()  //Need to clear pseudoDirty on visibility change!
-            if(it.isVisible()){
-                val pos = it.getPosition()
-                g.drawImage(img, pos.x, pos.y, null)
-            }
-        }
-
-        if(opacityProperty.v < 1f) {
-            for (x in 0 until content.width) {
-                for (y in 0 until content.height) {
-                    val argb = content.getRGB(x, y).toUInt()
-                    val rgb = argb % 16777216u
-                    val a = argb / 16777216u
-                    val aCorrected = min(max(a.toFloat() * opacityProperty.v, 0f), 255f).toUInt()
-                    val argbCorrected = aCorrected * 16777216u + rgb
-                    content.setRGB(x,y,argbCorrected.toInt())
-                }
-            }
-        }
-
-        return content
-    }
-
     private lateinit var cache: BufferedImage
     private var cacheDirty = true
     private var pseudoDirty = false
+    private var opacityChanged = false
     protected fun markDirty(){
         cacheDirty = true
     }
     protected fun markPseudoDirty(){
         pseudoDirty = true
     }
-    fun get(): BufferedImage{
-        pseudoDirty = false
-        if(!needsRepaint()){
-            return cache
-        }
-        cache = render()
-        cacheDirty = false
-        return cache
+
+    protected fun markOpacityChanged(){
+        opacityChanged = true
+    }
+
+    fun hasOpacityChanged(): Boolean{
+        return opacityChanged
     }
 
     fun needsRepaint(): Boolean{
-        return cacheDirty || pseudoDirty || children.any{it.needsRepaint()}
+        return cacheDirty || pseudoDirty || opacityChanged || children.any{it.needsRepaint()}
+    }
+    fun clearRepaintFlags(){
+        cacheDirty = false
+        pseudoDirty = false
+        opacityChanged = false
     }
 
     fun findById(id: String): List<VideoClip>{
