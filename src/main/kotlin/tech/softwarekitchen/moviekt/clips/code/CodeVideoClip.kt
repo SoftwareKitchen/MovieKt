@@ -16,7 +16,7 @@ import kotlin.math.roundToInt
 data class CodeVideoClipTheme(
     val normColor: Color = Color.WHITE,
     val keywordColor: Color = Color.ORANGE,
-    val highlightColor: Color = Color(100,120,0),
+    val highlightColor: Color = Color(96,96,96),
     val textConstantColor: Color = Color(0,120,0),
     val commentColor: Color = Color(128,128,128),
     val numericColor: Color = Color(0,200,200)

@@ -21,7 +21,7 @@ data class SVGVideoClipConfiguration(
 )
 
 enum class SVGOperationType{
-    Move, RelativeMove, Line, RelativeLine, Arc, RelativeArc, HorizontalLine, RelativeHorizontalLine, VerticalLine, RelativeVerticalLine, ClosePath
+    Move, RelativeMove, CubicBezier, Line, RelativeLine, Arc, RelativeArc, HorizontalLine, RelativeHorizontalLine, VerticalLine, RelativeVerticalLine, ClosePath
 }
 
 interface SVGOperation{
@@ -33,6 +33,9 @@ class SVGLineOperation(val target: Pair<Double, Double>): SVGOperation{
 }
 class SVGRelativeLineOperation(val target: Pair<Double, Double>): SVGOperation{
     override val type: SVGOperationType = SVGOperationType.RelativeLine
+}
+class SVGCubicBezierOperation(val b1: Pair<Double, Double>, val b2: Pair<Double, Double>, val end: Pair<Double, Double>): SVGOperation{
+    override val type: SVGOperationType = SVGOperationType.CubicBezier
 }
 class SVGMoveOperation(val target: Pair<Double, Double>): SVGOperation{
     override val type: SVGOperationType = SVGOperationType.Move
@@ -65,8 +68,26 @@ class SVGClosePath: SVGOperation{
     override val type: SVGOperationType = SVGOperationType.ClosePath
 }
 
-private class SVGReader(private val path: String){
-    val operations: List<SVGOperation>
+interface SVGImage{
+    fun getOperations(): List<List<SVGOperation>>
+}
+private class SVGGroupReader(private val data: Map<String, Any>): SVGImage{
+
+    override fun getOperations(): List<List<SVGOperation>> {
+        val path = data["path"] as List<Map<String, Any>>
+        val readPaths = path.map{
+            SVGPathReader(it["d"] as String)
+        }
+        return readPaths.map{it.getOperations()}.flatten()
+    }
+}
+
+private class SVGPathReader(private val path: String): SVGImage{
+    private val operations: List<SVGOperation>
+
+    override fun getOperations(): List<List<SVGOperation>> {
+        return listOf(operations)
+    }
 
     init{
         val ops = ArrayList<SVGOperation>()
@@ -87,7 +108,7 @@ private class SVGReader(private val path: String){
                 v
             }else{
                 val part = rest.substring(0,firstIndex)
-                rest = rest.substring(firstIndex, rest.length).trim()
+                rest = rest.substring(firstIndex+1, rest.length).trim()
                 negate * part.toDouble()
             }
         }
@@ -103,9 +124,10 @@ private class SVGReader(private val path: String){
         while(rest != ""){
             if(rest[0].isLetter()){
                 val letter = rest[0]
-                rest = rest.substring(1, rest.length)
+                rest = rest.substring(1, rest.length).trim()
 
                 val op = when(letter){
+                    'C' -> SVGCubicBezierOperation(readCooPair(), readCooPair(), readCooPair())
                     'M' -> SVGMoveOperation(readCooPair())
                     'm' -> SVGRelativeMoveOperation(readCooPair())
                     'A' -> {
@@ -147,6 +169,10 @@ private class SVGReader(private val path: String){
             }
         }
 
+        if(ops.last() !is SVGClosePath){
+            ops.add(SVGClosePath())
+        }
+
         operations = ops
     }
 }
@@ -162,16 +188,30 @@ class SVGVideoClip(
 ) {
     private val basePos: Pair<Int, Int>
     private val canvasSize: Pair<Int, Int>
-    private val content: SVGReader
+    private val content: SVGImage
 
     init{
         val res = configuration.file.readText()
         val parsed = XmlMapper().readValue(res,Map::class.java)
 
-        val viewBase = (parsed["viewBox"] as String).split(" ")
-        basePos = Pair(viewBase[0].toInt(), viewBase[1].toInt())
-        canvasSize = Pair(viewBase[2].toInt(), viewBase[3].toInt())
-        content = SVGReader((parsed["path"] as Map<String, Any>)["d"]!! as String)
+
+        if(parsed.keys.contains("viewBox")){
+            val viewBase = (parsed["viewBox"] as String).split(" ")
+            basePos = Pair(viewBase[0].toInt(), viewBase[1].toInt())
+            canvasSize = Pair(viewBase[2].toInt(), viewBase[3].toInt())
+        }else{
+            //Go via width & height
+            val wid = (parsed["width"] as String).toInt()
+            val hei = (parsed["height"] as String).toInt()
+            basePos = Pair(0,0)
+            canvasSize = Pair(wid, hei)
+        }
+        content = when{
+            "path" in parsed.keys -> SVGPathReader((parsed["path"] as Map<String, Any>)["d"]!! as String)
+            "g" in parsed.keys -> SVGGroupReader(parsed["g"] as Map<String, Any>)
+            else -> throw Exception()
+        }
+
     }
 
     override fun renderContent(img: BufferedImage) {
@@ -192,28 +232,34 @@ class SVGVideoClip(
         g.color = configuration.strokeColor
         g.stroke = configuration.stroke
 
-        content.operations.forEach{
-            when(it.type){
+        content.getOperations().forEach{
+            ops ->
+            ops.forEach{
+            when(it.type) {
                 SVGOperationType.Move -> {
                     val (mx, my) = coordinateMapper((it as SVGMoveOperation).target.first, it.target.second)
                     path = GeneralPath()
                     path.moveTo(mx, my)
                 }
+
                 SVGOperationType.RelativeMove -> {
                     val (mx, my) = coordinateMapper((it as SVGRelativeMoveOperation).target.first, it.target.second)
                     val last = path.currentPoint
                     path = GeneralPath()
                     path.moveTo(mx + last.x, my + last.y)
                 }
+
                 SVGOperationType.Line -> {
                     val (mx, my) = coordinateMapper((it as SVGLineOperation).target.first, it.target.second)
                     path.lineTo(mx, my)
                 }
+
                 SVGOperationType.RelativeLine -> {
                     val (mx, my) = coordinateMapper((it as SVGRelativeLineOperation).target.first, it.target.second)
                     val last = path.currentPoint
                     path.lineTo(mx + last.x, my + last.y)
                 }
+
                 SVGOperationType.Arc -> {
                     val (mx, my) = coordinateMapper((it as SVGArcOperation).target.first, it.target.second)
                     val _last = path.currentPoint
@@ -221,8 +267,8 @@ class SVGVideoClip(
                     val last = Vector2(_last.x, _last.y)
                     val tgt = Vector2(mx, my)
 
-                    val rotMatrix = Matrix22.getRotationMatrix(- it.xDeg * PI / 180.0)
-                    val scaleMatrix = Matrix22.getScaleMatrix(1/it.rad.first, 1/it.rad.second)
+                    val rotMatrix = Matrix22.getRotationMatrix(-it.xDeg * PI / 180.0)
+                    val scaleMatrix = Matrix22.getScaleMatrix(1 / it.rad.first, 1 / it.rad.second)
 
                     val lastTransformed = scaleMatrix.mul(rotMatrix.mul(last))
                     val tgtTransformed = scaleMatrix.mul(rotMatrix.mul(tgt))
@@ -231,9 +277,9 @@ class SVGVideoClip(
                     val d = tgtTransformed.minus(lastTransformed).length()
                     val uni = tgtTransformed.minus(lastTransformed).uni()
 
-                    val orthoMatrix = when(it.flgDir == it.flgLongArc){
-                        true -> Matrix22(0.0,1.0,-1.0,0.0)
-                        false -> Matrix22(0.0,-1.0,1.0,0.0)
+                    val orthoMatrix = when (it.flgDir == it.flgLongArc) {
+                        true -> Matrix22(0.0, 1.0, -1.0, 0.0)
+                        false -> Matrix22(0.0, -1.0, 1.0, 0.0)
                     }
                     val orthoUni = orthoMatrix.mul(uni)
                     val fac = sqrt(1 - 0.25 * d * d)
@@ -247,10 +293,10 @@ class SVGVideoClip(
 
                     val dir01 = angle1 - angle0
                     val circ = 2 * PI
-                    val (base, step, end) = when{
+                    val (base, step, end) = when {
                         dir01 >= PI && it.flgLongArc == 0 -> Triple(angle1, 0.1, angle0 + circ)
                         dir01 >= PI -> Triple(angle0, 0.1, angle1)
-                        dir01 >= 0 && it.flgLongArc == 0 -> Triple(angle0,0.1,angle1)
+                        dir01 >= 0 && it.flgLongArc == 0 -> Triple(angle0, 0.1, angle1)
                         dir01 >= 0 -> Triple(angle1, 0.1, angle0 + circ)
                         dir01 > -PI && it.flgLongArc == 0 -> Triple(angle1, 0.1, angle0)
                         dir01 > -PI -> Triple(angle0, 0.1, angle1 + circ)
@@ -259,13 +305,14 @@ class SVGVideoClip(
                     }
 
                     val numPoints = floor((end - base) / step).toInt()
-                    val points = (0 until numPoints).map{ base + (it+1) * step}.map{Vector2(cos(it), sin(it))}.map{it.plus(ellipseCenter)}
+                    val points = (0 until numPoints).map { base + (it + 1) * step }.map { Vector2(cos(it), sin(it)) }
+                        .map { it.plus(ellipseCenter) }
 
                     val rotMatrixInverted = rotMatrix.invert()
                     val scaleMatrixInverted = scaleMatrix.invert()
-                    val pointsExtracted = points.map{rotMatrixInverted.mul(scaleMatrixInverted.mul(it))}
+                    val pointsExtracted = points.map { rotMatrixInverted.mul(scaleMatrixInverted.mul(it)) }
 
-                    pointsExtracted.forEach{
+                    pointsExtracted.forEach {
                         path.lineTo(it.x, it.y)
                     }
                     path.lineTo(tgt.x, tgt.y)
@@ -277,8 +324,8 @@ class SVGVideoClip(
                     val last = Vector2(_last.x, _last.y)
                     val tgt = last.plus(Vector2(mx, my))
 
-                    val rotMatrix = Matrix22.getRotationMatrix(- it.xDeg * PI / 180.0)
-                    val scaleMatrix = Matrix22.getScaleMatrix(1/it.rad.first, 1/it.rad.second)
+                    val rotMatrix = Matrix22.getRotationMatrix(-it.xDeg * PI / 180.0)
+                    val scaleMatrix = Matrix22.getScaleMatrix(1 / it.rad.first, 1 / it.rad.second)
 
                     val lastTransformed = scaleMatrix.mul(rotMatrix.mul(last))
                     val tgtTransformed = scaleMatrix.mul(rotMatrix.mul(tgt))
@@ -287,9 +334,9 @@ class SVGVideoClip(
                     val d = tgtTransformed.minus(lastTransformed).length()
                     val uni = tgtTransformed.minus(lastTransformed).uni()
 
-                    val orthoMatrix = when(it.flgDir == it.flgLongArc){
-                        true -> Matrix22(0.0,1.0,-1.0,0.0)
-                        false -> Matrix22(0.0,-1.0,1.0,0.0)
+                    val orthoMatrix = when (it.flgDir == it.flgLongArc) {
+                        true -> Matrix22(0.0, 1.0, -1.0, 0.0)
+                        false -> Matrix22(0.0, -1.0, 1.0, 0.0)
                     }
                     val orthoUni = orthoMatrix.mul(uni)
                     val fac = sqrt(1 - 0.25 * d * d)
@@ -303,10 +350,10 @@ class SVGVideoClip(
 
                     val dir01 = angle1 - angle0
                     val circ = 2 * PI
-                    val (base, step, end) = when{
+                    val (base, step, end) = when {
                         dir01 >= PI && it.flgLongArc == 0 -> Triple(angle1, 0.1, angle0 + circ)
                         dir01 >= PI -> Triple(angle0, 0.1, angle1)
-                        dir01 >= 0 && it.flgLongArc == 0 -> Triple(angle0,0.1,angle1)
+                        dir01 >= 0 && it.flgLongArc == 0 -> Triple(angle0, 0.1, angle1)
                         dir01 >= 0 -> Triple(angle1, 0.1, angle0 + circ)
                         dir01 > -PI && it.flgLongArc == 0 -> Triple(angle1, 0.1, angle0)
                         dir01 > -PI -> Triple(angle0, 0.1, angle1 + circ)
@@ -315,46 +362,65 @@ class SVGVideoClip(
                     }
 
                     val numPoints = floor((end - base) / step).toInt()
-                    val points = (0 until numPoints).map{ base + (it+1) * step}.map{Vector2(cos(it), sin(it))}.map{it.plus(ellipseCenter)}
+                    val points = (0 until numPoints).map { base + (it + 1) * step }.map { Vector2(cos(it), sin(it)) }
+                        .map { it.plus(ellipseCenter) }
 
                     val rotMatrixInverted = rotMatrix.invert()
                     val scaleMatrixInverted = scaleMatrix.invert()
-                    val pointsExtracted = points.map{rotMatrixInverted.mul(scaleMatrixInverted.mul(it))}
+                    val pointsExtracted = points.map { rotMatrixInverted.mul(scaleMatrixInverted.mul(it)) }
 
-                    pointsExtracted.forEach{
+                    pointsExtracted.forEach {
                         path.lineTo(it.x, it.y)
                     }
                     path.lineTo(tgt.x, tgt.y)
                 }
+
                 SVGOperationType.HorizontalLine -> {
                     val prev = path.currentPoint
-                    val (tgtX,_) = coordinateMapper((it as SVGHorizontalLine).dx, 0.0)
+                    val (tgtX, _) = coordinateMapper((it as SVGHorizontalLine).dx, 0.0)
                     path.lineTo(tgtX, prev.y)
                 }
+
                 SVGOperationType.RelativeHorizontalLine -> {
                     val prev = path.currentPoint
-                    val (tgtX,_) = coordinateMapper((it as SVGRelativeHorizontalLine).dx, 0.0)
+                    val (tgtX, _) = coordinateMapper((it as SVGRelativeHorizontalLine).dx, 0.0)
                     path.lineTo(prev.x + tgtX, prev.y)
                 }
+
                 SVGOperationType.VerticalLine -> {
                     val prev = path.currentPoint
-                    val (_, tgtY) = coordinateMapper(0.0,(it as SVGVerticalLine).dy)
+                    val (_, tgtY) = coordinateMapper(0.0, (it as SVGVerticalLine).dy)
                     path.lineTo(prev.x, tgtY)
                 }
+
                 SVGOperationType.RelativeVerticalLine -> {
                     val prev = path.currentPoint
-                    val (_, tgtY) = coordinateMapper(0.0,(it as SVGRelativeVerticalLine).dy)
+                    val (_, tgtY) = coordinateMapper(0.0, (it as SVGRelativeVerticalLine).dy)
                     path.lineTo(prev.x, tgtY + prev.y)
                 }
+
                 SVGOperationType.ClosePath -> {
                     val fc = configuration.fillColor
-                    if(fc != null){
+                    if (fc != null) {
                         g.color = fc
                         g.fill(path)
                     }
                     g.color = configuration.strokeColor
                     g.draw(path)
                 }
+
+                SVGOperationType.CubicBezier -> {
+                    val cbDesc = it as SVGCubicBezierOperation
+                    val b1 = coordinateMapper(cbDesc.b1.first, cbDesc.b1.second)
+                    val b2 = coordinateMapper(cbDesc.b2.first, cbDesc.b2.second)
+                    val end = coordinateMapper(cbDesc.end.first, cbDesc.end.second)
+                    path.curveTo(
+                        b1.first, b1.second,
+                        b2.first, b2.second,
+                        end.first, end.second
+                    )
+                }
+            }
             }
         }
     }
