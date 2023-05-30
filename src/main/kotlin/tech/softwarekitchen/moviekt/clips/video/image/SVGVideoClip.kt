@@ -5,6 +5,7 @@ import tech.softwarekitchen.common.matrix.Matrix22
 import tech.softwarekitchen.common.vector.Vector2
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
+import tech.softwarekitchen.moviekt.util.parseColor
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.Stroke
@@ -12,6 +13,13 @@ import java.awt.geom.GeneralPath
 import java.awt.image.BufferedImage
 import java.io.File
 import kotlin.math.*
+
+private fun parseFillColor(color: String): Color?{
+    if(color == "none"){
+        return null
+    }
+    return parseColor(color)
+}
 
 data class SVGVideoClipConfiguration(
     val file: File,
@@ -68,25 +76,37 @@ class SVGClosePath: SVGOperation{
     override val type: SVGOperationType = SVGOperationType.ClosePath
 }
 
+enum class SVGStyleType{
+    Fill, Stroke
+}
+data class SVGStyle(val type: SVGStyleType, val value: String)
+data class SVGPath(
+    val ops: List<SVGOperation>,
+    val style: List<SVGStyle>
+)
+
 interface SVGImage{
-    fun getOperations(): List<List<SVGOperation>>
+    fun getOperations(): List<SVGPath>
 }
 private class SVGGroupReader(private val data: Map<String, Any>): SVGImage{
 
-    override fun getOperations(): List<List<SVGOperation>> {
+    override fun getOperations(): List<SVGPath> {
         val path = data["path"] as List<Map<String, Any>>
         val readPaths = path.map{
-            SVGPathReader(it["d"] as String)
+            SVGPathReader(it["d"] as String, it["style"]?.let{it as String})
         }
         return readPaths.map{it.getOperations()}.flatten()
     }
 }
 
-private class SVGPathReader(private val path: String): SVGImage{
-    private val operations: List<SVGOperation>
+private class
 
-    override fun getOperations(): List<List<SVGOperation>> {
-        return listOf(operations)
+private class SVGPathReader(private val path: String, private val style: String?): SVGImage{
+    private val operations: List<SVGOperation>
+    private val styles: List<SVGStyle>
+
+    override fun getOperations(): List<SVGPath> {
+        return listOf(SVGPath(operations, styles))
     }
 
     init{
@@ -174,6 +194,26 @@ private class SVGPathReader(private val path: String): SVGImage{
         }
 
         operations = ops
+
+        val styles = ArrayList<SVGStyle>()
+
+        style?.let{
+            styleString ->
+            val statements = styleString.split(";").map(String::trim).filter{!it.isBlank()}
+            statements.forEach{
+                stmt ->
+                val parts = stmt.split(":").map(String::trim).filter{!it.isBlank()}
+                when(val key = parts[0].lowercase()){
+                    "fill" -> styles.add(SVGStyle(SVGStyleType.Fill, parts[1]))
+                    "stroke" -> styles.add(SVGStyle(SVGStyleType.Stroke, parts[1]))
+                    else -> {
+                        println("Warning: Ignoring SVG style key '$key'")
+                    }
+                }
+            }
+        }
+
+        this.styles = styles
     }
 }
 
@@ -207,7 +247,11 @@ class SVGVideoClip(
             canvasSize = Pair(wid, hei)
         }
         content = when{
-            "path" in parsed.keys -> SVGPathReader((parsed["path"] as Map<String, Any>)["d"]!! as String)
+            "path" in parsed.keys -> {
+                val pathData = (parsed["path"] as Map<String, Any>)["d"]!! as String
+                val styleData = (parsed["path"] as Map<String, Any>)["style"]?.let{it as String}
+                SVGPathReader(pathData, styleData)
+            }
             "g" in parsed.keys -> SVGGroupReader(parsed["g"] as Map<String, Any>)
             else -> throw Exception()
         }
@@ -225,22 +269,48 @@ class SVGVideoClip(
         }
 
         val g = img.createGraphics()
-        var path = GeneralPath()
 
         g.color = Color.LIGHT_GRAY
         g.fillRect(0,0,img.width, img.height)
-        g.color = configuration.strokeColor
         g.stroke = configuration.stroke
 
         content.getOperations().forEach{
             ops ->
-            ops.forEach{
+            var path = GeneralPath()
+            ops.ops.forEach{
             when(it.type) {
                 SVGOperationType.Move -> {
+                    val fc = configuration.fillColor
+                        ?: ops.style.firstOrNull{it.type == SVGStyleType.Fill}?.let{ parseFillColor(it.value) }
+
+                    if (fc != null) {
+                        g.color = fc
+                        g.fill(path)
+                    }
+
+                    val sc = ops.style.firstOrNull{it.type == SVGStyleType.Stroke}?.let{ parseFillColor(it.value) } ?: configuration.strokeColor
+
+                    g.color = sc
+                    g.draw(path)
+
                     val (mx, my) = coordinateMapper((it as SVGMoveOperation).target.first, it.target.second)
                     path = GeneralPath()
                     path.moveTo(mx, my)
                 }
+                SVGOperationType.ClosePath -> {
+                    val fc = configuration.fillColor
+                        ?: ops.style.firstOrNull{it.type == SVGStyleType.Fill}?.let{ parseFillColor(it.value) }
+
+                    if (fc != null) {
+                        g.color = fc
+                        g.fill(path)
+                    }
+
+                    val sc = ops.style.firstOrNull{it.type == SVGStyleType.Stroke}?.let{ parseFillColor(it.value) } ?: configuration.strokeColor
+                    g.color = sc
+                    g.draw(path)
+                }
+
 
                 SVGOperationType.RelativeMove -> {
                     val (mx, my) = coordinateMapper((it as SVGRelativeMoveOperation).target.first, it.target.second)
@@ -398,17 +468,6 @@ class SVGVideoClip(
                     val (_, tgtY) = coordinateMapper(0.0, (it as SVGRelativeVerticalLine).dy)
                     path.lineTo(prev.x, tgtY + prev.y)
                 }
-
-                SVGOperationType.ClosePath -> {
-                    val fc = configuration.fillColor
-                    if (fc != null) {
-                        g.color = fc
-                        g.fill(path)
-                    }
-                    g.color = configuration.strokeColor
-                    g.draw(path)
-                }
-
                 SVGOperationType.CubicBezier -> {
                     val cbDesc = it as SVGCubicBezierOperation
                     val b1 = coordinateMapper(cbDesc.b1.first, cbDesc.b1.second)
