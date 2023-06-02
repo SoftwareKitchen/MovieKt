@@ -65,6 +65,9 @@ private class LayerBuffer(
 
     @OptIn(ExperimentalUnsignedTypes::class)
     fun onPixelChange(x: Int, y: Int, depth: Int){
+        if(x < 0 || x >= cache.width || y < 0 || y >= cache.height){
+            return
+        }
         val linearIndex = y * size.x + x
         if(depthMap[x][y] < 0 || depth <= depthMap[x][y] ){
             var r: UByte = 0u
