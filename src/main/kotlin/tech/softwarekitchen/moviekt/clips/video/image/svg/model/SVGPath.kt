@@ -1,12 +1,15 @@
 package tech.softwarekitchen.moviekt.clips.video.image.svg.model
 
-class SVGPath(data: Map<String, Any>) {
+import org.w3c.dom.Element
+
+class SVGPath(data: Element): SVGItem{
     val operations: List<SVGOperation>
     val styles: List<SVGStyle>
 
     init{
-        val path = data["d"] as String
-        val style = data["style"]?.let{it as String}
+
+        val path = data.attributes.getNamedItem("d")!!.textContent
+        styles = data.parseSVGStyles()
 
         val ops = ArrayList<SVGOperation>()
         var rest = path
@@ -95,13 +98,6 @@ class SVGPath(data: Map<String, Any>) {
             }
         }
 
-        if(ops.last() !is SVGClosePath){
-            ops.add(SVGClosePath())
-        }
-
         operations = ops
-
-
-        this.styles = parseSVGStyles(style)
     }
 }

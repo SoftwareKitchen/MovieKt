@@ -47,50 +47,50 @@ fun Graphics2D.drawWithSVGStyle(styles: List<SVGStyle>, fillOp: (Graphics2D) -> 
 fun SVGPath.draw(g: Graphics2D, coordinateMapper: CoordinateMapper, scaler: Scaler2D, parentStyles: List<SVGStyle>){
     val effectiveStyles = mergeStyles(parentStyles, styles)
 
-    var path = GeneralPath()
+    var path: GeneralPath? = null
 
     var lastOp: SVGOperation? = null
     var lastOrigin: Point2D? = null
     operations.forEach {
         when (it.type) {
             SVGOperationType.Move -> {
-                g.drawWithSVGStyle(
-                    effectiveStyles,
-                    {it.fill(path) },
-                    {it.draw(path)},
-                    scaler
-                )
                 val (mx, my) = coordinateMapper((it as SVGMoveOperation).target.first, it.target.second)
-                path = GeneralPath()
-                path.moveTo(mx, my)
+                if(path == null){
+                    path = GeneralPath()
+                }
+                path!!.moveTo(mx, my)
             }
 
             SVGOperationType.ClosePath -> {
+                path!!.closePath()
                 g.drawWithSVGStyle(
                     effectiveStyles,
                     {it.fill(path) },
                     {it.draw(path)},
                     scaler
                 )
+                path = null
             }
 
 
             SVGOperationType.RelativeMove -> {
                 val (mx, my) = coordinateMapper((it as SVGRelativeMoveOperation).target.first, it.target.second)
-                val last = path.currentPoint ?: Point(0, 0)
-                path = GeneralPath()
-                path.moveTo(mx + last.x, my + last.y)
+                if(path == null){
+                    path = GeneralPath()
+                }
+                val last = path!!.currentPoint ?: Point(0, 0)
+                path!!.moveTo(mx + last.x, my + last.y)
             }
 
             SVGOperationType.Line -> {
                 val (mx, my) = coordinateMapper((it as SVGLineOperation).target.first, it.target.second)
-                path.lineTo(mx, my)
+                path!!.lineTo(mx, my)
             }
 
             SVGOperationType.RelativeLine -> {
                 val (mx, my) = coordinateMapper((it as SVGRelativeLineOperation).target.first, it.target.second)
-                val last = path.currentPoint
-                path.lineTo(mx + last.x, my + last.y)
+                val last = path!!.currentPoint
+                path?.lineTo(mx + last.x, my + last.y)
             }
 
             SVGOperationType.Arc -> {
@@ -98,7 +98,7 @@ fun SVGPath.draw(g: Graphics2D, coordinateMapper: CoordinateMapper, scaler: Scal
                 val (mx, my) = coordinateMapper((it as SVGArcOperation).target.first, it.target.second)
                 val radScaledX = scaler.first(it.rad.first)
                 val radScaledY = scaler.second(it.rad.second)
-                val _last = path.currentPoint
+                val _last = path!!.currentPoint
 
                 val last = Vector2(_last.x, _last.y)
                 val tgt = Vector2(mx, my)
@@ -134,7 +134,7 @@ fun SVGPath.draw(g: Graphics2D, coordinateMapper: CoordinateMapper, scaler: Scal
 
                 val dir01 = angle1 - angle0
                 val circ = 2 * PI
-                val (base, step, end) = when {
+                val (_base, _step, _end) = when {
                     dir01 >= PI && it.flgLongArc == 0 -> Triple(angle1, 0.1, angle0 + circ)
                     dir01 >= PI -> Triple(angle0, 0.1, angle1)
                     dir01 >= 0 && it.flgLongArc == 0 -> Triple(angle0, 0.1, angle1)
@@ -143,6 +143,10 @@ fun SVGPath.draw(g: Graphics2D, coordinateMapper: CoordinateMapper, scaler: Scal
                     dir01 > -PI -> Triple(angle0, 0.1, angle1 + circ)
                     it.flgLongArc == 0 -> Triple(angle0, 0.1, angle1 + circ)
                     else -> Triple(angle1, 0.1, angle0)
+                }
+                val (base, step, end) = when(it.flgDir){
+                    0 -> Triple(_end, -_step, _base)
+                    else -> Triple(_base, _step, _end)
                 }
 
                 val numPoints = floor((end - base) / step).toInt()
@@ -154,16 +158,16 @@ fun SVGPath.draw(g: Graphics2D, coordinateMapper: CoordinateMapper, scaler: Scal
                 val pointsExtracted = points.map { rotMatrixInverted.mul(scaleMatrixInverted.mul(it)) }
 
                 pointsExtracted.forEach {
-                    path.lineTo(it.x, it.y)
+                    path!!.lineTo(it.x, it.y)
                 }
-                path.lineTo(tgt.x, tgt.y)
+                path!!.lineTo(tgt.x, tgt.y)
             }      //FIXME, duplication..
             SVGOperationType.RelativeArc -> {
                 val (mx, my) = coordinateMapper((it as SVGRelativeArcOperation).target.first, it.target.second)
                 val radScaledX = scaler.first(it.rad.first)
                 val radScaledY = scaler.second(it.rad.second)
 
-                val _last = path.currentPoint
+                val _last = path!!.currentPoint
 
                 val last = Vector2(_last.x, _last.y)
                 val tgt = last.plus(Vector2(mx, my))
@@ -214,42 +218,42 @@ fun SVGPath.draw(g: Graphics2D, coordinateMapper: CoordinateMapper, scaler: Scal
                 val pointsExtracted = points.map { rotMatrixInverted.mul(scaleMatrixInverted.mul(it)) }
 
                 pointsExtracted.forEach {
-                    path.lineTo(it.x, it.y)
+                    path!!.lineTo(it.x, it.y)
                 }
-                path.lineTo(tgt.x, tgt.y)
+                path!!.lineTo(tgt.x, tgt.y)
             }
 
             SVGOperationType.HorizontalLine -> {
-                val prev = path.currentPoint
+                val prev = path!!.currentPoint
                 val (tgtX, _) = coordinateMapper((it as SVGHorizontalLine).dx, 0.0)
-                path.lineTo(tgtX, prev.y)
+                path!!.lineTo(tgtX, prev.y)
             }
 
             SVGOperationType.RelativeHorizontalLine -> {
-                val prev = path.currentPoint
+                val prev = path!!.currentPoint
                 val (tgtX, _) = coordinateMapper((it as SVGRelativeHorizontalLine).dx, 0.0)
-                path.lineTo(prev.x + tgtX, prev.y)
+                path!!.lineTo(prev.x + tgtX, prev.y)
             }
 
             SVGOperationType.VerticalLine -> {
-                val prev = path.currentPoint
+                val prev = path!!.currentPoint
                 val (_, tgtY) = coordinateMapper(0.0, (it as SVGVerticalLine).dy)
-                path.lineTo(prev.x, tgtY)
+                path!!.lineTo(prev.x, tgtY)
             }
 
             SVGOperationType.RelativeVerticalLine -> {
-                val prev = path.currentPoint
+                val prev = path!!.currentPoint
                 val (_, tgtY) = coordinateMapper(0.0, (it as SVGRelativeVerticalLine).dy)
-                path.lineTo(prev.x, tgtY + prev.y)
+                path!!.lineTo(prev.x, tgtY + prev.y)
             }
 
             SVGOperationType.RelativeCubicBezier -> {
-                val prev = path.currentPoint
+                val prev = path!!.currentPoint
                 val cbDesc = it as SVGRelativeCubicBezierOperation
                 val b1 = coordinateMapper(cbDesc.b1.first, cbDesc.b1.second)
                 val b2 = coordinateMapper(cbDesc.b2.first, cbDesc.b2.second)
                 val end = coordinateMapper(cbDesc.end.first, cbDesc.end.second)
-                path.curveTo(
+                path!!.curveTo(
                     b1.first + prev.x, b1.second + prev.y,
                     b2.first + prev.x, b2.second + prev.y,
                     end.first + prev.x, end.second + prev.y
@@ -261,14 +265,14 @@ fun SVGPath.draw(g: Graphics2D, coordinateMapper: CoordinateMapper, scaler: Scal
                 val b1 = coordinateMapper(cbDesc.b1.first, cbDesc.b1.second)
                 val b2 = coordinateMapper(cbDesc.b2.first, cbDesc.b2.second)
                 val end = coordinateMapper(cbDesc.end.first, cbDesc.end.second)
-                path.curveTo(
+                path!!.curveTo(
                     b1.first, b1.second,
                     b2.first, b2.second,
                     end.first, end.second
                 )
             }
             SVGOperationType.RelativeSmoothCubicBezier -> {
-                val origin = path.currentPoint
+                val origin = path!!.currentPoint
 
                 val b1 = when{
                     lastOp!! is SVGRelativeCubicBezierOperation -> {
@@ -290,7 +294,7 @@ fun SVGPath.draw(g: Graphics2D, coordinateMapper: CoordinateMapper, scaler: Scal
                 val b2 = coordinateMapper(cbDesc.b2.first, cbDesc.b2.second)
                 val end = coordinateMapper(cbDesc.end.first, cbDesc.end.second)
 
-                path.curveTo(
+                path!!.curveTo(
                     b1.x, b1.y,
                     b2.first + origin.x, b2.second + origin.y,
                     end.first + origin.x, end.second + origin.y
@@ -298,7 +302,16 @@ fun SVGPath.draw(g: Graphics2D, coordinateMapper: CoordinateMapper, scaler: Scal
             }
         }
         lastOp = it
-        lastOrigin = path.currentPoint
+        lastOrigin = path?.currentPoint
+    }
+
+    path?.let {p ->
+        g.drawWithSVGStyle(
+            effectiveStyles,
+            { it.fill(p) },
+            { it.draw(p) },
+            scaler
+        )
     }
 }
 
@@ -328,18 +341,15 @@ fun SVGCircle.draw(g: Graphics2D, scaler: Scaler2D, coordinateMapper: Coordinate
     )
 }
 
-fun SVGGroup.draw(g: Graphics2D, scaler: Scaler2D, coordinateMapper: CoordinateMapper, parentStyles: List<SVGStyle>){
+fun SVGGroup.draw(g: Graphics2D, scaler: Scaler2D, coordinateMapper: CoordinateMapper, parentStyles: List<SVGStyle>) {
     val effectiveStyles = mergeStyles(parentStyles, styles)
-    subgroups.forEach{
-        it.draw(g, scaler, coordinateMapper, effectiveStyles)
-    }
-
-    paths.forEach{
-        it.draw(g, coordinateMapper, scaler, effectiveStyles)
-    }
-
-    circles.forEach{
-        it.draw(g, scaler, coordinateMapper, effectiveStyles)
+    children.forEach {
+        when {
+            it is SVGGroup -> it.draw(g, scaler, coordinateMapper, effectiveStyles)
+            it is SVGPath -> it.draw(g, coordinateMapper, scaler, effectiveStyles)
+            it is SVGCircle -> it.draw(g, scaler, coordinateMapper, effectiveStyles)
+            else -> throw Exception()
+        }
     }
 }
 
@@ -349,7 +359,14 @@ fun SVGImage.draw(target: BufferedImage){
     val scaler = getScaler(size)
     val g = target.createGraphics()
 
-    base.draw(g, scaler, coordinateMapper, listOf())
+    data.forEach {
+        when {
+            it is SVGGroup -> it.draw(g, scaler, coordinateMapper, listOf())
+            it is SVGPath -> it.draw(g, coordinateMapper, scaler, listOf())
+            it is SVGCircle -> it.draw(g, scaler, coordinateMapper, listOf())
+            else -> throw Exception()
+        }
+    }
 }
 
 class SVGVideoClip(

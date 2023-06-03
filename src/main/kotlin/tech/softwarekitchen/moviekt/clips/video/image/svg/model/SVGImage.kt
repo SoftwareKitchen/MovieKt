@@ -1,32 +1,56 @@
 package tech.softwarekitchen.moviekt.clips.video.image.svg.model
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
+import org.w3c.dom.Element
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.image.svg.Scaler2D
 import java.io.File
+import javax.xml.parsers.DocumentBuilderFactory
+
+interface SVGItem
+
+fun Element.svgIterate(): List<SVGItem>{
+    val result = ArrayList<SVGItem>()
+    (0 until childNodes.length).map{
+        val node = childNodes.item(it)
+        if(node is Element){
+            result.add(when(node.tagName){
+                "g" -> SVGGroup(node)
+                "path" -> SVGPath(node)
+                "circle" -> SVGCircle(node)
+                else -> throw Exception()
+            })
+        }
+    }
+    return result
+}
 
 class SVGImage(file: File) {
     val basePos: Pair<Int, Int>
     val canvasSize: Pair<Int, Int>
-    val base: SVGGroup
+    val data: List<SVGItem>
 
     init {
-        val res = file.readText()
-        val parsed = XmlMapper().readValue(res, Map::class.java)
+        val builder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+        val xmlDoc = builder.parse(file.inputStream())
+        val svgElem = xmlDoc.documentElement
 
-        if (parsed.keys.contains("viewBox")) {
-            val viewBase = (parsed["viewBox"] as String).split(" ")
+        val viewBox = svgElem.attributes.getNamedItem("viewBox")
+        if (viewBox != null) {
+            val vb = viewBox.textContent
+            val viewBase = vb.split(" ")
             basePos = Pair(viewBase[0].toInt(), viewBase[1].toInt())
             canvasSize = Pair(viewBase[2].toInt(), viewBase[3].toInt())
         } else {
             //Go via width & height
-            val wid = (parsed["width"] as String).toInt()
-            val hei = (parsed["height"] as String).toInt()
+
+            val wid = (svgElem.attributes.getNamedItem("width").textContent).toInt()
+            val hei = (svgElem.attributes.getNamedItem("height").textContent).toInt()
             basePos = Pair(0, 0)
             canvasSize = Pair(wid, hei)
         }
 
-        base = SVGGroup(parsed as Map<String, Any>)
+        data = svgElem.svgIterate()
     }
 
     fun getCoordinateMapper(size: Vector2i): (Double, Double) -> Pair<Double, Double>{

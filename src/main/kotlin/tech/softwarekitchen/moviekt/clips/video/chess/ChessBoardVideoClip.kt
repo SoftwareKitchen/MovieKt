@@ -5,7 +5,9 @@ import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.image.svg.SVGVideoClip
 import tech.softwarekitchen.moviekt.clips.video.image.svg.SVGVideoClipConfiguration
 import tech.softwarekitchen.moviekt.core.Movie
+import java.awt.BasicStroke
 import java.awt.Color
+import java.awt.geom.GeneralPath
 import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_ARGB
 import java.io.File
@@ -107,7 +109,7 @@ class ChessBoardVideoClip(
 }
 
 fun main(){
-    val cb = ChessBoardVideoClip(
+    /*val cb = ChessBoardVideoClip(
         "_",
         Vector2i(800,800),
         Vector2i(0,0),
@@ -115,10 +117,11 @@ fun main(){
         ChessBoardVideoClipConfiguration()
     )
     val vid = Movie("Foo",5,25,cb)
-    vid.write()
+    vid.write()*/
 
-    /*val img = BufferedImage(100,100,TYPE_INT_ARGB)
+    val img = BufferedImage(100,100,TYPE_INT_ARGB)
     val piece = ChessPiece("bQa8",Vector2i(800,800))
     piece.piece.renderContent(img)
-    ImageIO.write(img,"png", File("foo.png"))*/
+    ImageIO.write(img,"png", File("foo.png"))
+
 }

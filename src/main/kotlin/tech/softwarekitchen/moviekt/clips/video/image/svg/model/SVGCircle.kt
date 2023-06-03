@@ -1,14 +1,17 @@
 package tech.softwarekitchen.moviekt.clips.video.image.svg.model
 
-class SVGCircle(source: Map<String, Any>) {
+import org.w3c.dom.Element
+
+class SVGCircle(source: Element): SVGItem {
     val center: Pair<Double, Double>
     val radius: Double
 
     init{
         center = Pair(
-            (source["cx"] as String).toDouble(),
-            (source["cy"] as String).toDouble()
+            source.attributes.getNamedItem("cx")!!.textContent.toDouble(),
+            source.attributes.getNamedItem("cy")!!.textContent.toDouble()
         )
-        radius = (source["r"] as String).toDouble()
+        radius = source.attributes.getNamedItem("r")!!.textContent.toDouble()
+
     }
 }

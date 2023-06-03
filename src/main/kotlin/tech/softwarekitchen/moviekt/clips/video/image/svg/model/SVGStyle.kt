@@ -1,5 +1,6 @@
 package tech.softwarekitchen.moviekt.clips.video.image.svg.model
 
+import org.w3c.dom.Element
 import tech.softwarekitchen.moviekt.util.parseColor
 import java.awt.Color
 
@@ -15,7 +16,9 @@ enum class SVGStyleType{
 }
 data class SVGStyle(val type: SVGStyleType, val value: String)
 
-fun parseSVGStyles(styleString: String?): List<SVGStyle>{
+fun Element.parseSVGStyles(): List<SVGStyle>{
+    val styleString = attributes.getNamedItem("style")?.textContent
+
     styleString ?: return listOf()
     val styles = ArrayList<SVGStyle>()
 
