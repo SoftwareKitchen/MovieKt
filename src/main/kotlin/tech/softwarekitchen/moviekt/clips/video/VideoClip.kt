@@ -1,6 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video
 
 import tech.softwarekitchen.common.vector.Vector2i
+import tech.softwarekitchen.moviekt.mutation.MovieKtMutation
 import java.awt.image.BufferedImage
 
 abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, visible: Boolean){
@@ -110,4 +111,11 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
     fun set(id: String, value: Any){
         properties.first{it.name == id}.set(value)
     }
+
+    open fun prepareMutation(mutation: MovieKtMutation): String{
+        throw Exception()
+    }
+
+    open fun applyKeyframe(mutation: String, value: Float){}
+    open fun removeMutation(id: String){}
 }

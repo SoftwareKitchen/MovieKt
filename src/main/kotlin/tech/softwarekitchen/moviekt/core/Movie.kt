@@ -6,13 +6,14 @@ import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.exception.FFMPEGDidntShutdownException
 import tech.softwarekitchen.moviekt.exception.ImageSizeMismatchException
 import tech.softwarekitchen.moviekt.exception.VideoIsClosedException
-import java.awt.image.BufferedImage
+import tech.softwarekitchen.moviekt.mutation.MovieKtMutation
 import java.io.File
 import java.io.OutputStream
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
+private data class ActiveMutation(val node: VideoClip, val uuid: String, val start: Float, val duration: Float)
 
 /**
  * Movie wrapper class
@@ -38,6 +39,7 @@ class Movie(
     private val frameCallbacks = ArrayList<RenderCallback>()
     private val onceCallbacks = ArrayList<OnceCallback>()
     private val animations = ArrayList<MovieKtAnimation<*>>()
+    private val mutations = ArrayList<MovieKtMutation>()
     private fun log(){
         while(videoFramesWritten < numVideoFrames){
             if(this::videoStart.isInitialized) {
@@ -175,6 +177,11 @@ class Movie(
         var mappedAnimations = animations.associateWith{
             videoRoot.findById(it.nodeId)
         }
+        var waitingMutations = mutations.associateWith {
+            videoRoot.findById(it.node).first()
+        }.toMutableMap()
+        val activeMutations = ArrayList<ActiveMutation>()
+
 
         val renderBuffer = RenderBuffer(videoRoot)
 
@@ -185,6 +192,36 @@ class Movie(
             toExecute.forEach{it.action()}
             onceCallbacks.removeAll(toExecute)
 
+
+            //Add new
+            val toStart = waitingMutations.filter{t >= it.key.start}
+            val registered = toStart.map{
+                val key = it.value.prepareMutation(it.key)
+                ActiveMutation(it.value, key, it.key.start, it.key.duration)
+            }
+            activeMutations.addAll(registered)
+            toStart.forEach{
+                waitingMutations.remove(it.key)
+            }
+
+            //Remove expired
+            val expired = activeMutations.filter{t > it.start + it.duration}
+            activeMutations.removeAll(expired)
+
+            expired.forEach{
+                it.node.removeMutation(it.uuid)
+            }
+
+            //Run active
+            activeMutations.forEach{
+                val kf = (t - it.start) / it.duration
+                it.node.applyKeyframe(it.uuid, kf)
+            }
+
+
+            activeMutations.removeAll(expired)
+
+
             mappedAnimations.forEach{
                 animData ->
                 if(animData.key.isApplicable(t)){
@@ -194,6 +231,8 @@ class Movie(
                     }
                 }
             }
+
+
 
             mappedAnimations = mappedAnimations.filterKeys {
                 !it.isFinished(t)
@@ -275,5 +314,9 @@ class Movie(
 
     fun addAnimation(anim: MovieKtAnimation<*>){
         animations.add(anim)
+    }
+
+    fun addMutation(mut: MovieKtMutation){
+        mutations.add(mut)
     }
 }

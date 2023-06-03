@@ -4,14 +4,12 @@ import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.image.svg.SVGVideoClip
 import tech.softwarekitchen.moviekt.clips.video.image.svg.SVGVideoClipConfiguration
-import tech.softwarekitchen.moviekt.core.Movie
-import java.awt.BasicStroke
+import tech.softwarekitchen.moviekt.mutation.MovieKtMutation
 import java.awt.Color
-import java.awt.geom.GeneralPath
 import java.awt.image.BufferedImage
-import java.awt.image.BufferedImage.TYPE_INT_ARGB
 import java.io.File
-import javax.imageio.ImageIO
+import java.util.*
+import kotlin.math.roundToInt
 
 private enum class ChessPieceType(val v: String){
     King("K"), Queen("Q"), Bishop("B"), Knight("N"), Rook("R"), Pawn("P")
@@ -21,11 +19,21 @@ private enum class ChessPieceColor(val c: String){
     Black("b"), White("w")
 }
 
-private class ChessPiece(desc: String, imgSize: Vector2i) {
+private fun Char.parseRow(): Int{
+    return digitToInt() - 1
+}
+private fun Char.parseCol(): Int{
+    return code - 'a'.code
+}
+
+private class ChessPiece(desc: String, private val imgSize: Vector2i) {
     val type: ChessPieceType
     val color: ChessPieceColor
-    val col: Int
-    val row: Int
+    var col: Int
+    var row: Int
+    private var currentMutation: String? = null
+    private var sourceRow: Int? = null
+    private var sourceCol: Int? = null
 
     val piece: SVGVideoClip
 
@@ -49,8 +57,8 @@ private class ChessPiece(desc: String, imgSize: Vector2i) {
             else -> throw Exception()
         }
 
-        row = desc[desc.length-1].digitToInt() - 1
-        col = desc[desc.length-2].code - 'a'.code
+        row = desc[desc.length-1].parseRow()
+        col = desc[desc.length-2].parseCol()
 
         val xPos = imgSize.x * col / 8
         val yPos = imgSize.y * (7 - row) / 8
@@ -64,6 +72,50 @@ private class ChessPiece(desc: String, imgSize: Vector2i) {
         )
     }
 
+    fun moveTo(col: Int, row: Int): String{
+        val uuid = UUID.randomUUID().toString()
+        currentMutation = uuid
+        sourceRow = this.row
+        sourceCol = this.col
+        this.row = row
+        this.col = col
+
+        return uuid
+    }
+
+    fun setKeyframe(keyframe: String, v: Float){
+        currentMutation?.let{
+            if(it == keyframe){
+                val src = Vector2i(
+                    imgSize.x * sourceCol!! / 8,
+                    imgSize.y * (7 - sourceRow!!) / 8
+                )
+                val tgt = Vector2i(
+                    imgSize.x * col / 8,
+                    imgSize.y * (7 - row) / 8
+                )
+                val pos = Vector2i(
+                    (src.x * (1f - v) + tgt.x * v).roundToInt(),
+                    (src.y * (1f - v) + tgt.y * v).roundToInt()
+                )
+                piece.set(VideoClip.PropertyKey_Position, pos)
+            }
+        }
+    }
+
+    fun removeMutation(kf: String){
+        if(currentMutation == kf){
+            currentMutation = null
+            sourceRow = null
+            sourceCol = null
+        }
+        val pos = Vector2i(
+            imgSize.x * col / 8,
+            imgSize.y * (7 - row) / 8
+        )
+        piece.set(VideoClip.PropertyKey_Position, pos)
+
+    }
 }
 
 data class ChessBoardVideoClipConfiguration(
@@ -83,7 +135,6 @@ class ChessBoardVideoClip(
     init{
         val strParts = configuration.position.split(" ").map{it.trim()}.filter{ it.isNotBlank() }
         pieces = strParts.map{
-            println(it)
             ChessPiece(it, size)
         }.toMutableList()
 
@@ -108,5 +159,49 @@ class ChessBoardVideoClip(
                 }
             }
         }
+    }
+
+    override fun prepareMutation(mutation: MovieKtMutation): String {
+        return when(mutation.type){
+            "Move" -> prepareMoveMutation(mutation)
+            else -> throw Exception()
+        }
+    }
+
+    private fun prepareMoveMutation(mutation: MovieKtMutation): String{
+        val chessMove = mutation.base["move"] as String
+
+        val figureType = when(chessMove[0]){
+            'K' -> ChessPieceType.King
+            'Q' -> ChessPieceType.Queen
+            'B' -> ChessPieceType.Bishop
+            'N' -> ChessPieceType.Knight
+            'R' -> ChessPieceType.Rook
+            else -> ChessPieceType.Pawn
+        }
+
+        val rest = when(figureType){
+            ChessPieceType.Pawn -> chessMove
+            else -> chessMove.substring(1, chessMove.length)
+        }
+
+        //Identify target
+        val targetRow = rest[4].parseRow()
+        val targetCol = rest[3].parseCol()
+
+        //Identify source
+        val sourceCol = rest[0].parseCol()
+        val sourceRow = rest[1].parseRow()
+        val piece = pieces.first{it.type == figureType && it.col == sourceCol && it.row == sourceRow}
+
+        return piece.moveTo(targetCol, targetRow)
+    }
+
+    override fun removeMutation(id: String) {
+        pieces.forEach{it.removeMutation(id)}
+    }
+
+    override fun applyKeyframe(mutation: String, value: Float) {
+        pieces.forEach { it.setKeyframe(mutation, value) }
     }
 }

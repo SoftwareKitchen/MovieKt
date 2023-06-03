@@ -133,9 +133,19 @@ private class LayerBuffer(
             return
         }
 
+        val previousPosition = position
         val p = clip.getPosition()
         if(!p.equals(position)){
-            //TODO
+            position = p
+            val deltaToPrevious = previousPosition.plus(p.invert())
+            for(x in 0 until cache.width){
+                for(y in 0 until cache.height){
+                    val shifted = Vector2i(x,y).plus(deltaToPrevious)
+                    if(shifted.x < 0 || shifted.y < 0 || shifted.x >= cache.width || shifted.y >= cache.height){
+                        onChange(shifted.x + position.x, shifted.y + position.y, this.depth)
+                    }
+                }
+            }
         }
         val s = clip.getSize()
         if(s.x != cache.width || s.y != cache.height){
@@ -146,7 +156,7 @@ private class LayerBuffer(
         if(clip.isVisible()){
             clip.renderContent(img)
         }
-        val fullRepaintRequired = clip.hasOpacityChanged()
+        val fullRepaintRequired = clip.hasOpacityChanged() || !p.equals(previousPosition)
         clip.clearRepaintFlags()
         cache = img
 
