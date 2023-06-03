@@ -52,6 +52,7 @@ fun SVGPath.draw(g: Graphics2D, coordinateMapper: CoordinateMapper, scaler: Scal
     var lastOp: SVGOperation? = null
     var lastOrigin: Point2D? = null
     operations.forEach {
+        val origin = path?.currentPoint
         when (it.type) {
             SVGOperationType.Move -> {
                 val (mx, my) = coordinateMapper((it as SVGMoveOperation).target.first, it.target.second)
@@ -283,7 +284,11 @@ fun SVGPath.draw(g: Graphics2D, coordinateMapper: CoordinateMapper, scaler: Scal
                         Vector2(2*origin.x - b2Last.x, 2 * origin.y - b2Last.y)
                     }
                     lastOp!! is SVGCubicBezierOperation -> {
-                        TODO()
+                        val b1ProtoRaw = (lastOp!! as SVGCubicBezierOperation).b2
+                        val b1Proto = coordinateMapper(b1ProtoRaw.first, b1ProtoRaw.second)
+                        val b2Last = Vector2(b1Proto.first, b1Proto.second)
+
+                        Vector2(2*origin.x - b2Last.x, 2 * origin.y - b2Last.y)
                     }
                     else -> {
                         Vector2(origin.x, origin.y)
@@ -302,7 +307,7 @@ fun SVGPath.draw(g: Graphics2D, coordinateMapper: CoordinateMapper, scaler: Scal
             }
         }
         lastOp = it
-        lastOrigin = path?.currentPoint
+        lastOrigin = origin
     }
 
     path?.let {p ->

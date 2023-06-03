@@ -82,7 +82,10 @@ class ChessBoardVideoClip(
     private val pieces: MutableList<ChessPiece>
     init{
         val strParts = configuration.position.split(" ").map{it.trim()}.filter{ it.isNotBlank() }
-        pieces = strParts.map{ChessPiece(it, size)}.toMutableList()
+        pieces = strParts.map{
+            println(it)
+            ChessPiece(it, size)
+        }.toMutableList()
 
         pieces.forEach{
             addChild(it.piece)
@@ -106,22 +109,4 @@ class ChessBoardVideoClip(
             }
         }
     }
-}
-
-fun main(){
-    /*val cb = ChessBoardVideoClip(
-        "_",
-        Vector2i(800,800),
-        Vector2i(0,0),
-        true,
-        ChessBoardVideoClipConfiguration()
-    )
-    val vid = Movie("Foo",5,25,cb)
-    vid.write()*/
-
-    val img = BufferedImage(100,100,TYPE_INT_ARGB)
-    val piece = ChessPiece("bQa8",Vector2i(800,800))
-    piece.piece.renderContent(img)
-    ImageIO.write(img,"png", File("foo.png"))
-
 }

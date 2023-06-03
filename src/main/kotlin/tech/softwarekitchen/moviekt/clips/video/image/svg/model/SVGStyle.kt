@@ -19,12 +19,10 @@ data class SVGStyle(val type: SVGStyleType, val value: String)
 fun Element.parseSVGStyles(): List<SVGStyle>{
     val styleString = attributes.getNamedItem("style")?.textContent
 
-    styleString ?: return listOf()
     val styles = ArrayList<SVGStyle>()
 
-    styleString.let{
-            styleString ->
-        val statements = styleString.split(";").map(String::trim).filter{!it.isBlank()}
+    styleString?.let{
+        val statements = it.split(";").map(String::trim).filter{!it.isBlank()}
         statements.forEach{
                 stmt ->
             val parts = stmt.split(":").map(String::trim).filter{!it.isBlank()}
@@ -38,6 +36,18 @@ fun Element.parseSVGStyles(): List<SVGStyle>{
             }
         }
     }
+
+    attributes.getNamedItem("fill")?.textContent?.let{
+        styles.add(SVGStyle(SVGStyleType.Fill, it))
+    }
+    attributes.getNamedItem("stroke")?.textContent?.let{
+        styles.add(SVGStyle(SVGStyleType.Stroke, it))
+    }
+    attributes.getNamedItem("stroke-width")?.textContent?.let{
+        styles.add(SVGStyle(SVGStyleType.StrokeWidth, it))
+    }
+
+
 
     return styles
 }
