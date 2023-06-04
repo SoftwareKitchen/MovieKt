@@ -6,7 +6,7 @@
 
     <groupId>tech.software-kitchen</groupId>
     <artifactId>MovieKt</artifactId>
-    <version>0.5.0</version>
+    <version>0.6.0-dev</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

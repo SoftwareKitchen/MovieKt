@@ -3,6 +3,9 @@ package tech.softwarekitchen.moviekt.clips.video
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.mutation.MovieKtMutation
 import java.awt.image.BufferedImage
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.math.roundToInt
 
 abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, visible: Boolean){
     companion object{
@@ -12,6 +15,9 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
         val PropertyKey_Size = "Size"
         val PropertyKey_Visible = "Visible"
     }
+    protected class ActiveMutation(val onTick: (Float) -> Unit, val onClose: () -> Unit)
+    private class MoveMutation(val source: Vector2i, val target: Vector2i, val id: String)
+
     class VideoClipProperty<T>(val name: String, initialValue: T, private val onChange: () -> Unit, private val converter: (Any) -> T = {it as T}){
         private var value: T = initialValue
         val v: T
@@ -40,6 +46,7 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
         sizeProperty,
         visibleProperty
     )
+
 
     protected fun registerProperty(vararg property: VideoClipProperty<*>){
         property.forEach{
@@ -112,10 +119,54 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
         properties.first{it.name == id}.set(value)
     }
 
-    open fun prepareMutation(mutation: MovieKtMutation): String{
-        throw Exception()
+    private val mutations = HashMap<String, (MovieKtMutation) -> Pair<String, ActiveMutation>>()
+    private val activeMutations = HashMap<String, ActiveMutation>()
+
+    protected fun registerMutation(name: String, callback: (MovieKtMutation) -> Pair<String, ActiveMutation>){
+        mutations[name] = callback
     }
 
-    open fun applyKeyframe(mutation: String, value: Float){}
-    open fun removeMutation(id: String){}
+    protected fun registerActiveMutation(id: String, callbacks: ActiveMutation){
+        activeMutations[id] = callbacks
+    }
+
+    fun prepareMutation(mutation: MovieKtMutation): String{
+        return when(mutation.type){
+            "move" -> {
+                val targetBase = mutation.base["target"] as Map<String, Any>
+                val targetX = targetBase["x"] as Int
+                val targetY = targetBase["y"] as Int
+                val id = UUID.randomUUID().toString()
+
+                val src = getPosition()
+                registerActiveMutation(
+                    id,
+                    ActiveMutation(
+                        {
+                            val loc = Vector2i((src.x * (1f - it) + targetX * it).roundToInt(), (src.y * (1f - it) + targetY * it).roundToInt())
+                            set(PropertyKey_Position, loc)
+                        },
+                        {
+                            set(PropertyKey_Position, Vector2i(targetX, targetY))
+                        }
+                    )
+                )
+                id
+            }
+            else -> {
+                val cb = mutations[mutation.type] ?: throw Exception()
+                val res = cb(mutation)
+                activeMutations[res.first] = res.second
+                res.first
+            }
+        }
+    }
+
+    fun applyKeyframe(mutation: String, value: Float){
+        activeMutations[mutation]!!.onTick(value)
+    }
+    fun removeMutation(id: String){
+        activeMutations[id]!!.onClose()
+        activeMutations.remove(id)
+    }
 }

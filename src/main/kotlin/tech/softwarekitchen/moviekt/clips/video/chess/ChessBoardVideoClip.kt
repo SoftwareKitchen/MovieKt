@@ -41,6 +41,7 @@ private class ChessPiece(desc: String, private val imgSize: Vector2i) {
     val piece: SVGVideoClip
 
     init{
+
         color = when(desc[0]){
             'b' -> ChessPieceColor.Black
             'w' -> ChessPieceColor.White
@@ -136,6 +137,8 @@ class ChessBoardVideoClip(
 
     private val pieces: MutableList<ChessPiece>
     init{
+        registerMutation("chess_move",this::prepareMoveMutation)
+
         val strParts = configuration.position.split(" ").map{it.trim()}.filter{ it.isNotBlank() }
         pieces = strParts.map{
             ChessPiece(it, size)
@@ -164,14 +167,7 @@ class ChessBoardVideoClip(
         }
     }
 
-    override fun prepareMutation(mutation: MovieKtMutation): String {
-        return when(mutation.type){
-            "Move" -> prepareMoveMutation(mutation)
-            else -> throw Exception()
-        }
-    }
-
-    private fun prepareMoveMutation(mutation: MovieKtMutation): String{
+    private fun prepareMoveMutation(mutation: MovieKtMutation): Pair<String, ActiveMutation>{
         val chessMove = mutation.base["move"] as String
 
         val figureType = when(chessMove[0]){
@@ -197,14 +193,10 @@ class ChessBoardVideoClip(
         val sourceRow = rest[1].parseRow()
         val piece = pieces.first{it.type == figureType && it.col == sourceCol && it.row == sourceRow}
 
-        return piece.moveTo(targetCol, targetRow)
-    }
+        val id = piece.moveTo(targetCol, targetRow)
+        val tickCB: (Float) -> Unit = { piece.setKeyframe(id, it) }
+        val closeCB: () -> Unit = {piece.removeMutation(id)}
 
-    override fun removeMutation(id: String) {
-        pieces.forEach{it.removeMutation(id)}
-    }
-
-    override fun applyKeyframe(mutation: String, value: Float) {
-        pieces.forEach { it.setKeyframe(mutation, value) }
+        return Pair(id, ActiveMutation(tickCB, closeCB))
     }
 }
