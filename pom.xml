@@ -6,7 +6,7 @@
 
     <groupId>tech.software-kitchen</groupId>
     <artifactId>MovieKt</artifactId>
-    <version>0.4.0</version>
+    <version>0.5.0</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -32,7 +32,7 @@
         <dependency>
             <groupId>tech.software-kitchen.common</groupId>
             <artifactId>Common-Vector</artifactId>
-            <version>1.1</version>
+            <version>1.2</version>
         </dependency>
         <dependency>
             <groupId>tech.softwarekitchen.tsr</groupId>
