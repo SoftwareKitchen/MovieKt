@@ -16,7 +16,6 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
         val PropertyKey_Visible = "Visible"
     }
     protected class ActiveMutation(val onTick: (Float) -> Unit, val onClose: () -> Unit)
-    private class MoveMutation(val source: Vector2i, val target: Vector2i, val id: String)
 
     class VideoClipProperty<T>(val name: String, initialValue: T, private val onChange: () -> Unit, private val converter: (Any) -> T = {it as T}){
         private var value: T = initialValue
@@ -145,9 +144,34 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
                         {
                             val loc = Vector2i((src.x * (1f - it) + targetX * it).roundToInt(), (src.y * (1f - it) + targetY * it).roundToInt())
                             set(PropertyKey_Position, loc)
+                            onMove()
                         },
                         {
                             set(PropertyKey_Position, Vector2i(targetX, targetY))
+                            onMove()
+                        }
+                    )
+                )
+                id
+            }
+            "resize" -> {
+                val sizeBase = mutation.base["target"] as Map<String, Any>
+                val targetWidth = sizeBase["width"] as Int
+                val targetHeight = sizeBase["height"] as Int
+                val id = UUID.randomUUID().toString()
+
+                val src = getSize()
+                registerActiveMutation(
+                    id,
+                    ActiveMutation(
+                        {
+                            val size = Vector2i((src.x * (1f - it) + targetWidth * it).roundToInt(), (src.y * (1f - it) + targetHeight * it).roundToInt())
+                            set(PropertyKey_Size, size)
+                            onResize()
+                        },
+                        {
+                            set(PropertyKey_Size, Vector2i(targetWidth, targetHeight))
+                            onResize()
                         }
                     )
                 )
@@ -169,4 +193,7 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
         activeMutations[id]!!.onClose()
         activeMutations.remove(id)
     }
+
+    open fun onResize(){}
+    open fun onMove(){}
 }

@@ -1,5 +1,6 @@
 package tech.softwarekitchen.moviekt.core
 
+import tech.softwarekitchen.common.vector.Rectangle2i
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import java.awt.image.BufferedImage
@@ -10,6 +11,10 @@ import kotlin.math.roundToInt
 private val ZeroAlpha = 0u.toUByte()
 private val FullAlpha = 255u.toUByte()
 
+private fun Vector2i.withSize(size: Vector2i): Rectangle2i{
+    return Rectangle2i(x, y, size.x, size.y)
+}
+
 //TODO Limit buffers to required size only for mem opt
 private class LayerBuffer(
     private val depth: Int,
@@ -18,7 +23,7 @@ private class LayerBuffer(
     private val onChange: (Int, Int, Int) -> Unit
 ){
     @OptIn(ExperimentalUnsignedTypes::class)
-    val buffer = UByteArray(4 * size.x * size.y)
+    var buffer = UByteArray(4 * size.x * size.y)
     private var position: Vector2i = clip.getPosition()
     private var cache: BufferedImage
     private val sublayers: List<LayerBuffer>
@@ -60,7 +65,7 @@ private class LayerBuffer(
         if(innerY < 0 || innerY >= cache.height){
             return null
         }
-        return (y - position.y) * size.x + (x - position.x)
+        return innerY * cache.width + innerX
     }
 
     @OptIn(ExperimentalUnsignedTypes::class)
@@ -68,7 +73,7 @@ private class LayerBuffer(
         if(x < 0 || x >= cache.width || y < 0 || y >= cache.height){
             return
         }
-        val linearIndex = y * size.x + x
+        val linearIndex = y * cache.width + x
         if(depthMap[x][y] < 0 || depth <= depthMap[x][y] ){
             var r: UByte = 0u
             var g: UByte = 0u
@@ -121,7 +126,6 @@ private class LayerBuffer(
         }
     }
 
-    //TODO Alpha change
     fun update(){
         if(!clip.needsRepaint()){
             return
@@ -133,32 +137,42 @@ private class LayerBuffer(
             return
         }
 
-        val previousPosition = position
-        val p = clip.getPosition()
-        if(!p.equals(position)){
-            position = p
-            val deltaToPrevious = previousPosition.plus(p.invert())
-            for(x in 0 until cache.width){
-                for(y in 0 until cache.height){
-                    val shifted = Vector2i(x,y).plus(deltaToPrevious)
-                    if(shifted.x < 0 || shifted.y < 0 || shifted.x >= cache.width || shifted.y >= cache.height){
-                        onChange(shifted.x + position.x, shifted.y + position.y, this.depth)
-                    }
-                }
-            }
-        }
-        val s = clip.getSize()
-        if(s.x != cache.width || s.y != cache.height){
-            //TODO
-        }
         val cacheData = (cache.raster.dataBuffer as DataBufferInt).data
+        val s = clip.getSize()
         val img = BufferedImage(s.x, s.y, TYPE_INT_ARGB)
         if(clip.isVisible()){
             clip.renderContent(img)
         }
-        val fullRepaintRequired = clip.hasOpacityChanged() || !p.equals(previousPosition)
+
+        val previousSize = Vector2i(cache.width, cache.height)
+        val sizeChanged = s.x != cache.width || s.y != cache.height
+        if(sizeChanged){
+            buffer = UByteArray(4 * s.x * s.y)
+        }
+        cache = img //Needs to be set before the calculations, since we need the current size for them
+
+        val previousPosition = position
+        val p = clip.getPosition()
+        position = p
+        val positionChanged = !p.equals(previousPosition)
+
+        if(positionChanged || sizeChanged){
+            //Old - New = Overhead that needs to be cleared
+            val oldRectangle = previousPosition.withSize(previousSize)
+            val newRectangle = p.withSize(s)
+
+            val toClear = oldRectangle.sub(newRectangle)
+            toClear.forEach{
+                for(x in 0 until it.width){
+                    for(y in 0 until it.height){
+                        onChange(it.x0 + x, it.y0 + y, this.depth)
+                    }
+                }
+            }
+        }
+
+        val fullRepaintRequired = clip.hasOpacityChanged() || positionChanged || sizeChanged
         clip.clearRepaintFlags()
-        cache = img
 
         if(fullRepaintRequired){
             for(x in 0 until img.width){

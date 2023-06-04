@@ -2,6 +2,8 @@ package tech.softwarekitchen.moviekt.clips.video.chess
 
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
+import tech.softwarekitchen.moviekt.clips.video.VideoClip.Companion.PropertyKey_Position
+import tech.softwarekitchen.moviekt.clips.video.VideoClip.Companion.PropertyKey_Size
 import tech.softwarekitchen.moviekt.clips.video.image.svg.SVGVideoClip
 import tech.softwarekitchen.moviekt.clips.video.image.svg.SVGVideoClipConfiguration
 import tech.softwarekitchen.moviekt.clips.video.image.svg.model.SVGImage
@@ -29,7 +31,7 @@ private fun Char.parseCol(): Int{
     return code - 'a'.code
 }
 
-private class ChessPiece(desc: String, private val imgSize: Vector2i) {
+private class ChessPiece(desc: String, private var imgSize: Vector2i) {
     val type: ChessPieceType
     val color: ChessPieceColor
     var col: Int
@@ -74,6 +76,17 @@ private class ChessPiece(desc: String, private val imgSize: Vector2i) {
             true,
             SVGVideoClipConfiguration(svg)
         )
+    }
+
+    fun updateBoardSize(size: Vector2i){
+        imgSize = size
+        val updatedSize = imgSize.scale(0.125)
+        piece.set(PropertyKey_Size, updatedSize)
+        val pos = Vector2i(
+            imgSize.x * col / 8,
+            imgSize.y * (7 - row) / 8
+        )
+        piece.set(PropertyKey_Position, pos)
     }
 
     fun moveTo(col: Int, row: Int): String{
@@ -198,5 +211,11 @@ class ChessBoardVideoClip(
         val closeCB: () -> Unit = {piece.removeMutation(id)}
 
         return Pair(id, ActiveMutation(tickCB, closeCB))
+    }
+
+    override fun onResize() {
+        pieces.forEach{
+            it.updateBoardSize(getSize())
+        }
     }
 }
