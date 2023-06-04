@@ -14,6 +14,7 @@ import java.awt.image.BufferedImage.TYPE_INT_ARGB
 import java.io.File
 import java.util.*
 import javax.imageio.ImageIO
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 private enum class ChessPieceType(val v: String){
@@ -81,7 +82,8 @@ private class ChessPiece(desc: String, private var imgSize: Vector2i) {
     fun updateBoardSize(size: Vector2i){
         imgSize = size
         val updatedSize = imgSize.scale(0.125)
-        piece.set(PropertyKey_Size, updatedSize)
+        val zeroPrevent = Vector2i(max(1, updatedSize.x), max(1, updatedSize.y))
+        piece.set(PropertyKey_Size, zeroPrevent)
         val pos = Vector2i(
             imgSize.x * col / 8,
             imgSize.y * (7 - row) / 8
