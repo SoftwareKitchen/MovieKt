@@ -10,30 +10,36 @@ import javax.xml.parsers.DocumentBuilderFactory
 interface SVGItem
 
 fun Element.svgIterate(): List<SVGItem>{
-    val result = ArrayList<SVGItem>()
+    val result = ArrayList<SVGItem?>()
     (0 until childNodes.length).map{
         val node = childNodes.item(it)
         if(node is Element){
             result.add(when(node.tagName){
                 "g" -> SVGGroup(node)
-                "path" -> SVGPath(node)
+                "path" -> SVGPath.fromXMLNode(node)
                 "circle" -> SVGCircle(node)
+                "defs" -> SVGGroup(node)    //Fixme?
+                "rect" -> null              //TODO
+                "clipPath" -> null          //TODO
                 else -> throw Exception()
             })
         }
     }
-    return result
+    return result.filterNotNull()
 }
 
 class SVGImage(file: File) {
     val basePos: Pair<Int, Int>
     val canvasSize: Pair<Int, Int>
     val data: List<SVGItem>
+    val styles: List<SVGStyle>
 
     init {
         val builder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
         val xmlDoc = builder.parse(file.inputStream())
         val svgElem = xmlDoc.documentElement
+
+        styles = svgElem.parseSVGStyles()
 
         val viewBox = svgElem.attributes.getNamedItem("viewBox")
         if (viewBox != null) {

@@ -11,8 +11,12 @@ fun parseFillColor(color: String): Color?{
     return parseColor(color)
 }
 
+fun Color.toInt(): Int{
+    return 256*256*256 * alpha + 256*256 * red + 256 * green + blue
+}
+
 enum class SVGStyleType{
-    Fill, Stroke, StrokeWidth
+    Fill, Stroke, StrokeWidth, FillRule
 }
 data class SVGStyle(val type: SVGStyleType, val value: String)
 
@@ -30,6 +34,7 @@ fun Element.parseSVGStyles(): List<SVGStyle>{
                 "fill" -> styles.add(SVGStyle(SVGStyleType.Fill, parts[1]))
                 "stroke" -> styles.add(SVGStyle(SVGStyleType.Stroke, parts[1]))
                 "stroke-width" -> styles.add(SVGStyle(SVGStyleType.StrokeWidth, parts[1]))
+                "fill-rule" -> styles.add(SVGStyle(SVGStyleType.FillRule, parts[1]))
                 else -> {
                     println("Warning: Ignoring SVG style key '$key'")
                 }
@@ -45,6 +50,9 @@ fun Element.parseSVGStyles(): List<SVGStyle>{
     }
     attributes.getNamedItem("stroke-width")?.textContent?.let{
         styles.add(SVGStyle(SVGStyleType.StrokeWidth, it))
+    }
+    attributes.getNamedItem("fill-rule")?.textContent?.let{
+        styles.add(SVGStyle(SVGStyleType.FillRule, it))
     }
 
 

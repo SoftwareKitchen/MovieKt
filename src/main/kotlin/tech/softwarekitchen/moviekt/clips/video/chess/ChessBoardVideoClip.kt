@@ -4,11 +4,14 @@ import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.image.svg.SVGVideoClip
 import tech.softwarekitchen.moviekt.clips.video.image.svg.SVGVideoClipConfiguration
+import tech.softwarekitchen.moviekt.clips.video.image.svg.model.SVGImage
 import tech.softwarekitchen.moviekt.mutation.MovieKtMutation
 import java.awt.Color
 import java.awt.image.BufferedImage
+import java.awt.image.BufferedImage.TYPE_INT_ARGB
 import java.io.File
 import java.util.*
+import javax.imageio.ImageIO
 import kotlin.math.roundToInt
 
 private enum class ChessPieceType(val v: String){
