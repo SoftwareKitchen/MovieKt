@@ -1,8 +1,8 @@
-package tech.softwarekitchen.moviekt.clips.code
+package tech.softwarekitchen.moviekt.clips.video.code
 
 import tech.softwarekitchen.common.vector.Vector2i
-import tech.softwarekitchen.moviekt.clips.code.parser.KotlinParser
-import tech.softwarekitchen.moviekt.clips.code.parser.YMLParser
+import tech.softwarekitchen.moviekt.clips.video.code.parser.KotlinParser
+import tech.softwarekitchen.moviekt.clips.video.code.parser.YMLParser
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.text.getTextSize
 import tech.softwarekitchen.moviekt.util.DoubleRange
@@ -72,7 +72,7 @@ class CodeVideoClip(
             PropertyKey_Anchor,
             configuration.anchor,
             this::markDirty,
-            converter = {CodeVideoClipAnchor.valueOf(it as String)}
+            converter = { CodeVideoClipAnchor.valueOf(it as String)}
         )
     private val fontProperty =
         VideoClipProperty(
@@ -115,7 +115,7 @@ class CodeVideoClip(
         registerProperty(offsetProperty, highlight, anchorProperty, sourceProperty, fontProperty)
     }
 
-    private fun loadCode(): Code{
+    private fun loadCode(): Code {
         val code = File(sourceProperty.v).readText()
         return formatters[configuration.format]!!.prettify(code)
     }

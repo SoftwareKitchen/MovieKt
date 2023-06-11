@@ -1,6 +1,6 @@
-package tech.softwarekitchen.moviekt.clips.code.parser
+package tech.softwarekitchen.moviekt.clips.video.code.parser
 
-import tech.softwarekitchen.moviekt.clips.code.*
+import tech.softwarekitchen.moviekt.clips.video.code.*
 
 class YMLParser: CodePrettifier {
     override fun prettify(code: String): Code {
@@ -26,7 +26,7 @@ class YMLParser: CodePrettifier {
             }
             val rest = it.trim()
             val rest2 = if(rest.startsWith("-")){
-                lineElements.add(TextCodeSnippet("- ",CodeSnippetType.Normal))
+                lineElements.add(TextCodeSnippet("- ", CodeSnippetType.Normal))
                 rest.substring(1, rest.length).trim()
             }else{
                 rest
@@ -34,7 +34,7 @@ class YMLParser: CodePrettifier {
 
             if(rest2.contains(":")){
                 val parts = rest2.split(":")
-                lineElements.add(TextCodeSnippet(parts[0],CodeSnippetType.Keyword))
+                lineElements.add(TextCodeSnippet(parts[0], CodeSnippetType.Keyword))
                 lineElements.add(TextCodeSnippet(": ${parts[1]}", CodeSnippetType.Normal))
             }else{
                 lineElements.add(TextCodeSnippet(rest2, CodeSnippetType.Normal))

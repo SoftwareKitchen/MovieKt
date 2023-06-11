@@ -66,7 +66,7 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
         children.add(child)
 
         addChildListeners.forEach{
-            it(child)m ,mn
+            it(child)
         }
     }
 

@@ -4,8 +4,8 @@ import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.VideoClip.Companion.PropertyKey_Position
 import tech.softwarekitchen.moviekt.clips.video.VideoClip.Companion.PropertyKey_Size
-import tech.softwarekitchen.moviekt.clips.video.image.svg.SVGVideoClip
-import tech.softwarekitchen.moviekt.clips.video.image.svg.SVGVideoClipConfiguration
+import tech.softwarekitchen.moviekt.clips.video.image.SVGVideoClip
+import tech.softwarekitchen.moviekt.clips.video.image.SVGVideoClipConfiguration
 import tech.softwarekitchen.moviekt.mutation.MovieKtMutation
 import java.awt.Color
 import java.awt.image.BufferedImage

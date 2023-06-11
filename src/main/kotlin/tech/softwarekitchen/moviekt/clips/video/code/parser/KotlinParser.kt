@@ -1,6 +1,6 @@
-package tech.softwarekitchen.moviekt.clips.code.parser
+package tech.softwarekitchen.moviekt.clips.video.code.parser
 
-import tech.softwarekitchen.moviekt.clips.code.*
+import tech.softwarekitchen.moviekt.clips.video.code.*
 
 private abstract class KotlinParserStage(
     val type: CodeSnippetType,
@@ -19,7 +19,7 @@ private abstract class KotlinParserStage(
             val raw = text.substring(lastEnd, r.first)
             if(raw.isNotEmpty()){
                 when(next){
-                    null -> result.add(TextCodeSnippet(raw,CodeSnippetType.Normal ))
+                    null -> result.add(TextCodeSnippet(raw, CodeSnippetType.Normal ))
                     else -> result.addAll(next.parse(raw))
                 }
             }

@@ -54,6 +54,11 @@
             <artifactId>jackson-dataformat-xml</artifactId>
             <version>2.15.0</version>
         </dependency>
+        <dependency>
+            <groupId>tech.software-kitchen</groupId>
+            <artifactId>kSVG</artifactId>
+            <version>0.1.0</version>
+        </dependency>
     </dependencies>
 
     <build>
