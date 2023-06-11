@@ -46,7 +46,6 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
         visibleProperty
     )
 
-
     protected fun registerProperty(vararg property: VideoClipProperty<*>){
         property.forEach{
             properties.add(it)
@@ -59,8 +58,27 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
 
     abstract fun renderContent(img: BufferedImage)
 
+    private val addChildListeners = ArrayList<(VideoClip) -> Unit>()
+    fun addAddChildListeners(listener: (VideoClip) -> Unit){
+        addChildListeners.add(listener)
+    }
     fun addChild(child: VideoClip){
         children.add(child)
+
+        addChildListeners.forEach{
+            it(child)m ,mn
+        }
+    }
+
+    private val removeChildListeners = ArrayList<(VideoClip) -> Unit>()
+    fun addRemoveChildListener(listener: (VideoClip) -> Unit){
+        removeChildListeners.add(listener)
+    }
+    fun removeChild(child: VideoClip){
+        children.remove(child)
+        removeChildListeners.forEach{
+            it(child)
+        }
     }
 
     fun getChildren(): List<VideoClip>{

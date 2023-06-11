@@ -6,14 +6,11 @@ import tech.softwarekitchen.moviekt.clips.video.VideoClip.Companion.PropertyKey_
 import tech.softwarekitchen.moviekt.clips.video.VideoClip.Companion.PropertyKey_Size
 import tech.softwarekitchen.moviekt.clips.video.image.svg.SVGVideoClip
 import tech.softwarekitchen.moviekt.clips.video.image.svg.SVGVideoClipConfiguration
-import tech.softwarekitchen.moviekt.clips.video.image.svg.model.SVGImage
 import tech.softwarekitchen.moviekt.mutation.MovieKtMutation
 import java.awt.Color
 import java.awt.image.BufferedImage
-import java.awt.image.BufferedImage.TYPE_INT_ARGB
 import java.io.File
 import java.util.*
-import javax.imageio.ImageIO
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -150,18 +147,39 @@ class ChessBoardVideoClip(
     id, size, position, visible
 ) {
 
-    private val pieces: MutableList<ChessPiece>
+    companion object{
+        val PropertyKey_BoardState = "State"
+    }
+
+    private val pieces = ArrayList<ChessPiece>()
+    private val boardStateProperty = VideoClipProperty(PropertyKey_BoardState,configuration.position,this::updateBoardState)
     init{
         registerMutation("chess_move",this::prepareMoveMutation)
+        registerProperty(boardStateProperty)
 
-        val strParts = configuration.position.split(" ").map{it.trim()}.filter{ it.isNotBlank() }
-        pieces = strParts.map{
-            ChessPiece(it, size)
+        updateBoardState()
+    }
+
+    private fun updateBoardState(){
+        pieces.forEach{
+            removeChild(it.piece)
+        }
+
+        pieces.clear()
+
+        val boardDesc = boardStateProperty.v
+
+        val strParts = boardDesc.split(" ").map{it.trim()}.filter{ it.isNotBlank() }
+        val updatedPieces = strParts.map{
+            ChessPiece(it, getSize())
         }.toMutableList()
 
-        pieces.forEach{
+        updatedPieces.forEach{
             addChild(it.piece)
         }
+        this.pieces.addAll(updatedPieces)
+
+        markDirty()
     }
 
     override fun renderContent(img: BufferedImage) {

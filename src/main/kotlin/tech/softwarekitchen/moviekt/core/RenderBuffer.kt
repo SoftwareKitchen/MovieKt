@@ -6,7 +6,6 @@ import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_ARGB
 import java.awt.image.DataBufferInt
-import kotlin.math.roundToInt
 
 private val ZeroAlpha = 0u.toUByte()
 private val FullAlpha = 255u.toUByte()
@@ -17,7 +16,7 @@ private fun Vector2i.withSize(size: Vector2i): Rectangle2i{
 
 //TODO Limit buffers to required size only for mem opt
 private class LayerBuffer(
-    private val depth: Int,
+    private var depth: Int,
     private val size: Vector2i,
     private val clip: VideoClip,
     private val onChange: (Int, Int, Int) -> Unit
@@ -26,10 +25,12 @@ private class LayerBuffer(
     var buffer = UByteArray(4 * size.x * size.y)
     private var position: Vector2i = clip.getPosition()
     private var cache: BufferedImage
-    private val sublayers: List<LayerBuffer>
+    private val sublayers: MutableList<LayerBuffer>
     private val depthMap = Array(size.x){Array(size.y){-1} }
 
     init{
+        clip.addRemoveChildListener(this::removeSublayer)
+        clip.addAddChildListeners(this::addSublayer)
         val clipSize = clip.getSize()
         cache = BufferedImage(clipSize.x, clipSize.y, TYPE_INT_ARGB)
         if(clip.isVisible()){
@@ -44,7 +45,51 @@ private class LayerBuffer(
                 child,
                 this::onPixelChange
             )
+        }.toMutableList()
+    }
+
+    private fun removeSublayer(childClip: VideoClip){
+        val sublayer = sublayers.first{it.clip == childClip}
+        val sublayerDepth = sublayers.indexOf(sublayer)
+        val pixelsToRemove = ArrayList<Pair<Int, Int>>()
+        sublayers.remove(sublayer)
+        for(i in sublayerDepth until sublayers.size){
+            sublayers[i].updateDepth(i)
         }
+        for(x in 0 until size.x){
+            for(y in 0 until size.y){
+                if(depthMap[x][y] == sublayerDepth){
+                    pixelsToRemove.add(Pair(x,y))
+                    depthMap[x][y] = -1
+                    onPixelChange(x,y,0)
+                }
+                if(depthMap[x][y] > sublayerDepth){
+                    depthMap[x][y] = depthMap[x][y] - 1
+                }
+            }
+        }
+    }
+
+    private fun addSublayer(childClip: VideoClip){
+        for(x in 0 until size.x){
+            for(y in 0 until size.y){
+                if(depthMap[x][y] >= sublayers.size){
+                    depthMap[x][y] = depthMap[x][y] + 1
+                }
+            }
+        }
+        val sublayer = LayerBuffer(
+            sublayers.size,
+            size,
+            childClip,
+            this::onPixelChange
+        )
+        sublayers.add(sublayer)
+        sublayer.init()
+    }
+
+    private fun updateDepth(depth: Int){
+        this.depth = depth
     }
 
     fun init(){
