@@ -21,7 +21,21 @@ class SVGVideoClip(
 ): VideoClip(
     id, size, position, visible
 ) {
-    private val content: SVGImage = SVGImage(configuration.file)
+    companion object{
+        val PropertyKey_File = "file"
+    }
+
+    private var content: SVGImage = SVGImage(configuration.file)
+    private val fileProperty = VideoClipProperty(PropertyKey_File,configuration.file,this::loadImage,{File(it as String)})
+
+    init{
+        registerProperty(fileProperty)
+    }
+
+    private fun loadImage(){
+        content = SVGImage(fileProperty.v)
+        markDirty()
+    }
 
     override fun renderContent(img: BufferedImage) {
         content.draw(img)

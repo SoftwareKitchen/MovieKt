@@ -1,13 +1,14 @@
 package tech.softwarekitchen.moviekt.clips.video
 
 import tech.softwarekitchen.common.vector.Vector2i
+import tech.softwarekitchen.moviekt.exception.UnknownPropertyException
 import tech.softwarekitchen.moviekt.mutation.MovieKtMutation
 import java.awt.image.BufferedImage
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.roundToInt
 
-abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, visible: Boolean){
+abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, visible: Boolean, private val volatile: Boolean = false){
     companion object{
         val PropertyKey_Offset = "Offset"
         val PropertyKey_Opacity = "Opacity"
@@ -117,7 +118,7 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
     }
 
     fun needsRepaint(): Boolean{
-        return cacheDirty || pseudoDirty || opacityChanged || children.any{it.needsRepaint()}
+        return cacheDirty || pseudoDirty || opacityChanged || children.any{it.needsRepaint()} || volatile
     }
     fun clearRepaintFlags(){
         cacheDirty = false
@@ -133,7 +134,8 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
     }
 
     fun set(id: String, value: Any){
-        properties.first{it.name == id}.set(value)
+        val prop = properties.firstOrNull{it.name == id} ?: throw UnknownPropertyException(id, this.id)
+        prop.set(value)
     }
 
     private val mutations = HashMap<String, (MovieKtMutation) -> Pair<String, ActiveMutation>>()

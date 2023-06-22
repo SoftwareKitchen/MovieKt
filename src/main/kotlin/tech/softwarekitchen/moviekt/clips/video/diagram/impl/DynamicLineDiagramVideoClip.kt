@@ -31,7 +31,7 @@ class DynamicLineDiagramVideoClip(
     visible: Boolean,
     private val dataProvider: () -> List<Double>,
     private val configuration: DynamicLineDiagramVideoClipConfiguration = DynamicLineDiagramVideoClipConfiguration()
-): PointBasedDiagramVideoClip(id, size, position, visible, configuration = configuration) {
+): PointBasedDiagramVideoClip(id, size, position, visible, configuration = configuration, volatile = true) {
 
     override fun generateDataDisplay(size: Vector2i): BufferedImage {
         val image = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)

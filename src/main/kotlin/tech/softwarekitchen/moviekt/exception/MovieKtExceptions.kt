@@ -5,3 +5,5 @@ class ImageSizeMismatchException: Exception()
 class FFMPEGDidntShutdownException: Exception()
 class ClipSizeMismatchException: Exception()
 class ChainedClipRequiresVisibilityDurationException: Exception()
+class UnknownPropertyException(property: String, id: String): Exception("Unknown property $property in node $id")
+

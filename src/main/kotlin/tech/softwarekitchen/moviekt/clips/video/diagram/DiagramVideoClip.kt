@@ -28,8 +28,9 @@ abstract class DiagramVideoClip(
     position: Vector2i,
     visible: Boolean,
     private val yAxis: DiagramAxisConfiguration,
-    private val xAxis: DiagramAxisConfiguration
-): VideoClip(id, size,position, visible) {
+    private val xAxis: DiagramAxisConfiguration,
+    volatile: Boolean = false
+): VideoClip(id, size,position, visible, volatile) {
     abstract fun generateDataDisplay(size: Vector2i): BufferedImage
     data class LegendEntry(val pos: Int, val legend: String)
     abstract fun getYLegendEntries(dataScreenHeight: Int): List<LegendEntry>

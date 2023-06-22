@@ -16,9 +16,10 @@ abstract class XYDiagramVideoClip(
     size: Vector2i,
     position: Vector2i,
     visible: Boolean,
-    private val configuration: XYDiagramConfiguration
+    private val configuration: XYDiagramConfiguration,
+    volatile: Boolean = false
 ): DiagramVideoClip(
-    id, size, position, visible, yAxis = configuration.yAxis, xAxis = configuration.xAxis
+    id, size, position, visible, yAxis = configuration.yAxis, xAxis = configuration.xAxis, volatile
 ) {
     abstract fun getData(): List<Pair<Double,Double>>
 
