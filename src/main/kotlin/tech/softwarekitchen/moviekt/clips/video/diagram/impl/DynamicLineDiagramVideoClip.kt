@@ -29,13 +29,24 @@ class DynamicLineDiagramVideoClip(
     size: Vector2i,
     position: Vector2i,
     visible: Boolean,
-    private val dataProvider: () -> List<Double>,
+    dataProvider: () -> List<Double>,
     private val configuration: DynamicLineDiagramVideoClipConfiguration = DynamicLineDiagramVideoClipConfiguration()
 ): PointBasedDiagramVideoClip(id, size, position, visible, configuration = configuration, volatile = true) {
+    companion object{
+        val PropertyKey_DataProvider = "DataProvider"
+    }
+    private val dataProviderProperty = VideoClipProperty(PropertyKey_DataProvider,dataProvider,this::markDirty)
+    init{
+        registerProperty(dataProviderProperty)
+    }
+
+    fun updateProvider(provider: () -> List<Double>){
+        dataProviderProperty.set(provider)
+    }
 
     override fun generateDataDisplay(size: Vector2i): BufferedImage {
         val image = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)
-        val data = dataProvider()
+        val data = dataProviderProperty.v()
         val (xScale, yScale) = getScreenMapper(size)
 
         val xMapped = data.indices.map{xScale(it.toDouble())}
@@ -70,6 +81,6 @@ class DynamicLineDiagramVideoClip(
     }
 
     override fun getData(): List<Pair<Double, Double>> {
-        return dataProvider().mapIndexed{i,v -> Pair(i.toDouble(),v)}
+        return dataProviderProperty.v().mapIndexed{i,v -> Pair(i.toDouble(),v)}
     }
 }
