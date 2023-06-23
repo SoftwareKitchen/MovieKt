@@ -3,6 +3,7 @@ package tech.softwarekitchen.moviekt.clips.video.diagram
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.diagram.impl.DynamicDiagramBackgroundGrid
 import tech.softwarekitchen.moviekt.clips.video.diagram.impl.DynamicLineDiagramColorConfiguration
+import tech.softwarekitchen.moviekt.exception.InvalidConfigurationException
 
 interface XYDiagramConfiguration{
     val xAxis: DiagramAxisConfiguration
@@ -47,6 +48,9 @@ abstract class XYDiagramVideoClip(
     }
 
     private fun generateLogarithmicBounds(min: Double, max: Double, pixSize: Int, invert: Boolean = false): List<LegendEntry>{
+        if(min <= 0.0 || max <= 0.0){
+            throw InvalidConfigurationException("Invalid logarithmic bounds")
+        }
         val expMin = Math.log10(min)
         val expMax = Math.log10(max)
         val innerExponentLow = Math.ceil(expMin).toInt()
