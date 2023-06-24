@@ -4,6 +4,7 @@ import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import java.awt.Color
 import java.awt.Graphics2D
+import java.awt.geom.AffineTransform
 import java.awt.image.BufferedImage
 
 data class Padding(val left: Int, val right: Int, val top: Int, val bottom: Int)
@@ -19,7 +20,8 @@ data class DiagramAxisConfiguration(
     val min: Double? = null,
     val max: Double? = null,
     val unit: String? = null,
-    val mode: DiagramAxisMode? = DiagramAxisMode.Linear
+    val mode: DiagramAxisMode? = DiagramAxisMode.Linear,
+    val title: String? = null
 )
 
 abstract class DiagramVideoClip(
@@ -41,11 +43,17 @@ abstract class DiagramVideoClip(
             DiagramAxisLegendMode.None -> 0
             DiagramAxisLegendMode.AxisOnly -> 3
             DiagramAxisLegendMode.Full -> 30
+        } + when(xAxis.title){
+            null -> 0
+            else -> 30
         }
         val leftPadding = when(yAxis.legendMode){
             DiagramAxisLegendMode.None -> 0
             DiagramAxisLegendMode.AxisOnly -> 3
             DiagramAxisLegendMode.Full -> 70
+        } + when(yAxis.title){
+            null -> 0
+            else -> 35
         }
         val padding = Padding(leftPadding,0,0,bottomPadding)
 
@@ -61,6 +69,10 @@ abstract class DiagramVideoClip(
     }
 
     private fun drawYAxis(padding: Padding, graphics: Graphics2D, dataDisplaySize: Vector2i, totSize: Vector2i){
+        val yShift = when(yAxis.title){
+            null -> 0
+            else -> 20
+        }
         graphics.color = Color.WHITE
         when(yAxis.legendMode){
             DiagramAxisLegendMode.None -> {}
@@ -72,11 +84,23 @@ abstract class DiagramVideoClip(
 
                 for(item in yAxisEntries){
                     graphics.fillRect(padding.left-7,padding.top + item.pos-2,7,5)
-                    graphics.drawString(item.legend,2,padding.top + item.pos+8)
+                    graphics.drawString(item.legend,yShift+2,padding.top + item.pos+8)
                 }
                 graphics.fillRect(padding.left-4,padding.top,3,dataDisplaySize.y)
             }
         }
+        yAxis.title?.let{
+            graphics.font = graphics.font.deriveFont(18f)
+            val rect = graphics.font.getStringBounds(it, graphics.fontRenderContext)
+            val width = rect.width
+            val centerX = 10
+            val centerY = (totSize.y - padding.bottom) / 2
+            val forRestore = graphics.transform
+            graphics.transform = AffineTransform.getRotateInstance(-Math.PI / 2, centerX.toDouble(), centerY.toDouble())
+            graphics.drawString(it, (centerX - width / 2).toInt(), centerY + 4)
+            graphics.transform = forRestore
+        }
+
     }
 
     private fun drawXAxis(padding: Padding, graphics: Graphics2D, dataDisplaySize: Vector2i, totSize: Vector2i){
@@ -94,6 +118,12 @@ abstract class DiagramVideoClip(
                 }
                 graphics.fillRect(padding.left,totSize.y - padding.bottom,dataDisplaySize.x,3)
             }
+        }
+
+        xAxis.title?.let{
+            graphics.font = graphics.font.deriveFont(18f)
+            val rect = graphics.font.getStringBounds(it, graphics.fontRenderContext)
+            graphics.drawString(it, (padding.left + (totSize.x - padding.left - rect.width) / 2).toInt(), totSize.y - 20 )
         }
     }
 }

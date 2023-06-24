@@ -19,18 +19,7 @@ class TSRVideoClip(
 
     private val sceneProperty = VideoClipProperty(
         PropertyKey_Scene,
-        TSRSceneDescriptor(
-            Scene(listOf()),
-            Camera(
-                Vector3(0.0,0.0,0.0),
-                Vector3(1.0,0.0,0.0),
-                Vector3(0.0,1.0,0.0),
-                45.0,
-                size,
-                Color(0,0,0,0),
-                listOf()
-            )
-        ),
+        scene,
         this::markDirty
     )
 
