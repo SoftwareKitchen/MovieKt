@@ -17,9 +17,10 @@ abstract class BarBasedDiagramVideoClip(
     size: Vector2i,
     position: Vector2i,
     visible: Boolean,
-    private val configuration: XYDiagramConfiguration
+    private val configuration: XYDiagramConfiguration,
+    private val volatile: Boolean = false
 ): XYDiagramVideoClip(
-    id, size, position, visible, configuration
+    id, size, position, visible, configuration, volatile = volatile
 ) {
     protected fun getYScreenMapper(dataScreenSize: Vector2i, addOne: Boolean = false): (Double) -> Int{
         val dataBounds = getDataBounds()
