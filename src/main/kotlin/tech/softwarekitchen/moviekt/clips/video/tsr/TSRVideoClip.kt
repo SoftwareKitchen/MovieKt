@@ -12,7 +12,7 @@ data class TSRSceneDescriptor(val scene: Scene, val camera: Camera)
 
 class TSRVideoClip(
     id: String, size: Vector2i, position: Vector2i, visible: Boolean, private val scene: TSRSceneDescriptor
-): VideoClip(id, size, position, visible) {
+): VideoClip(id, size, position, visible, volatile = true) {
     companion object{
         val PropertyKey_Scene = "Scene"
     }

@@ -26,6 +26,10 @@ abstract class XYDiagramVideoClip(
 
 
     private fun generateLinearBounds(min: Double, max: Double, pixSize: Int, invert: Boolean = false): List<LegendEntry>{
+        if(min == max){
+            return generateLinearBounds(min-1, max+1, pixSize, invert)
+        }
+
         val ceilExponent = Math.ceil(Math.log10(max-min)).toInt()
         val rel = (max - min) / (Math.pow(10.0, ceilExponent.toDouble()))
         val relMax = max / (Math.pow(10.0, ceilExponent.toDouble()))
@@ -120,7 +124,12 @@ abstract class XYDiagramVideoClip(
             -3 -> "p"
             -4 -> "f"
             -5 -> "a"
+            -6 -> "z"
+            -7 -> "y"
+            -8 -> "r"
+
             else -> {
+                println("UNKNOWN PREFIX FOR $prefixCtr")
                 throw Exception()
             }
         }

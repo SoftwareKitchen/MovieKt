@@ -138,7 +138,7 @@ private class LayerBuffer(
                     r = ((r * a) + (_r * (255u - a)) / 255u).toUByte()
                     g = ((g * a) + (_g * (255u - a)) / 255u).toUByte()
                     b = ((b * a) + (_b * (255u - a)) / 255u).toUByte()
-                    a = (a + (255u - a) * (_a / 255u)).toUByte()
+                    a = (a + ((255u - a) * _a) / 255u).toUByte()
                 }
                 if(a == FullAlpha){
                     depthMap[x][y] = index
@@ -157,7 +157,7 @@ private class LayerBuffer(
                     r = ((r * a) + (_r * (255u - a)) / 255u).toUByte()
                     g = ((g * a) + (_g * (255u - a)) / 255u).toUByte()
                     b = ((b * a) + (_b * (255u - a)) / 255u).toUByte()
-                    a = (a + (255u - a) * (_a / 255u)).toUByte()
+                    a = (a + ((255u - a) * _a) / 255u).toUByte()
                 }
                 depthMap[x][y] = sublayers.size
             }

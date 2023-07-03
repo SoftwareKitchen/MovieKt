@@ -108,7 +108,7 @@ abstract class DiagramVideoClip(
         when(xAxis.legendMode){
             DiagramAxisLegendMode.None -> {}
             DiagramAxisLegendMode.AxisOnly -> {
-                graphics.fillRect(padding.left,totSize.y - padding.bottom,dataDisplaySize.x-padding.right,totSize.y)
+                graphics.fillRect(padding.left,totSize.y - padding.bottom,dataDisplaySize.x-padding.right,3)
             }
             DiagramAxisLegendMode.Full -> {
                 val xAxisEntries = getXLegendEntries(dataDisplaySize.x)
@@ -123,7 +123,7 @@ abstract class DiagramVideoClip(
         xAxis.title?.let{
             graphics.font = graphics.font.deriveFont(18f)
             val rect = graphics.font.getStringBounds(it, graphics.fontRenderContext)
-            graphics.drawString(it, (padding.left + (totSize.x - padding.left - rect.width) / 2).toInt(), totSize.y - 20 )
+            graphics.drawString(it, (padding.left + (totSize.x - padding.left - rect.width) / 2).toInt(), totSize.y - 16 )
         }
     }
 }
