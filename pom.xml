@@ -30,14 +30,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>tech.software-kitchen.common</groupId>
-            <artifactId>Common-Vector</artifactId>
-            <version>1.2</version>
-        </dependency>
-        <dependency>
             <groupId>tech.softwarekitchen.tsr</groupId>
             <artifactId>TSR</artifactId>
-            <version>0.1</version>
+            <version>0.2-dev</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>

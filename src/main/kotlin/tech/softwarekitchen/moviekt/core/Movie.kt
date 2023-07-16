@@ -7,6 +7,7 @@ import tech.softwarekitchen.moviekt.exception.FFMPEGDidntShutdownException
 import tech.softwarekitchen.moviekt.exception.ImageSizeMismatchException
 import tech.softwarekitchen.moviekt.exception.VideoIsClosedException
 import tech.softwarekitchen.moviekt.mutation.MovieKtMutation
+import tech.softwarekitchen.moviekt.theme.VideoTheme
 import java.io.File
 import java.io.OutputStream
 import java.time.Duration
@@ -40,6 +41,7 @@ class Movie(
     private val onceCallbacks = ArrayList<OnceCallback>()
     private val animations = ArrayList<MovieKtAnimation<*>>()
     private val mutations = ArrayList<MovieKtMutation>()
+    private var theme: VideoTheme? = null
     private fun log(){
         while(videoFramesWritten < numVideoFrames){
             if(this::videoStart.isInitialized) {
@@ -149,6 +151,11 @@ class Movie(
     fun write(){
         videoStart = LocalDateTime.now()
         Thread(this::log).start()
+
+        //Prepare
+        theme?.let{
+            videoRoot.applyTheme(it)
+        }
 
         val rawVideoName = name+"_temp.mp4"
         val rawAudioName = name+"_temp.m4a"
@@ -318,5 +325,9 @@ class Movie(
 
     fun addMutation(mut: MovieKtMutation){
         mutations.add(mut)
+    }
+
+    fun setTheme(theme: VideoTheme){
+        this.theme = theme
     }
 }

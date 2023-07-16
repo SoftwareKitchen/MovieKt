@@ -2,12 +2,11 @@ package tech.softwarekitchen.moviekt.clips.video.diagram
 
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
+import tech.softwarekitchen.moviekt.util.Padding
 import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.geom.AffineTransform
 import java.awt.image.BufferedImage
-
-data class Padding(val left: Int, val right: Int, val top: Int, val bottom: Int)
 
 enum class DiagramAxisLegendMode{
     None, AxisOnly, Full

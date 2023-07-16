@@ -3,12 +3,13 @@ package tech.softwarekitchen.moviekt.clips.video
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.exception.UnknownPropertyException
 import tech.softwarekitchen.moviekt.mutation.MovieKtMutation
+import tech.softwarekitchen.moviekt.theme.ThemedClip
 import java.awt.image.BufferedImage
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.roundToInt
 
-abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, visible: Boolean, private val volatile: Boolean = false){
+abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, visible: Boolean, private val volatile: Boolean = false): ThemedClip{
     companion object{
         val PropertyKey_Offset = "Offset"
         val PropertyKey_Opacity = "Opacity"
@@ -18,7 +19,7 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
     }
     protected class ActiveMutation(val onTick: (Float) -> Unit, val onClose: () -> Unit)
 
-    class VideoClipProperty<T>(val name: String, initialValue: T, private val onChange: () -> Unit, private val converter: (Any) -> T = {it as T}){
+    protected open class VideoClipProperty<T>(val name: String, initialValue: T, private val onChange: () -> Unit, private val converter: (Any) -> T = {it as T}){
         private var value: T = initialValue
         val v: T
             get(){return value}
@@ -37,7 +38,7 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
     private val offsetProperty = VideoClipProperty(PropertyKey_Offset, Vector2i(0,0), this::markPseudoDirty)
     private val opacityProperty = VideoClipProperty(PropertyKey_Opacity, 1f, this::markOpacityChanged)
     private val positionProperty = VideoClipProperty(PropertyKey_Position, position, this::markPseudoDirty)
-    private val sizeProperty = VideoClipProperty(PropertyKey_Size, size, this::markDirty)
+    private val sizeProperty = VideoClipProperty(PropertyKey_Size, size,{onResize(); markDirty()})
     private val visibleProperty = VideoClipProperty(PropertyKey_Visible, visible, this::markOpacityChanged)
     private val properties: MutableList<VideoClipProperty<*>> = arrayListOf(
         offsetProperty,
@@ -53,8 +54,15 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
         }
     }
 
-    fun getProperty(id: String): VideoClipProperty<*>{
-        return properties.first{it.name == id}
+    protected class VideoClipThemeProperty<T>(name: String, onChange: () -> Unit, converter: (Any) -> T = {it as T}): VideoClipProperty<T?>(name, null, onChange, converter){
+
+    }
+    protected fun registerThemedProperty(vararg tProperties: VideoClipThemeProperty<*>){
+        tProperties.forEach(properties::add)
+    }
+
+    override fun getEmptyThemeProperties(): List<String>{
+        return properties.filter{it is VideoClipThemeProperty<*>}.filter{it.v == null}.map{it.name}
     }
 
     abstract fun renderContent(img: BufferedImage)
@@ -63,7 +71,7 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
     fun addAddChildListeners(listener: (VideoClip) -> Unit){
         addChildListeners.add(listener)
     }
-    fun addChild(child: VideoClip){
+    open fun addChild(child: VideoClip){
         children.add(child)
 
         addChildListeners.forEach{
@@ -75,14 +83,14 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
     fun addRemoveChildListener(listener: (VideoClip) -> Unit){
         removeChildListeners.add(listener)
     }
-    fun removeChild(child: VideoClip){
+    open fun removeChild(child: VideoClip){
         children.remove(child)
         removeChildListeners.forEach{
             it(child)
         }
     }
 
-    fun getChildren(): List<VideoClip>{
+    override fun getChildren(): List<VideoClip>{
         return children
     }
 
@@ -133,8 +141,8 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
         }
     }
 
-    fun set(id: String, value: Any){
-        val prop = properties.firstOrNull{it.name == id} ?: throw UnknownPropertyException(id, this.id)
+    override fun set(key: String, value: Any){
+        val prop = properties.firstOrNull{it.name == key} ?: throw UnknownPropertyException(key, this.id)
         prop.set(value)
     }
 
