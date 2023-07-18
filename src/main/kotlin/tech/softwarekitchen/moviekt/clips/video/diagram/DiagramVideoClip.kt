@@ -76,7 +76,7 @@ abstract class DiagramVideoClip(
         when(yAxis.legendMode){
             DiagramAxisLegendMode.None -> {}
             DiagramAxisLegendMode.AxisOnly -> {
-                graphics.fillRect(0,padding.top,padding.left,dataDisplaySize.y)
+                graphics.fillRect(padding.left-4,padding.top,3,dataDisplaySize.y)
             }
             DiagramAxisLegendMode.Full -> {
                 val yAxisEntries = getYLegendEntries(dataDisplaySize.y)

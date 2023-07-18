@@ -3,6 +3,7 @@ package tech.softwarekitchen.moviekt.core
 import tech.softwarekitchen.common.vector.Rectangle2i
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
+import tech.softwarekitchen.moviekt.util.Pixel
 import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_ARGB
 import java.awt.image.DataBufferInt
@@ -115,7 +116,7 @@ private class LayerBuffer(
 
     @OptIn(ExperimentalUnsignedTypes::class)
     fun onPixelChange(x: Int, y: Int, depth: Int){
-        if(x < 0 || x >= cache.width || y < 0 || y >= cache.height){
+        if(x < 0 || x >= cache.width || y < 0 || y >= cache.height || x >= size.x || y >= size.y){
             return
         }
         val linearIndex = y * cache.width + x
@@ -135,10 +136,10 @@ private class LayerBuffer(
                     val _r = sublayers[index].buffer[4*sublayerIndex+1]
                     val _g = sublayers[index].buffer[4*sublayerIndex+2]
                     val _b = sublayers[index].buffer[4*sublayerIndex+3]
-                    r = ((r * a) + (_r * (255u - a)) / 255u).toUByte()
-                    g = ((g * a) + (_g * (255u - a)) / 255u).toUByte()
-                    b = ((b * a) + (_b * (255u - a)) / 255u).toUByte()
-                    a = (a + ((255u - a) * _a) / 255u).toUByte()
+                    r = (((r * a) + (_r * (255u - a))) / 255u).toUByte()
+                    g = (((g * a) + (_g * (255u - a))) / 255u).toUByte()
+                    b = (((b * a) + (_b * (255u - a))) / 255u).toUByte()
+                    a = ((a + ((255u - a) * _a)) / 255u).toUByte()
                 }
                 if(a == FullAlpha){
                     depthMap[x][y] = index
@@ -154,18 +155,21 @@ private class LayerBuffer(
                     val _r = ownPixel.shr(16) % 256u
                     val _g = ownPixel.shr(8) % 256u
                     val _b = ownPixel % 256u
-                    r = ((r * a) + (_r * (255u - a)) / 255u).toUByte()
-                    g = ((g * a) + (_g * (255u - a)) / 255u).toUByte()
-                    b = ((b * a) + (_b * (255u - a)) / 255u).toUByte()
-                    a = (a + ((255u - a) * _a) / 255u).toUByte()
+                    r = (((r * a) + (_r * (255u - a))) / 255u).toUByte()
+                    g = (((g * a) + (_g * (255u - a))) / 255u).toUByte()
+                    b = (((b * a) + (_b * (255u - a))) / 255u).toUByte()
+                    a = ((a + ((255u - a) * _a)) / 255u).toUByte()
                 }
                 depthMap[x][y] = sublayers.size
             }
 
-            buffer[4 * linearIndex] = a
-            buffer[4 * linearIndex + 1] = r
-            buffer[4 * linearIndex + 2] = g
-            buffer[4 * linearIndex + 3] = b
+            val pixel = Pixel(a,r,g,b)
+            val filtered = clip.runThroughFilter(x, y, cache.width, cache.height,pixel)
+
+            buffer[4 * linearIndex] = filtered.a
+            buffer[4 * linearIndex + 1] = filtered.r
+            buffer[4 * linearIndex + 2] = filtered.g
+            buffer[4 * linearIndex + 3] = filtered.b
 
             onChange(x+position.x,y+position.y,this.depth)
         }

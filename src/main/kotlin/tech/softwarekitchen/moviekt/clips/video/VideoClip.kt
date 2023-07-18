@@ -2,8 +2,11 @@ package tech.softwarekitchen.moviekt.clips.video
 
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.exception.UnknownPropertyException
+import tech.softwarekitchen.moviekt.filter.VideoClipFilter
+import tech.softwarekitchen.moviekt.filter.VideoClipFilterChain
 import tech.softwarekitchen.moviekt.mutation.MovieKtMutation
 import tech.softwarekitchen.moviekt.theme.ThemedClip
+import tech.softwarekitchen.moviekt.util.Pixel
 import java.awt.image.BufferedImage
 import java.util.*
 import kotlin.collections.ArrayList
@@ -224,4 +227,13 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
 
     open fun onResize(){}
     open fun onMove(){}
+
+    private val filterChain = VideoClipFilterChain()
+    fun addFilter(filter: VideoClipFilter){
+        filterChain.addFilter(filter)
+    }
+
+    fun runThroughFilter(x: Int, y: Int, xSize: Int, ySize: Int, pixel: Pixel): Pixel{
+        return filterChain.filter(x, y, xSize, ySize, pixel)
+    }
 }

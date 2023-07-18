@@ -10,12 +10,22 @@ class DataTableVideoClipConfiguration(
 
 class DataTableVideoClip(
     id: String, size: Vector2i,position: Vector2i, visible: Boolean,
-    private val data: Array<Array<String>>,
+    data: Array<Array<String>>,
     private val configuration: DataTableVideoClipConfiguration = DataTableVideoClipConfiguration()
 ): VideoClip(id, size, position, visible) {
+    companion object{
+        val PropertyKey_Data = "Data"
+    }
+
+    private val dataProperty = VideoClipProperty(PropertyKey_Data, data,this::markDirty)
+
+    init{
+        registerProperty(dataProperty)
+    }
 
     override fun renderContent(img: BufferedImage) {
         val curSize = Vector2i(img.width, img.height)
+        val data = dataProperty.v
 
         val numRows = data.size
         val numColumns = data.maxOf{it.size}
