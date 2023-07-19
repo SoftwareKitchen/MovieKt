@@ -5,6 +5,7 @@ import tech.softwarekitchen.moviekt.clips.audio.AudioContainerClip
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.exception.FFMPEGDidntShutdownException
 import tech.softwarekitchen.moviekt.exception.ImageSizeMismatchException
+import tech.softwarekitchen.moviekt.exception.NodeNotFoundException
 import tech.softwarekitchen.moviekt.exception.VideoIsClosedException
 import tech.softwarekitchen.moviekt.mutation.MovieKtMutation
 import tech.softwarekitchen.moviekt.theme.VideoTheme
@@ -185,7 +186,7 @@ class Movie(
             videoRoot.findById(it.nodeId)
         }
         var waitingMutations = mutations.associateWith {
-            videoRoot.findById(it.node).first()
+            videoRoot.findById(it.node).firstOrNull() ?: throw NodeNotFoundException(it.node)
         }.toMutableMap()
         val activeMutations = ArrayList<ActiveMutation>()
 

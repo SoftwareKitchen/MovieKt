@@ -163,6 +163,10 @@ private class LayerBuffer(
                 depthMap[x][y] = sublayers.size
             }
 
+            if(clip.getOpacity() < 1f){
+                a = (a.toInt() * clip.getOpacity()).toUInt().toUByte()
+            }
+
             val pixel = Pixel(a,r,g,b)
             val filtered = clip.runThroughFilter(x, y, cache.width, cache.height,pixel)
 

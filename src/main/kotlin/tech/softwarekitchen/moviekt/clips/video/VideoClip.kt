@@ -9,7 +9,6 @@ import tech.softwarekitchen.moviekt.theme.ThemedClip
 import tech.softwarekitchen.moviekt.util.Pixel
 import java.awt.image.BufferedImage
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.math.roundToInt
 
 abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, visible: Boolean, private val volatile: Boolean = false): ThemedClip{
@@ -235,5 +234,9 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
 
     fun runThroughFilter(x: Int, y: Int, xSize: Int, ySize: Int, pixel: Pixel): Pixel{
         return filterChain.filter(x, y, xSize, ySize, pixel)
+    }
+
+    fun getOpacity(): Float{
+        return opacityProperty.v
     }
 }

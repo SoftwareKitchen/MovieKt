@@ -3,16 +3,8 @@ package tech.softwarekitchen.moviekt.layout.impl
 import tech.softwarekitchen.common.vector.Vector2
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.common.vector.Vector3
-import tech.softwarekitchen.moviekt.animation.continous.LinearAnimation
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
-import tech.softwarekitchen.moviekt.clips.video.basic.ContainerVideoClip
-import tech.softwarekitchen.moviekt.clips.video.basic.SingleColorVideoClip
-import tech.softwarekitchen.moviekt.clips.video.image.StaticImageMode
-import tech.softwarekitchen.moviekt.clips.video.image.StaticImageVideoClip
-import tech.softwarekitchen.moviekt.clips.video.image.StaticImageVideoClipConfiguration
-import tech.softwarekitchen.moviekt.core.Movie
 import tech.softwarekitchen.moviekt.layout.Layout
-import tech.softwarekitchen.moviekt.layout.layout
 import tech.softwarekitchen.tsr.camera.Camera
 import tech.softwarekitchen.tsr.color.Color
 import tech.softwarekitchen.tsr.light.AmbientLight
@@ -20,7 +12,6 @@ import tech.softwarekitchen.tsr.`object`.TextureSection
 import tech.softwarekitchen.tsr.`object`.TexturedTriangle
 import tech.softwarekitchen.tsr.scene.Scene
 import java.awt.image.BufferedImage
-import java.io.File
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
