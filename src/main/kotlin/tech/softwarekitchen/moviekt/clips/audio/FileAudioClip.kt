@@ -8,6 +8,10 @@ class FileAudioClip(f: File, private val offset: Double = 0.0): AudioClip() {
     private val data: ByteArray
 
     init{
+        if(!f.exists() || f.isDirectory){
+            throw Exception()
+        }
+
         val process = ProcessBuilder(
             "ffmpeg",
             "-i",
