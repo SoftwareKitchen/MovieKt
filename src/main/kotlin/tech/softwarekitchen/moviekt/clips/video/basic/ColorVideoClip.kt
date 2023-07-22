@@ -2,6 +2,7 @@ package tech.softwarekitchen.moviekt.clips.video.basic
 
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
+import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
 import java.awt.Color
 import java.awt.image.BufferedImage
 
@@ -20,7 +21,7 @@ open class ColorVideoClip(id: String, size: Vector2i, position: Vector2i, visibl
     private val propertyBorderWidth = VideoClipProperty(PropertyKey_BorderWidth, configuration.borderWidth,this::markDirty)
     private val propertyBorderRadius = VideoClipProperty(PropertyKey_BorderRadius, configuration.borderRadius,this::markDirty)
 
-    override fun renderContent(img: BufferedImage) {
+    override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val bc = propertyBorderColor.v
         val bw = propertyBorderWidth.v
         val br = propertyBorderRadius.v

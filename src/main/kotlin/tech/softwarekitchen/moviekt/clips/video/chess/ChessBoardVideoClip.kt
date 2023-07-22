@@ -4,6 +4,7 @@ import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.VideoClip.Companion.PropertyKey_Position
 import tech.softwarekitchen.moviekt.clips.video.VideoClip.Companion.PropertyKey_Size
+import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
 import tech.softwarekitchen.moviekt.clips.video.image.SVGVideoClip
 import tech.softwarekitchen.moviekt.clips.video.image.SVGVideoClipConfiguration
 import tech.softwarekitchen.moviekt.mutation.MovieKtMutation
@@ -182,7 +183,7 @@ class ChessBoardVideoClip(
         markDirty()
     }
 
-    override fun renderContent(img: BufferedImage) {
+    override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val xBounds = (0..8).map{img.width * it / 8}
         val yBounds = (0..8).map{img.height * it / 8}
 

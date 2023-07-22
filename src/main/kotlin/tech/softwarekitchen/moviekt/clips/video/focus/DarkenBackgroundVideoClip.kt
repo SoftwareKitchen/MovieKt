@@ -2,6 +2,7 @@ package tech.softwarekitchen.moviekt.clips.video.focus
 
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
+import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
 import java.awt.Color
 import java.awt.image.BufferedImage
 
@@ -15,7 +16,7 @@ data class DarkenBackgroundVideoClipConfiguration(
 class DarkenBackgroundVideoClip(
     id: String, size: Vector2i, position: Vector2i, visible: Boolean, private val configuration: DarkenBackgroundVideoClipConfiguration
 ): VideoClip(id, size, position, visible) {
-    override fun renderContent(img: BufferedImage) {
+    override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val currentSize = Vector2i(img.width, img.height)
 
         val graphics = img.createGraphics()

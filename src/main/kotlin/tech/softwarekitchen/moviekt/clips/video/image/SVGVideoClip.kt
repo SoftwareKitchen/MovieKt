@@ -4,6 +4,7 @@ import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.ksvg.svg.SVGImage
 import tech.softwarekitchen.ksvg.svg.draw.draw
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
+import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
 import java.awt.image.BufferedImage
 import java.io.File
 
@@ -37,7 +38,7 @@ class SVGVideoClip(
         markDirty()
     }
 
-    override fun renderContent(img: BufferedImage) {
+    override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         content.draw(img)
     }
 }

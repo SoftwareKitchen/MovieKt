@@ -2,6 +2,7 @@ package tech.softwarekitchen.moviekt.clips.video.shape
 
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
+import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.Shape
@@ -15,7 +16,7 @@ class Dynamic2DSceneVideoClip(
     visible: Boolean,
     private val shapeProvider: List<ShapePaintConfiguration>,
 ) : VideoClip(id, size, position, visible){
-    override fun renderContent(img: BufferedImage) {
+    override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val graphics = img.createGraphics()
         shapeProvider.forEach{
             shape ->

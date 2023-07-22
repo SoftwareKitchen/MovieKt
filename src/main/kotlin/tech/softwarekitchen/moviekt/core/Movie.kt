@@ -3,6 +3,7 @@ package tech.softwarekitchen.moviekt.core
 import tech.softwarekitchen.moviekt.animation.MovieKtAnimation
 import tech.softwarekitchen.moviekt.clips.audio.AudioContainerClip
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
+import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
 import tech.softwarekitchen.moviekt.exception.FFMPEGDidntShutdownException
 import tech.softwarekitchen.moviekt.exception.ImageSizeMismatchException
 import tech.softwarekitchen.moviekt.exception.NodeNotFoundException
@@ -248,7 +249,7 @@ class Movie(
 
             frameCallbacks.forEach{it.execute(RenderCallbackTiming.Pre, videoFramesWritten, numVideoFrames, t)}
 
-            renderBuffer.update()
+            renderBuffer.update(VideoTimestamp(t.toDouble(), videoFramesWritten, numVideoFrames))
             writeFrame(videoOutputStream, renderBuffer.resultBuffer)
 
             frameCallbacks.forEach{it.execute(RenderCallbackTiming.Post, videoFramesWritten, numVideoFrames, t)}

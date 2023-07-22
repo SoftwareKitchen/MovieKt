@@ -4,6 +4,7 @@ import tech.softwarekitchen.common.vector.Vector2
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.common.vector.Vector3
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
+import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
 import tech.softwarekitchen.moviekt.layout.Layout
 import tech.softwarekitchen.tsr.camera.Camera
 import tech.softwarekitchen.tsr.color.Color
@@ -37,34 +38,34 @@ class TwoSidedBillboardLayout(name: String): Layout(name){
         }
     }
 
-    override fun renderContent(img: BufferedImage) {
+    override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val g = img.createGraphics()
         val bbState = bbStateProperty.v
         if(bbState <= 0.0){
-            g.drawImage(getPrimaryImage(),0,0,null)
+            g.drawImage(getPrimaryImage(t),0,0,null)
             return
         }
         if(bbState >= 1.0){
-            g.drawImage(getSecondaryImage(),0,0,null)
+            g.drawImage(getSecondaryImage(t),0,0,null)
             return
         }
 
-        val img = renderAnimationFrame(getPrimaryImage(), getSecondaryImage(), bbState)
+        val img = renderAnimationFrame(getPrimaryImage(t), getSecondaryImage(t), bbState)
         g.drawImage(img, 0, 0, null)
     }
 
-    private fun getPrimaryImage(): BufferedImage{
+    private fun getPrimaryImage(t: VideoTimestamp): BufferedImage{
         val i0 = BufferedImage(getSize().x, getSize().y, BufferedImage.TYPE_INT_ARGB)
         if(children.isNotEmpty()){
-            children[0].renderContent(i0)
+            children[0].renderContent(i0, t)
         }
         return i0
     }
 
-    private fun getSecondaryImage(): BufferedImage{
+    private fun getSecondaryImage(t: VideoTimestamp): BufferedImage{
         val i0 = BufferedImage(getSize().x, getSize().y, BufferedImage.TYPE_INT_ARGB)
         if(children.size > 1){
-            children[1].renderContent(i0)
+            children[1].renderContent(i0, t)
         }
         return i0
     }

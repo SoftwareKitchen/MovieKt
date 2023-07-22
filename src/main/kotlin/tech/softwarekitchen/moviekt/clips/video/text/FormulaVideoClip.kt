@@ -2,6 +2,7 @@ package tech.softwarekitchen.moviekt.clips.video.text
 
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
+import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
 import java.awt.Graphics2D
 import java.awt.image.BufferedImage
 import kotlin.math.max
@@ -159,7 +160,7 @@ class FormulaVideoClip(
     private val formula: FormulaElement,
     private val configuration: StaticFormulaVideoClipConfiguration = StaticFormulaVideoClipConfiguration()
 ): VideoClip(id, size, position, visible) {
-    override fun renderContent(img: BufferedImage) {
+    override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val curSize = Vector2i(img.width, img.height)
 
         val graphics = img.createGraphics()

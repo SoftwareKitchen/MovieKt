@@ -1,10 +1,9 @@
 package tech.softwarekitchen.moviekt.clips.video.tsr
 
 import tech.softwarekitchen.common.vector.Vector2i
-import tech.softwarekitchen.common.vector.Vector3
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
+import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
 import tech.softwarekitchen.tsr.camera.Camera
-import tech.softwarekitchen.tsr.color.Color
 import tech.softwarekitchen.tsr.scene.Scene
 import java.awt.image.BufferedImage
 
@@ -31,7 +30,7 @@ class TSRVideoClip(
         sceneProperty.set(scene)
     }
 
-    override fun renderContent(img: BufferedImage) {
+    override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val rendered = sceneProperty.v.camera.render(sceneProperty.v.scene)
         val g = img.createGraphics()
         g.drawImage(rendered,0,0,null)

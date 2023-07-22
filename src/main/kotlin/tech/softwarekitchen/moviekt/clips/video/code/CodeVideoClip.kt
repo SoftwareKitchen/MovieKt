@@ -1,9 +1,10 @@
 package tech.softwarekitchen.moviekt.clips.video.code
 
 import tech.softwarekitchen.common.vector.Vector2i
+import tech.softwarekitchen.moviekt.clips.video.VideoClip
+import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
 import tech.softwarekitchen.moviekt.clips.video.code.parser.KotlinParser
 import tech.softwarekitchen.moviekt.clips.video.code.parser.YMLParser
-import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.text.getTextSize
 import tech.softwarekitchen.moviekt.util.DoubleRange
 import java.awt.Color
@@ -126,7 +127,7 @@ class CodeVideoClip(
         }
     }
 
-    override fun renderContent(img: BufferedImage) {
+    override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val fontSize = 18
         val lineHeight = 22
         val indentWidth = 15

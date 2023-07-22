@@ -2,6 +2,7 @@ package tech.softwarekitchen.moviekt.clips.video.text
 
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
+import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
 import java.awt.Color
 import java.awt.Font
 import java.awt.font.FontRenderContext
@@ -55,7 +56,7 @@ class TextVideoClip (
         return f.deriveFont(configuration.fontSize.toFloat()).getStringBounds(text, FontRenderContext(AffineTransform(), true, true))
     }
 
-    override fun renderContent(img: BufferedImage) {
+    override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val curSize = Vector2i(img.width, img.height)
 
         val graphics = img.createGraphics()

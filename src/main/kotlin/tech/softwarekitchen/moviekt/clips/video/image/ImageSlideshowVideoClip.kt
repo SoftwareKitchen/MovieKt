@@ -2,6 +2,7 @@ package tech.softwarekitchen.moviekt.clips.video.image
 
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
+import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
@@ -23,7 +24,7 @@ class ImageSlideshowVideoClip(
         registerProperty(imageIndexProperty)
     }
 
-    override fun renderContent(img: BufferedImage) {
+    override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val imgIndex = imageIndexProperty.v
 
         if(imgIndex < 0 || imgIndex >= images.size){

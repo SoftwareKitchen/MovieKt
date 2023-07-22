@@ -3,6 +3,7 @@ package tech.softwarekitchen.moviekt.core
 import tech.softwarekitchen.common.vector.Rectangle2i
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
+import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
 import tech.softwarekitchen.moviekt.util.Pixel
 import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_ARGB
@@ -35,7 +36,7 @@ private class LayerBuffer(
         val clipSize = clip.getSize()
         cache = BufferedImage(clipSize.x, clipSize.y, TYPE_INT_ARGB)
         if(clip.isVisible()){
-            clip.renderContent(cache)
+            clip.renderContent(cache, VideoTimestamp(0.0,0,0))
         }
 
         sublayers = clip.getChildren().reversed().mapIndexed{
@@ -179,12 +180,12 @@ private class LayerBuffer(
         }
     }
 
-    fun update(){
+    fun update(t: VideoTimestamp){
         if(!clip.needsRepaint()){
             return
         }
         sublayers.forEach{
-            it.update()
+            it.update(t)
         }
         if(!clip.needsRepaint()){
             return
@@ -194,7 +195,7 @@ private class LayerBuffer(
         val s = clip.getSize()
         val img = BufferedImage(s.x, s.y, TYPE_INT_ARGB)
         if(clip.isVisible()){
-            clip.renderContent(img)
+            clip.renderContent(img, t)
         }
 
         val previousSize = Vector2i(cache.width, cache.height)
@@ -266,7 +267,7 @@ class RenderBuffer(
         resultBuffer[linearIndex * 3+2] = rootLayer.buffer[linearIndex*4+3].toByte()
     }
 
-    fun update(){
-        rootLayer.update()
+    fun update(t: VideoTimestamp){
+        rootLayer.update(t)
     }
 }

@@ -2,6 +2,7 @@ package tech.softwarekitchen.moviekt.clips.video.table
 
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
+import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
 import java.awt.image.BufferedImage
 
 class DataTableVideoClipConfiguration(
@@ -23,7 +24,7 @@ class DataTableVideoClip(
         registerProperty(dataProperty)
     }
 
-    override fun renderContent(img: BufferedImage) {
+    override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val curSize = Vector2i(img.width, img.height)
         val data = dataProperty.v
 

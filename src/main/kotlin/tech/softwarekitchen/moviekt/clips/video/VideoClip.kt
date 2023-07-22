@@ -11,6 +11,8 @@ import java.awt.image.BufferedImage
 import java.util.*
 import kotlin.math.roundToInt
 
+data class VideoTimestamp(val t: Double, val frame: Int, val totFrames: Int)
+
 abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, visible: Boolean, private val volatile: Boolean = false): ThemedClip{
     companion object{
         val PropertyKey_Offset = "Offset"
@@ -67,7 +69,7 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
         return properties.filter{it is VideoClipThemeProperty<*>}.filter{it.v == null}.map{it.name}
     }
 
-    abstract fun renderContent(img: BufferedImage)
+    abstract fun renderContent(img: BufferedImage, t: VideoTimestamp)
 
     private val addChildListeners = ArrayList<(VideoClip) -> Unit>()
     fun addAddChildListeners(listener: (VideoClip) -> Unit){

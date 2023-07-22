@@ -2,6 +2,7 @@ package tech.softwarekitchen.moviekt.clips.video.diagram
 
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
+import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
 import tech.softwarekitchen.moviekt.util.Padding
 import java.awt.Color
 import java.awt.Graphics2D
@@ -37,7 +38,7 @@ abstract class DiagramVideoClip(
     abstract fun getYLegendEntries(dataScreenHeight: Int): List<LegendEntry>
     abstract fun getXLegendEntries(dataScreenWidth: Int): List<LegendEntry>
 
-    override fun renderContent(img: BufferedImage) {
+    override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val bottomPadding = when(xAxis.legendMode){
             DiagramAxisLegendMode.None -> 0
             DiagramAxisLegendMode.AxisOnly -> 3

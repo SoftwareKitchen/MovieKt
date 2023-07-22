@@ -2,6 +2,7 @@ package tech.softwarekitchen.moviekt.clips.video.basic
 
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
+import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
 import java.awt.Color
 import java.awt.image.BufferedImage
 import kotlin.math.min
@@ -17,7 +18,7 @@ class ColorIndicatorVideoClip(
     id, size, position, visible
 ) {
 
-    override fun renderContent(img: BufferedImage) {
+    override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val size = Vector2i(img.width, img.height)
         val a = min(size.x, size.y)
         val padding = Vector2i((size.x - a) / 2, (size.y - a) / 2)

@@ -2,6 +2,7 @@ package tech.softwarekitchen.moviekt.clips.video.ui
 
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
+import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
 import java.awt.Color
 import java.awt.image.BufferedImage
 import kotlin.math.roundToInt
@@ -26,7 +27,7 @@ class ProgressBarVideoClip(
     init{
         registerProperty(progressProperty)
     }
-    override fun renderContent(img: BufferedImage) {
+    override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val graphics = img.createGraphics()
         graphics.color = configuration.color
 

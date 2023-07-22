@@ -2,6 +2,7 @@ package tech.softwarekitchen.moviekt.clips.video.image
 
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
+import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File
@@ -25,7 +26,7 @@ class StaticImageVideoClip(
 ): VideoClip(id, size, position, visible) {
     val toDraw = ImageIO.read(imageFile)
 
-    override fun renderContent(img: BufferedImage) {
+    override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val graphics = img.createGraphics()
         when(configuration.mode){
             StaticImageMode.KeepSize -> graphics.drawImage(toDraw,0,0,null)

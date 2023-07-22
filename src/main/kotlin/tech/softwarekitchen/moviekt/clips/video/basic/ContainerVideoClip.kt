@@ -2,6 +2,7 @@ package tech.softwarekitchen.moviekt.clips.video.basic
 
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
+import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.image.BufferedImage
@@ -24,7 +25,7 @@ open class ContainerVideoClip(
 ): VideoClip(
     id, size, position, visible
 ) {
-    override fun renderContent(img: BufferedImage) {
+    override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         if(configuration.border.width > 0){
             val size = Vector2i(img.width, img.height)
             val graphics = img.createGraphics()

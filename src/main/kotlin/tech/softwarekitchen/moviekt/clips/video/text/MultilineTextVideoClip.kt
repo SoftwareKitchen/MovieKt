@@ -2,6 +2,7 @@ package tech.softwarekitchen.moviekt.clips.video.text
 
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
+import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
 import java.awt.Color
 import java.awt.Font
 import java.awt.geom.Rectangle2D
@@ -32,7 +33,7 @@ class MultilineTextVideoClip(
     private val configuration: MultilineTextVideoClipConfiguration
 ): VideoClip(id, size, position, visible){
 
-    override fun renderContent(img: BufferedImage) {
+    override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val graphics = img.createGraphics()
         val _font = configuration.ttFont?.let{
             Font.createFont(Font.TRUETYPE_FONT, it)
