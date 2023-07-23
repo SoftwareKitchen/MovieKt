@@ -267,7 +267,7 @@ class Movie(
 
         when(audioContainer.numChannels){
             1 -> {
-                ProcessBuilder(
+                val audioProcess = ProcessBuilder(
                     "ffmpeg",
                     "-y",
                     "-f", "u16be",
@@ -281,6 +281,24 @@ class Movie(
                     .redirectError(ProcessBuilder.Redirect.DISCARD)
                     .redirectOutput(ProcessBuilder.Redirect.DISCARD)
                     .start()
+
+                val audioOutputStream = audioProcess.outputStream
+                while(audioFramesWritten < numAudioFrames){
+                    val t = audioFramesWritten / 44100.0
+                    val v = audioContainer.getAt(t)
+                    val ampTranslated = v.map{(32767.0 * it + 1).toInt()}
+
+                    audioOutputStream.write((ampTranslated[0] / 256) % 256)
+                    audioOutputStream.write(ampTranslated[0] % 256)
+                    audioFramesWritten++
+                }
+
+                audioOutputStream.flush()
+                audioOutputStream.close()
+
+                if(!audioProcess.waitFor(5, TimeUnit.SECONDS)){
+                    throw FFMPEGDidntShutdownException()
+                }
             }
             2 -> {
                 val rawLeft = rawAudioName.replace(".m4a", "-left.m4a")
