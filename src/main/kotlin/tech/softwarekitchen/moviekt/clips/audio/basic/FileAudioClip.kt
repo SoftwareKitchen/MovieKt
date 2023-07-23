@@ -1,8 +1,9 @@
-package tech.softwarekitchen.moviekt.clips.audio
+package tech.softwarekitchen.moviekt.clips.audio.basic
 
+import tech.softwarekitchen.moviekt.clips.audio.AudioClip
 import java.io.File
 
-class FileAudioClip(f: File, private val offset: Double = 0.0): AudioClip() {
+class FileAudioClip(f: File, private val offset: Double = 0.0): AudioClip(1) {
     constructor(path: String): this(File(path))
 
     private val data: ByteArray
@@ -27,13 +28,13 @@ class FileAudioClip(f: File, private val offset: Double = 0.0): AudioClip() {
         data = stream.readAllBytes()
     }
 
-    override fun getAt(t: Double): Double {
+    override fun getAt(t: Double): List<Double> {
         val index = 4* ((t + offset) * 44100).toInt()
         if(index < 0 || index > data.size -1){
             throw Exception()
         }
         val s = (data[index].toUByte() * 256u + data[index+1].toUByte()).toInt() - 32768
-        return s.toDouble() / 32768.0
+        return listOf(s.toDouble() / 32768.0)
     }
 
     override fun getLength(): Double {

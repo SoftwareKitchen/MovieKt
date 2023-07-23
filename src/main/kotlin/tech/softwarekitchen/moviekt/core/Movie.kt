@@ -1,7 +1,7 @@
 package tech.softwarekitchen.moviekt.core
 
 import tech.softwarekitchen.moviekt.animation.MovieKtAnimation
-import tech.softwarekitchen.moviekt.clips.audio.AudioContainerClip
+import tech.softwarekitchen.moviekt.clips.audio.basic.AudioContainerClip
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
 import tech.softwarekitchen.moviekt.exception.FFMPEGDidntShutdownException
@@ -37,7 +37,11 @@ class Movie(
     private lateinit var audioStart: LocalDateTime
     private var audioFramesWritten = 0
     private val numAudioFrames = 44100 * length + 1
-    private val audioContainer = AudioContainerClip(length.toDouble())
+    var audioContainer = AudioContainerClip(length.toDouble(), 1)
+        set(value) {
+            println("WARN Audio container was replaced - all previous settings are lost")
+            field = value
+        }
     private var mergeDone = false
     private val frameCallbacks = ArrayList<RenderCallback>()
     private val onceCallbacks = ArrayList<OnceCallback>()
@@ -115,10 +119,6 @@ class Movie(
         }
         target.write(image)
         videoFramesWritten++
-    }
-
-    fun getAudioContainer(): AudioContainerClip{
-        return audioContainer
     }
 
     enum class RenderCallbackTiming{
@@ -263,38 +263,107 @@ class Movie(
         }
 
         audioStart = LocalDateTime.now()
-        val audioProcess = ProcessBuilder(
-            "ffmpeg",
-            "-y",
-            "-f","u16be",
-            "-t","$length",
-            "-i","pipe:0",
-            "-ar","44100",
-            "-c:a","libfdk_aac",
-            "-vbr","5",
-            rawAudioName
-        )
-            .redirectError(ProcessBuilder.Redirect.DISCARD)
-            .redirectOutput(ProcessBuilder.Redirect.DISCARD)
-            .start()
 
-        val audioOutputStream = audioProcess.outputStream
-        while(audioFramesWritten < numAudioFrames){
-            val t = audioFramesWritten / 44100.0
-            val v = audioContainer.getAt(t)
-            val ampTranslated = (32767.0 * (v + 1)).toInt()
 
-            audioOutputStream.write((ampTranslated / 256) % 256)
-            audioOutputStream.write(ampTranslated % 256)
-            audioFramesWritten++
+        when(audioContainer.numChannels){
+            1 -> {
+                ProcessBuilder(
+                    "ffmpeg",
+                    "-y",
+                    "-f", "u16be",
+                    "-t", "$length",
+                    "-i", "pipe:0",
+                    "-ar", "44100",
+                    "-c:a", "libfdk_aac",
+                    "-vbr", "5",
+                    rawAudioName
+                )
+                    .redirectError(ProcessBuilder.Redirect.DISCARD)
+                    .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+                    .start()
+            }
+            2 -> {
+                val rawLeft = rawAudioName.replace(".m4a", "-left.m4a")
+                val rawRight = rawAudioName.replace(".m4a", "-right.m4a")
+                val audioProcessLeft = ProcessBuilder(
+                    "ffmpeg",
+                    "-y",
+                    "-f", "u16be",
+                    "-t", "$length",
+                    "-i", "pipe:0",
+                    "-ar", "44100",
+                    "-c:a", "libfdk_aac",
+                    "-vbr", "5",
+                    rawLeft
+                )
+                    .redirectError(ProcessBuilder.Redirect.DISCARD)
+                    .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+                    .start()
+                val audioProcessRight = ProcessBuilder(
+                    "ffmpeg",
+                    "-y",
+                    "-f", "u16be",
+                    "-t", "$length",
+                    "-i", "pipe:0",
+                    "-ar", "44100",
+                    "-c:a", "libfdk_aac",
+                    "-vbr", "5",
+                    rawRight
+                )
+                    .redirectError(ProcessBuilder.Redirect.DISCARD)
+                    .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+                    .start()
+
+                val audioOutputStreamLeft = audioProcessLeft.outputStream
+                val audioOutputStreamRight = audioProcessRight.outputStream
+                while(audioFramesWritten < numAudioFrames){
+                    val t = audioFramesWritten / 44100.0
+                    val v = audioContainer.getAt(t)
+                    val ampTranslated = v.map{(32767.0 * it + 1).toInt()}
+
+                    audioOutputStreamLeft.write((ampTranslated[0] / 256) % 256)
+                    audioOutputStreamLeft.write(ampTranslated[0] % 256)
+                    audioOutputStreamRight.write((ampTranslated[1] / 256) % 256)
+                    audioOutputStreamRight.write(ampTranslated[1] % 256)
+                    audioFramesWritten++
+                }
+
+                audioOutputStreamLeft.flush()
+                audioOutputStreamLeft.close()
+                audioOutputStreamRight.flush()
+                audioOutputStreamRight.close()
+
+                if(!audioProcessLeft.waitFor(5, TimeUnit.SECONDS)){
+                    throw FFMPEGDidntShutdownException()
+                }
+                if(!audioProcessRight.waitFor(5, TimeUnit.SECONDS)){
+                    throw FFMPEGDidntShutdownException()
+                }
+
+                //Merge audio
+                val audioProcessMerge = ProcessBuilder(
+                    "ffmpeg",
+                    "-y",
+                    "-i", rawLeft,
+                    "-i", rawRight,
+                    "-filter_complex", "[0:a][1:a]join=inputs=2:channel_layout=stereo[a]",
+                    "-map", "[a]",
+                    rawAudioName
+                )
+                    .redirectError(ProcessBuilder.Redirect.DISCARD)
+                    .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+                    .start()
+                if(!audioProcessMerge.waitFor(30, TimeUnit.SECONDS)){
+                    throw FFMPEGDidntShutdownException()
+                }
+                //File(rawLeft).delete()
+                //File(rawRight).delete()
+
+            }
+            else -> throw Exception("Currently only 1 (mono) or 2 (stereo) channels are supported")
         }
 
-        audioOutputStream.flush()
-        audioOutputStream.close()
 
-        if(!audioProcess.waitFor(5, TimeUnit.SECONDS)){
-            throw FFMPEGDidntShutdownException()
-        }
 
 
         val mergeProcess = ProcessBuilder(
