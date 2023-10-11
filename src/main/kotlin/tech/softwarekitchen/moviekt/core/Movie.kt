@@ -286,7 +286,7 @@ class Movie(
                 while(audioFramesWritten < numAudioFrames){
                     val t = audioFramesWritten / 44100.0
                     val v = audioContainer.getAt(t)
-                    val ampTranslated = v.map{(32767.0 * it + 1).toInt()}
+                    val ampTranslated = v.map{(32767.0 * (it + 1)).toInt()}
 
                     audioOutputStream.write((ampTranslated[0] / 256) % 256)
                     audioOutputStream.write(ampTranslated[0] % 256)

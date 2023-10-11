@@ -15,7 +15,7 @@ class AudioContainerClip(private val length: Double, numChannels: Int): AudioCli
     override fun getAt(t: Double): List<Double> {
         val raw = clips
             .filter { t >= it.offset && t < it.offset + it.clip.getLength() }
-            .map{ entry -> entry.clip.getAt(t).map{it * entry.volume} }
+            .map{ entry -> entry.clip.getAt(t - entry.offset).map{it * entry.volume} }
 
         val combined = (0 until numChannels).map{
             cid ->

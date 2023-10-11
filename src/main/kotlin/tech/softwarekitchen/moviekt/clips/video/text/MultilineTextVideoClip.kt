@@ -54,7 +54,9 @@ class MultilineTextVideoClip(
                         if(bounds.width <= img.width){
                             index++
                         }
-                        if(index == 1){ throw Exception() }
+                        if(index == 1){
+                            throw Exception()
+                        }
                         val l = parts.subList(0,index-1).joinToString(" ")
                         parts = parts.subList(index - 1, parts.size)
                         val r2d = font.getStringBounds(l, graphics.fontRenderContext)
