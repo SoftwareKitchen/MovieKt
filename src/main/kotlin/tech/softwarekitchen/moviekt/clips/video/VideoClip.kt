@@ -66,7 +66,7 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
     }
 
     override fun getPossibleThemeProperties(): List<String>{
-        return properties.filter{it is VideoClipThemeProperty<*>}.filter{it.v == null}.map{it.name}
+        return properties.filter{it is VideoClipThemeProperty<*>}.map{it.name}
     }
 
     abstract fun renderContent(img: BufferedImage, t: VideoTimestamp)

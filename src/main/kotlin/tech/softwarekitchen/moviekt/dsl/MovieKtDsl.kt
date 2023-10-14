@@ -71,7 +71,11 @@ fun movie(conf: DslVideoConfiguration.() -> Unit) {
     }
 
     c.theme?.let{
+        logger.info("Applying provided theme")
         rootClip.applyTheme(it)
+    }
+    c.theme ?: run {
+        logger.info("No theme provided")
     }
 
     movie.write()
@@ -110,7 +114,7 @@ fun DslChapterConfiguration.scene(conf: DslSceneConfiguration.() -> Unit){
     scenes.add(c)
 }
 
-data class DslThemeEntry(val key: String, val value: String)
+data class DslThemeEntry(val key: String, val value: Any)
 
 class DslTheme{
     private val items = ArrayList<DslThemeEntry>()
@@ -122,8 +126,8 @@ class DslTheme{
         return items.toList()
     }
 
-    var fontColor: String
-        get() = items.last{it.key == FontColor}.value
+    var fontColor: Color
+        get() = items.last{it.key == FontColor}.value as Color
         set(v){
             items.add(DslThemeEntry(FontColor, v))
         }
