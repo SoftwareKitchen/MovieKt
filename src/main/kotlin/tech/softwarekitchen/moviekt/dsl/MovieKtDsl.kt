@@ -1,5 +1,6 @@
 package tech.softwarekitchen.moviekt.dsl
 
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.animation.once.SetOnceAnimation
@@ -10,8 +11,12 @@ import tech.softwarekitchen.moviekt.clips.video.text.TextAnchor
 import tech.softwarekitchen.moviekt.clips.video.text.TextVideoClip
 import tech.softwarekitchen.moviekt.clips.video.util.FULLHD
 import tech.softwarekitchen.moviekt.core.Movie
+import tech.softwarekitchen.moviekt.layout.impl.CenterLayout
+import tech.softwarekitchen.moviekt.layout.impl.VerticalLayout
+import tech.softwarekitchen.moviekt.layout.impl.VerticalLayoutConfiguration
 import tech.softwarekitchen.moviekt.theme.VideoTheme
 import tech.softwarekitchen.moviekt.theme.VideoTheme.Companion.VTPropertyKey_FontColor
+import tech.softwarekitchen.moviekt.theme.VideoTheme.Companion.VTPropertyKey_FontSize
 import java.awt.Color
 import java.io.File
 import java.util.*
@@ -43,6 +48,8 @@ fun movie(conf: DslVideoConfiguration.() -> Unit) {
         rootClip
     )
 
+    c.theme?.let{movie.setTheme(it)}
+
     var currentOffset = 0
     logger.info("Preparing Video with ${c.chapters.size} chapters")
     c.chapters.forEach{
@@ -70,14 +77,6 @@ fun movie(conf: DslVideoConfiguration.() -> Unit) {
         currentOffset += chapterLength
     }
 
-    c.theme?.let{
-        logger.info("Applying provided theme")
-        rootClip.applyTheme(it)
-    }
-    c.theme ?: run {
-        logger.info("No theme provided")
-    }
-
     movie.write()
 }
 
@@ -92,20 +91,20 @@ fun DslVideoConfiguration.chapter(conf: DslChapterConfiguration.() -> Unit){
     chapters.add(c)
 }
 
-class DslSceneConfiguration(
-    var name: String = "Unnamed scene",
-    var length: Int = 3
-){
+abstract class DslClipContainer{
     private val children = ArrayList<VideoClip>()
-
     fun addClip(clip: VideoClip){
         children.add(clip)
     }
-
     fun getClips(): List<VideoClip>{
         return children.toList()
     }
 }
+
+class DslSceneConfiguration(
+    var name: String = "Unnamed scene",
+    var length: Int = 3
+): DslClipContainer()
 
 fun DslChapterConfiguration.scene(conf: DslSceneConfiguration.() -> Unit){
     val c = DslSceneConfiguration()
@@ -118,18 +117,20 @@ data class DslThemeEntry(val key: String, val value: Any)
 
 class DslTheme{
     private val items = ArrayList<DslThemeEntry>()
-    companion object{
-        val FontColor = VTPropertyKey_FontColor
-    }
 
     fun getItems(): List<DslThemeEntry>{
         return items.toList()
     }
 
     var fontColor: Color
-        get() = items.last{it.key == FontColor}.value as Color
+        get() = items.last{it.key == VTPropertyKey_FontColor}.value as Color
         set(v){
-            items.add(DslThemeEntry(FontColor, v))
+            items.add(DslThemeEntry(VTPropertyKey_FontColor, v))
+        }
+    var fontSize: Int
+        get() = items.last{it.key == VTPropertyKey_FontSize}.value as Int
+        set(v){
+            items.add(DslThemeEntry(VTPropertyKey_FontSize, v))
         }
 }
 
@@ -154,7 +155,7 @@ data class DslTextVideoClipConfiguration(
     var anchor: TextAnchor = TextAnchor.Left
 )
 
-fun DslSceneConfiguration.text(conf: DslTextVideoClipConfiguration.() -> Unit){
+fun DslClipContainer.text(conf: DslTextVideoClipConfiguration.() -> Unit){
     val c = DslTextVideoClipConfiguration()
     c.conf()
     val clip = TextVideoClip(
@@ -171,4 +172,25 @@ fun DslSceneConfiguration.text(conf: DslTextVideoClipConfiguration.() -> Unit){
         )
     )
     addClip(clip)
+}
+
+
+class DslCenterLayoutConfiguration: DslClipContainer()
+
+fun DslClipContainer.centered(conf: DslCenterLayoutConfiguration.() -> Unit){
+    val c = DslCenterLayoutConfiguration()
+    c.conf()
+    val centerLayout = CenterLayout()
+    c.getClips().forEach(centerLayout::addChild)
+    addClip(centerLayout)
+}
+
+class DslVerticalLayoutConfiguration: DslClipContainer()
+
+fun DslClipContainer.vertical(conf: DslVerticalLayoutConfiguration.() -> Unit){
+    val c = DslVerticalLayoutConfiguration()
+    c.conf()
+    val verticalLayout = VerticalLayout()
+    c.getClips().forEach(verticalLayout::addChild)
+    addClip(verticalLayout)
 }

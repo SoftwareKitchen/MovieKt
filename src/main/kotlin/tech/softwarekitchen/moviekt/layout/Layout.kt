@@ -3,6 +3,7 @@ package tech.softwarekitchen.moviekt.layout
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.basic.ContainerVideoClip
+import java.util.ConcurrentModificationException
 
 abstract class Layout(name: String = "layout"): ContainerVideoClip(name,Vector2i(100,100), Vector2i(0,0),true) {
     override fun addChild(child: VideoClip){
@@ -25,7 +26,7 @@ abstract class Layout(name: String = "layout"): ContainerVideoClip(name,Vector2i
         super.onMove()
     }
 
-    protected abstract fun recalculateChildren()
+    abstract fun recalculateChildren()
 
     fun fill(parent: VideoClip){
         set(PropertyKey_Position, Vector2i(0,0))
@@ -37,4 +38,19 @@ abstract class Layout(name: String = "layout"): ContainerVideoClip(name,Vector2i
 
 fun VideoClip.layout(layout: Layout){
     layout.fill(this)
+}
+
+fun VideoClip.initializeLayouts(){
+    if (this is Layout) {
+        this.recalculateChildren()
+        getChildren().forEach(VideoClip::initializeLayouts)
+    } else {
+        getChildren().forEach {
+            if (it is Layout) {
+                it.set(VideoClip.PropertyKey_Position, Vector2i(0, 0))
+                it.set(VideoClip.PropertyKey_Size, this.getSize())
+            }
+            it.initializeLayouts()
+        }
+    }
 }

@@ -27,6 +27,7 @@ interface ThemedClip{
 class VideoTheme {
     companion object{
         val VTPropertyKey_FontColor = "font-color"
+        val VTPropertyKey_FontSize = "font-size"
     }
     private val themeData = HashMap<String, Any>()
 

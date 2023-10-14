@@ -37,12 +37,13 @@ class TextVideoClip (
 
     companion object{
         val PropertyKey_Text = "Text"
-        val PropertyKey_FontColor = VideoTheme.VTPropertyKey_FontColor
     }
     override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     private val textProperty = VideoClipProperty(PropertyKey_Text, configuration.text, this::markDirty)
-    private val fontColorProperty = VideoClipThemeProperty(PropertyKey_FontColor, configuration.color, this::markDirty)
+    private val fontColorProperty = VideoClipThemeProperty(VideoTheme.VTPropertyKey_FontColor, configuration.color, this::markDirty)
+    private val fontSizeProperty = VideoClipThemeProperty(VideoTheme.VTPropertyKey_FontSize, configuration.fontSize, this::markDirty)
+
 
     init{
         font = configuration.ttFont?.let{
@@ -51,6 +52,7 @@ class TextVideoClip (
 
         registerProperty(textProperty)
         registerProperty(fontColorProperty)
+        registerProperty(fontSizeProperty)
     }
 
     fun getTextSize(text: String): Rectangle2D {
@@ -60,14 +62,14 @@ class TextVideoClip (
             graphics.font!!
         }
 
-        return f.deriveFont(configuration.fontSize.toFloat()).getStringBounds(text, FontRenderContext(AffineTransform(), true, true))
+        return f.deriveFont(fontSizeProperty.v.toFloat()).getStringBounds(text, FontRenderContext(AffineTransform(), true, true))
     }
 
     override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val curSize = Vector2i(img.width, img.height)
 
         val graphics = img.createGraphics()
-        val font = (font ?: graphics.font).deriveFont(configuration.fontSize.toFloat())
+        val font = (font ?: graphics.font).deriveFont(fontSizeProperty.v.toFloat())
         val bounds = font.getStringBounds(textProperty.v,graphics.fontRenderContext)
         val topleft = when(configuration.anchor){
             TextAnchor.Center -> curSize.scale(0.5).plus(Vector2i(- bounds.width.toInt() / 2,- bounds.height.toInt() / 2))

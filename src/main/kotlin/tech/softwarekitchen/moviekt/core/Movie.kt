@@ -1,5 +1,6 @@
 package tech.softwarekitchen.moviekt.core
 
+import org.slf4j.LoggerFactory
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.animation.MovieKtAnimation
 import tech.softwarekitchen.moviekt.clips.audio.basic.AudioContainerClip
@@ -11,6 +12,7 @@ import tech.softwarekitchen.moviekt.exception.FFMPEGDidntShutdownException
 import tech.softwarekitchen.moviekt.exception.ImageSizeMismatchException
 import tech.softwarekitchen.moviekt.exception.NodeNotFoundException
 import tech.softwarekitchen.moviekt.exception.VideoIsClosedException
+import tech.softwarekitchen.moviekt.layout.initializeLayouts
 import tech.softwarekitchen.moviekt.mutation.MovieKtMutation
 import tech.softwarekitchen.moviekt.theme.VideoTheme
 import java.io.File
@@ -51,6 +53,7 @@ class Movie(
     private val animations = ArrayList<MovieKtAnimation<*>>()
     private val mutations = ArrayList<MovieKtMutation>()
     private var theme: VideoTheme? = null
+    private val logger = LoggerFactory.getLogger(javaClass)
     private fun log(){
         while(videoFramesWritten < numVideoFrames){
             if(this::videoStart.isInitialized) {
@@ -158,9 +161,17 @@ class Movie(
         Thread(this::log).start()
 
         //Prepare
+        logger.info("Starting video preparations")
         theme?.let{
+            logger.info("Applying theme")
             videoRoot.applyTheme(it)
         }
+        theme ?: run {
+            logger.info("No theme provided")
+        }
+        logger.info("Initializing layouts")
+        videoRoot.initializeLayouts()
+        logger.info("Video preparations completed")
 
         val rawVideoName = name+"_temp.mp4"
         val rawAudioName = name+"_temp.m4a"
