@@ -1,5 +1,7 @@
 package tech.softwarekitchen.moviekt.layout.impl
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.layout.Layout
@@ -15,6 +17,8 @@ class VerticalLayout(private val configuration: VerticalLayoutConfiguration): La
             return layout
         }
     }
+
+    override val logger: Logger = LoggerFactory.getLogger(javaClass)
     override fun recalculateChildren(){
         val children = getChildren()
         val totalSpace = Vector2i(getSize().x - configuration.padding.left - configuration.padding.right, getSize().y - configuration.padding.top - configuration.padding.bottom - (children.size * configuration.spaceBetween))

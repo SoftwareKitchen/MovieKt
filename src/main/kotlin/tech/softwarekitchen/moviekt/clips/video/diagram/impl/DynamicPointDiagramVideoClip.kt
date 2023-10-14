@@ -1,5 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video.diagram.impl
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.diagram.DiagramAxisConfiguration
 import tech.softwarekitchen.moviekt.clips.video.diagram.PointBasedDiagramVideoClip
@@ -31,6 +33,8 @@ class DynamicPointDiagramVideoClip(
     id, size,position, visible,
     configuration = configuration,
 ) {
+    override val logger: Logger = LoggerFactory.getLogger(javaClass)
+
     override fun generateDataDisplay(size: Vector2i): BufferedImage {
         val img = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)
         drawBackgroundGrid(img, size)

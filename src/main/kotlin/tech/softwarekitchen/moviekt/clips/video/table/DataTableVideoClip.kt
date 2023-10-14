@@ -1,5 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video.table
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
@@ -17,6 +19,7 @@ class DataTableVideoClip(
     companion object{
         val PropertyKey_Data = "Data"
     }
+    override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     private val dataProperty = VideoClipProperty(PropertyKey_Data, data,this::markDirty)
 

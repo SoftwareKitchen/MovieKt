@@ -1,5 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video.diagram.impl
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.diagram.DiagramAxisConfiguration
 import tech.softwarekitchen.moviekt.clips.video.diagram.PointBasedDiagramVideoClip
@@ -35,6 +37,8 @@ class DynamicLineDiagramVideoClip(
     companion object{
         val PropertyKey_DataProvider = "DataProvider"
     }
+
+    override val logger: Logger = LoggerFactory.getLogger(javaClass)
     private val dataProviderProperty = VideoClipProperty(PropertyKey_DataProvider,dataProvider,this::markDirty)
     init{
         registerProperty(dataProviderProperty)

@@ -1,5 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video.basic
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
@@ -25,6 +27,7 @@ open class ContainerVideoClip(
 ): VideoClip(
     id, size, position, visible
 ) {
+    override val logger: Logger = LoggerFactory.getLogger(javaClass)
     override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         if(configuration.border.width > 0){
             val size = Vector2i(img.width, img.height)

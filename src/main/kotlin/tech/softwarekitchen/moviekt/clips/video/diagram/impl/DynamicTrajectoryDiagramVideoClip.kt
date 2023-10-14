@@ -1,5 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video.diagram.impl
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.diagram.DiagramAxisConfiguration
 import tech.softwarekitchen.moviekt.clips.video.diagram.XYDiagramConfiguration
@@ -29,6 +31,8 @@ class DynamicTrajectoryDiagramVideoClip(
     companion object{
         val colors = listOf(Color.YELLOW, Color.BLUE)
     }
+
+    override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     override fun getData(): List<Pair<Double, Double>> {
         return providers.map{it()}.flatten()

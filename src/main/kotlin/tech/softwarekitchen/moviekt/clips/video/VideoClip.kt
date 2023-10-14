@@ -58,14 +58,14 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
         }
     }
 
-    protected class VideoClipThemeProperty<T>(name: String, onChange: () -> Unit, converter: (Any) -> T = {it as T}): VideoClipProperty<T?>(name, null, onChange, converter){
+    protected class VideoClipThemeProperty<T>(name: String, initialValue: T, onChange: () -> Unit, converter: (Any) -> T = {it as T}): VideoClipProperty<T?>(name, initialValue, onChange, converter){
 
     }
     protected fun registerThemedProperty(vararg tProperties: VideoClipThemeProperty<*>){
         tProperties.forEach(properties::add)
     }
 
-    override fun getEmptyThemeProperties(): List<String>{
+    override fun getPossibleThemeProperties(): List<String>{
         return properties.filter{it is VideoClipThemeProperty<*>}.filter{it.v == null}.map{it.name}
     }
 

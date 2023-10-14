@@ -1,5 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video.diagram.impl
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.diagram.PointBasedDiagramVideoClip
 import java.awt.BasicStroke
@@ -19,6 +21,7 @@ class DynamicVerticalLineDiagramVideoClip(
         val colors = listOf(Color.YELLOW, Color.BLUE)
         val fillColors = listOf(Color(255,255,0,64), Color(0,0,255,64))
     }
+    override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     override fun generateDataDisplay(size: Vector2i): BufferedImage {
         val image = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)

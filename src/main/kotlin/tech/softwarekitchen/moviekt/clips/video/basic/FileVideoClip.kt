@@ -1,5 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video.basic
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
@@ -8,6 +10,8 @@ import java.io.File
 import kotlin.math.floor
 
 class FileVideoClip(id: String, size: Vector2i, position: Vector2i, private val f: File, private val videoSize: Vector2i, private val offset: Double = 0.0, private val videoOffset: Vector2i = Vector2i(0,0)): VideoClip(id, size, position, true, volatile = true) {
+
+    override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     private var data: ByteArray
     private val bufferLength = 3

@@ -1,5 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video.basic
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
@@ -15,6 +17,7 @@ open class ColorVideoClip(id: String, size: Vector2i, position: Vector2i, visibl
         val PropertyKey_BorderWidth = "BorderWidth"
         val PropertyKey_BorderRadius = "BorderRadius"
     }
+    override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     private val propertyBackground = VideoClipProperty(PropertyKey_Background, configuration.background,this::markDirty)
     private val propertyBorderColor = VideoClipProperty(PropertyKey_BorderColor, configuration.border,this::markDirty)

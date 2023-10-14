@@ -1,5 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video.tsr
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
@@ -15,6 +17,8 @@ class TSRVideoClip(
     companion object{
         val PropertyKey_Scene = "Scene"
     }
+
+    override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     private val sceneProperty = VideoClipProperty(
         PropertyKey_Scene,

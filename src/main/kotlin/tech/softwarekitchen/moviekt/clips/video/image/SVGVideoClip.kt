@@ -1,5 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video.image
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.ksvg.svg.SVGImage
 import tech.softwarekitchen.ksvg.svg.draw.draw
@@ -25,6 +27,7 @@ class SVGVideoClip(
     companion object{
         val PropertyKey_File = "file"
     }
+    override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     private var content: SVGImage = SVGImage(configuration.file)
     private val fileProperty = VideoClipProperty(PropertyKey_File,configuration.file,this::loadImage,{File(it as String)})

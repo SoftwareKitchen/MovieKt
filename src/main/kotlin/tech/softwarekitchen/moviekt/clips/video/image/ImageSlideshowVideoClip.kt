@@ -1,5 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video.image
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
@@ -18,6 +20,7 @@ class ImageSlideshowVideoClip(
         val PropertyKey_ImageIndex = "ImageIndex"
     }
 
+    override val logger: Logger = LoggerFactory.getLogger(javaClass)
     private val images = imageFiles.map{ImageIO.read(it)}
     private val imageIndexProperty = VideoClipProperty(PropertyKey_ImageIndex, 0, this::markDirty)
     init{

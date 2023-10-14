@@ -1,5 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video.ui
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
@@ -22,6 +24,7 @@ class ProgressBarVideoClip(
     companion object{
         val PropertyKey_Progress = "Progress"
     }
+    override val logger: Logger = LoggerFactory.getLogger(javaClass)
     private val progressProperty = VideoClipProperty(PropertyKey_Progress,0.0, this::markDirty)
 
     init{

@@ -1,8 +1,11 @@
 package tech.softwarekitchen.moviekt.clips.video.text
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
+import tech.softwarekitchen.moviekt.theme.VideoTheme
 import java.awt.Color
 import java.awt.Font
 import java.awt.font.FontRenderContext
@@ -34,9 +37,12 @@ class TextVideoClip (
 
     companion object{
         val PropertyKey_Text = "Text"
+        val PropertyKey_FontColor = VideoTheme.VTPropertyKey_FontColor
     }
+    override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     private val textProperty = VideoClipProperty(PropertyKey_Text, configuration.text, this::markDirty)
+    private val fontColorProperty = VideoClipThemeProperty(PropertyKey_FontColor, configuration.color, this::markDirty)
 
     init{
         font = configuration.ttFont?.let{
@@ -44,6 +50,7 @@ class TextVideoClip (
         }
 
         registerProperty(textProperty)
+        registerProperty(fontColorProperty)
     }
 
     fun getTextSize(text: String): Rectangle2D {
@@ -69,7 +76,7 @@ class TextVideoClip (
         val mapped = Vector2i(topleft.x - bounds.x.toInt() / 2, topleft.y - bounds.y.toInt())
 
         graphics.font = font
-        graphics.color = configuration.color
+        graphics.color = fontColorProperty.v
 
         graphics.drawString(textProperty.v,mapped.x, mapped.y)
     }

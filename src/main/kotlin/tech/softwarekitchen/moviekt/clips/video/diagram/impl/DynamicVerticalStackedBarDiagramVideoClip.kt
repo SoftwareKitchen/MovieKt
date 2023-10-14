@@ -1,5 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video.diagram.impl
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.diagram.BarBasedDiagramConfiguration
 import tech.softwarekitchen.moviekt.clips.video.diagram.BarBasedDiagramVideoClip
@@ -20,6 +22,8 @@ class DynamicVerticalStackedBarDiagramVideoClip(
     companion object{
         val PropertyKey_Providers = "Providers"
     }
+
+    override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     private val providerProperty = VideoClipProperty(PropertyKey_Providers, providers,this::markDirty)
     init{

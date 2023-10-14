@@ -1,5 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video.focus
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
@@ -16,6 +18,7 @@ data class DarkenBackgroundVideoClipConfiguration(
 class DarkenBackgroundVideoClip(
     id: String, size: Vector2i, position: Vector2i, visible: Boolean, private val configuration: DarkenBackgroundVideoClipConfiguration
 ): VideoClip(id, size, position, visible) {
+    override val logger: Logger = LoggerFactory.getLogger(javaClass)
     override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val currentSize = Vector2i(img.width, img.height)
 

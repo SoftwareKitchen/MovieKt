@@ -1,19 +1,24 @@
 package tech.softwarekitchen.moviekt.theme
 
+import org.slf4j.Logger
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import java.awt.Color
 
 interface ThemedClip{
-    fun getEmptyThemeProperties(): List<String>
+    val logger: Logger
+    fun getPossibleThemeProperties(): List<String>
     fun set(key: String, value: Any)
     fun getChildren(): List<VideoClip>
 
     fun applyTheme(theme: VideoTheme){
-        val keys = getEmptyThemeProperties()
+        logger.trace("Applying theme to node")
+        val keys = getPossibleThemeProperties()
+        logger.trace("Themable properties: ${keys.size}")
         keys.forEach{
             key ->
-            val data = theme.get(key) ?: throw Exception()
-            set(key, data)
+            theme.get(key)?.let{
+                set(key, it)
+            }
         }
         getChildren().forEach{it.applyTheme(theme)}
     }
@@ -25,9 +30,8 @@ class VideoTheme {
     }
     private val themeData = HashMap<String, Any>()
 
-    fun withFontColor(color: Color): VideoTheme{
-        themeData[VTPropertyKey_FontColor] = color
-        return this
+    fun set(key: String, value: Any){
+        themeData[key] = value
     }
 
     fun get(key: String): Any?{

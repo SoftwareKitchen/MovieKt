@@ -1,5 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video.chess
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.VideoClip.Companion.PropertyKey_Position
@@ -152,6 +154,7 @@ class ChessBoardVideoClip(
         val PropertyKey_BoardState = "State"
     }
 
+    override val logger: Logger = LoggerFactory.getLogger(javaClass)
     private val pieces = ArrayList<ChessPiece>()
     private val boardStateProperty = VideoClipProperty(PropertyKey_BoardState,configuration.position,this::updateBoardState)
     init{

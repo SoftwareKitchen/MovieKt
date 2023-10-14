@@ -1,9 +1,12 @@
 package tech.softwarekitchen.moviekt.core
 
+import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.animation.MovieKtAnimation
 import tech.softwarekitchen.moviekt.clips.audio.basic.AudioContainerClip
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
+import tech.softwarekitchen.moviekt.clips.video.basic.ContainerVideoClip
+import tech.softwarekitchen.moviekt.clips.video.util.FULLHD
 import tech.softwarekitchen.moviekt.exception.FFMPEGDidntShutdownException
 import tech.softwarekitchen.moviekt.exception.ImageSizeMismatchException
 import tech.softwarekitchen.moviekt.exception.NodeNotFoundException

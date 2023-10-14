@@ -1,5 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video.image
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
@@ -25,6 +27,7 @@ class StaticImageVideoClip(
     private val configuration: StaticImageVideoClipConfiguration = StaticImageVideoClipConfiguration(),
 ): VideoClip(id, size, position, visible) {
     val toDraw = ImageIO.read(imageFile)
+    override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val graphics = img.createGraphics()
