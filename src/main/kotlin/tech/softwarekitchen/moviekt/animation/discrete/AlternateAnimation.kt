@@ -1,6 +1,7 @@
 package tech.softwarekitchen.moviekt.animation.discrete
 
 import tech.softwarekitchen.moviekt.animation.MKTTimerangeAnimation
+import tech.softwarekitchen.moviekt.animation.MovieKtAnimation
 import kotlin.math.floor
 
 class AlternateAnimation<T: Any>(
@@ -21,5 +22,9 @@ class AlternateAnimation<T: Any>(
             0 -> v1
             else -> v2
         }
+    }
+
+    override fun shift(t: Float): MovieKtAnimation<T> {
+        return AlternateAnimation<T>(nodeId, property, start + t, duration, frequency, v1, v2)
     }
 }

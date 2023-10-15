@@ -1,12 +1,13 @@
 package tech.softwarekitchen.moviekt.animation.switchanim
 
 import tech.softwarekitchen.moviekt.animation.MKTTimerangeAnimation
+import tech.softwarekitchen.moviekt.animation.MovieKtAnimation
 
 class SetWithResetAnimation(
     nodeId: String,
     property: String,
-    setAt: Float,
-    resetAt: Float
+    private val setAt: Float,
+    private val resetAt: Float
 ): MKTTimerangeAnimation<Boolean>(
     nodeId, property, setAt, resetAt - setAt
 ) {
@@ -16,5 +17,9 @@ class SetWithResetAnimation(
             t < start + duration -> true
             else -> false
         }
+    }
+
+    override fun shift(t: Float): MovieKtAnimation<Boolean> {
+        return SetWithResetAnimation(nodeId,property, setAt + t, resetAt + t)
     }
 }

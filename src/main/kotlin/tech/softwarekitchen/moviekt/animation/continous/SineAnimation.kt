@@ -1,6 +1,7 @@
 package tech.softwarekitchen.moviekt.animation.continous
 
 import tech.softwarekitchen.moviekt.animation.MKTTimerangeAnimation
+import tech.softwarekitchen.moviekt.animation.MovieKtAnimation
 import kotlin.math.PI
 import kotlin.math.sin
 
@@ -19,5 +20,11 @@ class SineAnimation(
         val off = t - start
         val angle = 2 * PI * frequency * off
         return offset + halfAmp * sin(angle)
+    }
+
+    override fun shift(t: Float): MovieKtAnimation<Double> {
+        return SineAnimation(
+            nodeId, property, start + t, duration, offset, halfAmp, frequency
+        )
     }
 }

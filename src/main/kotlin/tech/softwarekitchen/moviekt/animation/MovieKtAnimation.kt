@@ -6,6 +6,7 @@ interface MovieKtAnimation<T: Any> {
     fun isApplicable(t: Float): Boolean
     fun isFinished(t: Float): Boolean
     fun get(t: Float): T
+    fun shift(t: Float): MovieKtAnimation<T>
 }
 
 abstract class MKTOnceAnimation<T: Any>(

@@ -23,9 +23,10 @@ open class ContainerVideoClip(
     size: Vector2i,
     position: Vector2i,
     visible: Boolean,
+    timeShift: Float = 0f,
     private val configuration: ContainerVideoClipConfiguration = ContainerVideoClipConfiguration()
 ): VideoClip(
-    id, size, position, visible
+    id, size, position, visible,timeShift = timeShift
 ) {
     override val logger: Logger = LoggerFactory.getLogger(javaClass)
     override fun renderContent(img: BufferedImage, t: VideoTimestamp) {

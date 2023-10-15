@@ -50,8 +50,6 @@ class Movie(
     private var mergeDone = false
     private val frameCallbacks = ArrayList<RenderCallback>()
     private val onceCallbacks = ArrayList<OnceCallback>()
-    private val animations = ArrayList<MovieKtAnimation<*>>()
-    private val mutations = ArrayList<MovieKtMutation>()
     private var theme: VideoTheme? = null
     private val logger = LoggerFactory.getLogger(javaClass)
     private fun log(){
@@ -197,10 +195,10 @@ class Movie(
 
         val videoOutputStream = videoProcess.outputStream
 
-        var mappedAnimations = animations.associateWith{
+        var mappedAnimations = videoRoot.getAnimations().associateWith{
             videoRoot.findById(it.nodeId)
         }
-        var waitingMutations = mutations.associateWith {
+        var waitingMutations = videoRoot.getMutations().associateWith {
             videoRoot.findById(it.node).firstOrNull() ?: throw NodeNotFoundException(it.node)
         }.toMutableMap()
         val activeMutations = ArrayList<ActiveMutation>()
@@ -420,14 +418,6 @@ class Movie(
         mergeDone = true
         File(rawAudioName).delete()
         File(rawVideoName).delete()
-    }
-
-    fun addAnimation(anim: MovieKtAnimation<*>){
-        animations.add(anim)
-    }
-
-    fun addMutation(mut: MovieKtMutation){
-        mutations.add(mut)
     }
 
     fun setTheme(theme: VideoTheme){

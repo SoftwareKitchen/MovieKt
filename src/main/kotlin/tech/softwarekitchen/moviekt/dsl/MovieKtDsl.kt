@@ -56,18 +56,18 @@ fun movie(conf: DslVideoConfiguration.() -> Unit) {
         logger.info("Preparing Chapter '${it.name}' with ${it.scenes.size} scenes")
         val chapterLength = it.scenes.sumOf{it.length}
         val id = UUID.randomUUID().toString()
-        val chapterRoot = ContainerVideoClip(id, c.size, Vector2i(0,0), false)
-        movie.addAnimation(SetOnceAnimation(id, VideoClip.PropertyKey_Visible, currentOffset.toFloat(), true))
-        movie.addAnimation(SetOnceAnimation(id, VideoClip.PropertyKey_Visible, (currentOffset + chapterLength).toFloat(), false))
+        val chapterRoot = ContainerVideoClip(id, c.size, Vector2i(0,0), false, currentOffset.toFloat())
+        chapterRoot.addRawAnimation(SetOnceAnimation(id, VideoClip.PropertyKey_Visible, 0f, true))
+        chapterRoot.addRawAnimation(SetOnceAnimation(id, VideoClip.PropertyKey_Visible, chapterLength.toFloat(), false))
         rootClip.addChild(chapterRoot)
 
         var currentSceneOffset = 0
         it.scenes.forEach{
             logger.info("Preparing Scene '${it.name}' with ${it.getClips().size} clips")
             val sid = UUID.randomUUID().toString()
-            val sceneRoot = ContainerVideoClip(sid, c.size, Vector2i(0,0), false)
-            movie.addAnimation(SetOnceAnimation(sid, VideoClip.PropertyKey_Visible, (currentOffset + currentSceneOffset).toFloat(), true))
-            movie.addAnimation(SetOnceAnimation(sid, VideoClip.PropertyKey_Visible, (currentOffset + currentSceneOffset + chapterLength).toFloat(), false))
+            val sceneRoot = ContainerVideoClip(sid, c.size, Vector2i(0,0), false, currentSceneOffset.toFloat())
+            sceneRoot.addRawAnimation(SetOnceAnimation(sid, VideoClip.PropertyKey_Visible, 0f, true))
+            sceneRoot.addRawAnimation(SetOnceAnimation(sid, VideoClip.PropertyKey_Visible, it.length.toFloat(), false))
             chapterRoot.addChild(sceneRoot)
 
             it.getClips().forEach(sceneRoot::addChild)

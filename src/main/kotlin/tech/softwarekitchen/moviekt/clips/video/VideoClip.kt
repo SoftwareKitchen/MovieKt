@@ -1,6 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video
 
 import tech.softwarekitchen.common.vector.Vector2i
+import tech.softwarekitchen.moviekt.animation.MovieKtAnimation
 import tech.softwarekitchen.moviekt.exception.UnknownPropertyException
 import tech.softwarekitchen.moviekt.filter.VideoClipFilter
 import tech.softwarekitchen.moviekt.filter.VideoClipFilterChain
@@ -13,7 +14,14 @@ import kotlin.math.roundToInt
 
 data class VideoTimestamp(val t: Double, val frame: Int, val totFrames: Int)
 
-abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, visible: Boolean, private val volatile: Boolean = false): ThemedClip{
+abstract class VideoClip(
+    val id: String,
+    size: Vector2i,
+    position: Vector2i,
+    visible: Boolean,
+    private val volatile: Boolean = false,
+    private val timeShift: Float = 0f
+): ThemedClip{
     companion object{
         val PropertyKey_Offset = "Offset"
         val PropertyKey_Opacity = "Opacity"
@@ -240,5 +248,24 @@ abstract class VideoClip(val id: String, size: Vector2i, position: Vector2i, vis
 
     fun getOpacity(): Float{
         return opacityProperty.v
+    }
+
+    private val rawAnimations = ArrayList<MovieKtAnimation<*>>()
+    private val rawMutations = ArrayList<MovieKtMutation>()
+
+    fun addRawAnimation(anim: MovieKtAnimation<*>){
+        rawAnimations.add(anim)
+    }
+
+    fun addRawMutation(mut: MovieKtMutation){
+        rawMutations.add(mut)
+    }
+
+    fun getAnimations(): List<MovieKtAnimation<*>>{
+        return (children.map{it.getAnimations()}.flatten() + rawAnimations).map{it.shift(timeShift)}
+    }
+
+    fun getMutations(): List<MovieKtMutation>{
+        return (children.map{it.getMutations()}.flatten() + rawMutations).map{it.shift(timeShift)}
     }
 }
