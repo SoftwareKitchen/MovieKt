@@ -84,7 +84,7 @@ class CodeVideoClip(
             configuration.ttFont,
             {
                 font = loadFont()
-                markDirty()
+                markDirty(null)
             }
         )
     private val sourceProperty =
@@ -93,7 +93,7 @@ class CodeVideoClip(
             configuration.file,
             {
                 formatted = loadCode()
-                markDirty()
+                markDirty(null)
             }
         )
     private val highlight =

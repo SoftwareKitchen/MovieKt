@@ -161,10 +161,10 @@ class ChessBoardVideoClip(
         registerMutation("chess_move",this::prepareMoveMutation)
         registerProperty(boardStateProperty)
 
-        updateBoardState()
+        updateBoardState(null)
     }
 
-    private fun updateBoardState(){
+    private fun updateBoardState(ignored: Any?){
         pieces.forEach{
             removeChild(it.piece)
         }
@@ -183,7 +183,7 @@ class ChessBoardVideoClip(
         }
         this.pieces.addAll(updatedPieces)
 
-        markDirty()
+        markDirty(null)
     }
 
     override fun renderContent(img: BufferedImage, t: VideoTimestamp) {

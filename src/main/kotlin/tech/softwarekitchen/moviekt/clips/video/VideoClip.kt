@@ -31,7 +31,7 @@ abstract class VideoClip(
     }
     protected class ActiveMutation(val onTick: (Float) -> Unit, val onClose: () -> Unit)
 
-    protected open class VideoClipProperty<T>(val name: String, initialValue: T, private val onChange: () -> Unit, private val converter: (Any) -> T = {it as T}){
+    protected open class VideoClipProperty<T>(val name: String, initialValue: T, private val onChange: (T) -> Unit, private val converter: (Any) -> T = {it as T}){
         private var value: T = initialValue
         val v: T
             get(){return value}
@@ -41,7 +41,7 @@ abstract class VideoClip(
                 return
             }
             value = x
-            onChange()
+            onChange(nv as T)
         }
     }
 
@@ -50,7 +50,7 @@ abstract class VideoClip(
     private val offsetProperty = VideoClipProperty(PropertyKey_Offset, Vector2i(0,0), this::markPseudoDirty)
     private val opacityProperty = VideoClipProperty(PropertyKey_Opacity, 1f, this::markOpacityChanged)
     private val positionProperty = VideoClipProperty(PropertyKey_Position, position, this::markPseudoDirty)
-    private val sizeProperty = VideoClipProperty(PropertyKey_Size, size,{onResize(); markDirty()})
+    private val sizeProperty = VideoClipProperty(PropertyKey_Size, size,{onResize(); markDirty(null)})
     private val visibleProperty = VideoClipProperty(PropertyKey_Visible, visible, this::markOpacityChanged)
     private val properties: MutableList<VideoClipProperty<*>> = arrayListOf(
         offsetProperty,
@@ -66,7 +66,7 @@ abstract class VideoClip(
         }
     }
 
-    protected class VideoClipThemeProperty<T>(name: String, initialValue: T, onChange: () -> Unit, converter: (Any) -> T = {it as T}): VideoClipProperty<T>(name, initialValue, onChange, converter){
+    protected class VideoClipThemeProperty<T>(name: String, initialValue: T, onChange: (T) -> Unit, converter: (Any) -> T = {it as T}): VideoClipProperty<T>(name, initialValue, onChange, converter){
 
     }
     protected fun registerThemedProperty(vararg tProperties: VideoClipThemeProperty<*>){
@@ -122,14 +122,14 @@ abstract class VideoClip(
     private var cacheDirty = true
     private var pseudoDirty = false
     private var opacityChanged = false
-    protected fun markDirty(){
+    protected fun markDirty(ignored: Any?){
         cacheDirty = true
     }
-    protected fun markPseudoDirty(){
+    protected fun markPseudoDirty(ignored: Any?){
         pseudoDirty = true
     }
 
-    protected fun markOpacityChanged(){
+    protected fun markOpacityChanged(ignored: Any?){
         opacityChanged = true
     }
 

@@ -36,9 +36,9 @@ class SVGVideoClip(
         registerProperty(fileProperty)
     }
 
-    private fun loadImage(){
+    private fun loadImage(ignored: Any?){
         content = SVGImage(fileProperty.v)
-        markDirty()
+        markDirty(null)
     }
 
     override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
