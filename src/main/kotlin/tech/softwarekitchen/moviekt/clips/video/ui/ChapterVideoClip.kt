@@ -37,7 +37,7 @@ class ChapterVideoClip(
         PropertyKey_ChapterPosition,
         0.0,
         {
-            child.set(PropertyKey_Position, Vector2i((it * getSize().x).toInt(), 0))
+            child.set(PropertyKey_Position, Vector2i(-(it * getSize().x).toInt(), 0))
             markDirty(null)
         }
     )
