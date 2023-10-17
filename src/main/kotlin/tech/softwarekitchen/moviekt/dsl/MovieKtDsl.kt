@@ -12,6 +12,7 @@ import tech.softwarekitchen.moviekt.clips.video.text.TextVideoClip
 import tech.softwarekitchen.moviekt.clips.video.util.FULLHD
 import tech.softwarekitchen.moviekt.core.Movie
 import tech.softwarekitchen.moviekt.layout.impl.CenterLayout
+import tech.softwarekitchen.moviekt.layout.impl.OverlayLayout
 import tech.softwarekitchen.moviekt.layout.impl.VerticalLayout
 import tech.softwarekitchen.moviekt.layout.impl.VerticalLayoutConfiguration
 import tech.softwarekitchen.moviekt.theme.VideoTheme
@@ -22,22 +23,30 @@ import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
 
-data class DslVideoConfiguration(
+interface DslChapterContainer{
+    val chapters: MutableList<DslChapterConfiguration>
+    val logger: Logger
+}
+
+class DslVideoConfiguration(
+    override val logger: Logger,
     var name: String = "Unnamed video",
     var fps: Int = 25,
     var size: Vector2i = FULLHD,
-    val chapters: MutableList<DslChapterConfiguration> = ArrayList<DslChapterConfiguration>(),
+    override val chapters: MutableList<DslChapterConfiguration> = ArrayList<DslChapterConfiguration>(),
     var theme: VideoTheme? = null
-)
+): DslChapterContainer
 
-fun movie(conf: DslVideoConfiguration.() -> Unit) {
+fun movie(conf: DslVideoConfiguration.() -> Unit){
     val logger = LoggerFactory.getLogger("MovieKt-DSL-Movie")
-    val c = DslVideoConfiguration()
+    val c = DslVideoConfiguration(logger)
     c.conf()
 
     logger.info("Creating video ${c.name}")
 
     val rootClip = ContainerVideoClip("_", c.size, Vector2i(0,0),true)
+
+    c.prepareChapters(rootClip)
 
     val videoLength = c.chapters.sumOf{ it.scenes.sumOf{ it.length }}
 
@@ -50,25 +59,33 @@ fun movie(conf: DslVideoConfiguration.() -> Unit) {
 
     c.theme?.let{movie.setTheme(it)}
 
+
+    movie.write()
+}
+
+fun DslChapterContainer.prepareChapters(target: VideoClip){
     var currentOffset = 0
-    logger.info("Preparing Video with ${c.chapters.size} chapters")
-    c.chapters.forEach{
+    logger.info("Preparing Video with ${chapters.size} chapters")
+    chapters.forEach{
         logger.info("Preparing Chapter '${it.name}' with ${it.scenes.size} scenes")
         val chapterLength = it.scenes.sumOf{it.length}
         val id = UUID.randomUUID().toString()
-        val chapterRoot = ContainerVideoClip(id, c.size, Vector2i(0,0), false, currentOffset.toFloat())
+        val chapterRoot = ContainerVideoClip(id, target.getSize(), Vector2i(0,0), false, currentOffset.toFloat())
         chapterRoot.addRawAnimation(SetOnceAnimation(id, VideoClip.PropertyKey_Visible, 0f, true))
         chapterRoot.addRawAnimation(SetOnceAnimation(id, VideoClip.PropertyKey_Visible, chapterLength.toFloat(), false))
-        rootClip.addChild(chapterRoot)
+        target.addChild(chapterRoot)
 
+
+        val overlay = OverlayLayout()
+        chapterRoot.addChild(overlay)
         var currentSceneOffset = 0
         it.scenes.forEach{
             logger.info("Preparing Scene '${it.name}' with ${it.getClips().size} clips")
             val sid = UUID.randomUUID().toString()
-            val sceneRoot = ContainerVideoClip(sid, c.size, Vector2i(0,0), false, currentSceneOffset.toFloat())
+            val sceneRoot = ContainerVideoClip(sid, target.getSize(), Vector2i(0,0), false, currentSceneOffset.toFloat())
             sceneRoot.addRawAnimation(SetOnceAnimation(sid, VideoClip.PropertyKey_Visible, 0f, true))
             sceneRoot.addRawAnimation(SetOnceAnimation(sid, VideoClip.PropertyKey_Visible, it.length.toFloat(), false))
-            chapterRoot.addChild(sceneRoot)
+            overlay.addChild(sceneRoot)
 
             it.getClips().forEach(sceneRoot::addChild)
 
@@ -76,8 +93,6 @@ fun movie(conf: DslVideoConfiguration.() -> Unit) {
         }
         currentOffset += chapterLength
     }
-
-    movie.write()
 }
 
 data class DslChapterConfiguration(
@@ -85,7 +100,7 @@ data class DslChapterConfiguration(
     val scenes: MutableList<DslSceneConfiguration> = ArrayList<DslSceneConfiguration>()
 )
 
-fun DslVideoConfiguration.chapter(conf: DslChapterConfiguration.() -> Unit){
+fun DslChapterContainer.chapter(conf: DslChapterConfiguration.() -> Unit){
     val c = DslChapterConfiguration()
     c.conf()
     chapters.add(c)

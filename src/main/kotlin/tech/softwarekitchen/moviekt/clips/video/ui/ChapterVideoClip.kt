@@ -28,6 +28,7 @@ class ChapterVideoClip(
         Vector2i(0,0),
         true
     )
+    private val childSquared: List<TextVideoClip>
 
     companion object{
         val PropertyKey_ChapterPosition = "ChapterPosition"
@@ -45,20 +46,33 @@ class ChapterVideoClip(
     init {
         registerProperty(chapterPositionProperty)
 
-        configuration.chapters.forEachIndexed {
+        childSquared = configuration.chapters.mapIndexed {
             index, chapter ->
-            val item = TextVideoClip(
+            TextVideoClip(
                 "_", getSize(),
                 Vector2i(index * getSize().x, 0),true,
                 StaticTextVideoClipConfiguration(chapter,36, Color.WHITE, anchor = TextAnchor.Center)
             )
-            child.addChild(item)
         }
+
+        childSquared.forEach(child::addChild)
 
         addChild(child)
     }
 
     override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
 
+    }
+
+    override fun onResize() {
+        val size = getSize()
+        child.set(PropertyKey_Size, Vector2i(size.x * childSquared.size, size.y))
+        childSquared.forEachIndexed{
+            i, it ->
+            it.set(PropertyKey_Size, Vector2i(size.x, size.y))
+            it.set(PropertyKey_Position, Vector2i(size.x * i, 0))
+        }
+        set(PropertyKey_ChapterPosition, chapterPositionProperty.v)
+        super.onResize()
     }
 }

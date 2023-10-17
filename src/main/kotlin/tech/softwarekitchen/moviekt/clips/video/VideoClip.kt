@@ -207,11 +207,9 @@ abstract class VideoClip(
                         {
                             val size = Vector2i((src.x * (1f - it) + targetWidth * it).roundToInt(), (src.y * (1f - it) + targetHeight * it).roundToInt())
                             set(PropertyKey_Size, size)
-                            onResize()
                         },
                         {
                             set(PropertyKey_Size, Vector2i(targetWidth, targetHeight))
-                            onResize()
                         }
                     )
                 )
