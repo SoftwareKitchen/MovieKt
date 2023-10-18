@@ -19,12 +19,12 @@ private fun Vector2i.withSize(size: Vector2i): Rectangle2i{
 //TODO Limit buffers to required size only for mem opt
 private class LayerBuffer(
     private var depth: Int,
-    private val size: Vector2i,
     private val clip: VideoClip,
     private val onChange: (Int, Int, Int) -> Unit
 ){
+    private val size = clip.getSize()
     @OptIn(ExperimentalUnsignedTypes::class)
-    var buffer = UByteArray(4 * size.x * size.y)
+    private var buffer = UByteArray(4 * size.x * size.y)
     private var position: Vector2i = clip.getPosition()
     private var cache: BufferedImage
     private val sublayers: MutableList<LayerBuffer>
@@ -43,7 +43,6 @@ private class LayerBuffer(
             depth, child ->
             LayerBuffer(
                 depth,
-                size,
                 child,
                 this::onPixelChange
             )
@@ -82,7 +81,6 @@ private class LayerBuffer(
         }
         val sublayer = LayerBuffer(
             sublayers.size,
-            size,
             childClip,
             this::onPixelChange
         )
@@ -247,13 +245,17 @@ private class LayerBuffer(
             }
         }
     }
+
+    fun getByte(index: Int): UByte{
+        return buffer[index]
+    }
 }
 class RenderBuffer(
     val root: VideoClip
 ) {
     private val size = root.getSize()
     val resultBuffer = ByteArray(size.x * size.y * 3)
-    private val rootLayer = LayerBuffer(0,size, root, this::onPixelChange)
+    private val rootLayer = LayerBuffer(0, root, this::onPixelChange)
 
     init{
         rootLayer.init()
@@ -262,9 +264,9 @@ class RenderBuffer(
     @OptIn(ExperimentalUnsignedTypes::class)
     fun onPixelChange(x: Int, y: Int, depth: Int){
         val linearIndex = y * size.x + x
-        resultBuffer[linearIndex * 3] = rootLayer.buffer[linearIndex*4+1].toByte()
-        resultBuffer[linearIndex * 3+1] = rootLayer.buffer[linearIndex*4+2].toByte()
-        resultBuffer[linearIndex * 3+2] = rootLayer.buffer[linearIndex*4+3].toByte()
+        resultBuffer[linearIndex * 3] = rootLayer.getByte(linearIndex*4+1).toByte()
+        resultBuffer[linearIndex * 3+1] = rootLayer.getByte(linearIndex*4+2).toByte()
+        resultBuffer[linearIndex * 3+2] = rootLayer.getByte(linearIndex*4+3).toByte()
     }
 
     fun update(t: VideoTimestamp){
