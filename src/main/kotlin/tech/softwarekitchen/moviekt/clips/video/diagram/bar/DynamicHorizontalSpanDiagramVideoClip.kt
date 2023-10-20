@@ -1,40 +1,40 @@
-package tech.softwarekitchen.moviekt.clips.video.diagram.impl
+package tech.softwarekitchen.moviekt.clips.video.diagram.bar
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import tech.softwarekitchen.common.vector.Vector2i
-import tech.softwarekitchen.moviekt.clips.video.diagram.BarBasedDiagramConfiguration
-import tech.softwarekitchen.moviekt.clips.video.diagram.BarBasedDiagramVideoClip
+import tech.softwarekitchen.moviekt.clips.video.diagram.bar.BarBasedDiagramConfiguration
+import tech.softwarekitchen.moviekt.clips.video.diagram.bar.BarBasedDiagramVideoClip
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.image.BufferedImage
 
-class DynamicVerticalBarDiagramVideoClip(
+class DynamicHorizontalSpanDiagramVideoClip(
     id: String,
     size: Vector2i,
     position: Vector2i,
     visible: Boolean,
-    private val dataProvider: () -> List<Double>,
-    private val configuration: BarBasedDiagramConfiguration
+    private val dataProvider: () -> List<Pair<Double, Double>>,
+    private val configuration: BarBasedDiagramConfiguration = BarBasedDiagramConfiguration(),
 ): BarBasedDiagramVideoClip(id, size, position, visible, configuration = configuration) {
-
     override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     override fun generateDataDisplay(size: Vector2i): BufferedImage {
         val image = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)
         val data = dataProvider()
-        val yScale = getYScreenMapper(size)
-        val dataMapped = data.map(yScale)
+        val xScale = getXScreenMapper(size)
+        val yScale = getYScreenMapper(size, true)
+        val dataMapped = data.map{Pair(xScale(it.first), xScale(it.second))}
 
         val graphics = image.createGraphics()
 
         graphics.color = Color(255,0,0,64)
 
-        val widthPerBar = size.x.toDouble() / dataMapped.size.toDouble()
-
         dataMapped.forEachIndexed{
             i, v ->
-            graphics.fillRect((i * widthPerBar).toInt(),v,widthPerBar.toInt(),size.y - v)
+            graphics.fillRect(
+                v.first,(yScale(i+1.0)),v.second - v.first,(yScale(i+0.0) - yScale(i+1.0))
+            )
         }
 
         graphics.color = Color.WHITE
@@ -42,13 +42,15 @@ class DynamicVerticalBarDiagramVideoClip(
 
         dataMapped.forEachIndexed{
             i,v ->
-            graphics.drawRect((i * widthPerBar).toInt(),v,widthPerBar.toInt(),size.y - v+1)
+            graphics.drawRect(
+                v.first,(yScale(i+1.0)),v.second - v.first,(yScale(i+0.0) - yScale(i+1.0))
+            )
         }
 
         return image
     }
 
     override fun getData(): List<Pair<Double, Double>> {
-        return dataProvider().mapIndexed{i,v -> Pair(i.toDouble(),v)}
+        return dataProvider().mapIndexed{i,v -> listOf(Pair(i.toDouble(),v.first), Pair(i.toDouble(), v.second))}.flatten()
     }
 }

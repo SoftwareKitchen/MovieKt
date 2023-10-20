@@ -1,10 +1,10 @@
-package tech.softwarekitchen.moviekt.clips.video.diagram.impl
+package tech.softwarekitchen.moviekt.clips.video.diagram.bar
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import tech.softwarekitchen.common.vector.Vector2i
-import tech.softwarekitchen.moviekt.clips.video.diagram.BarBasedDiagramConfiguration
-import tech.softwarekitchen.moviekt.clips.video.diagram.BarBasedDiagramVideoClip
+import tech.softwarekitchen.moviekt.clips.video.diagram.bar.BarBasedDiagramConfiguration
+import tech.softwarekitchen.moviekt.clips.video.diagram.bar.BarBasedDiagramVideoClip
 import java.awt.Color
 import java.awt.image.BufferedImage
 

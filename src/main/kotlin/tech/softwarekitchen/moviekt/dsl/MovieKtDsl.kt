@@ -2,19 +2,22 @@ package tech.softwarekitchen.moviekt.dsl
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import tech.softwarekitchen.common.vector.Vector2
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.animation.once.SetOnceAnimation
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.basic.ContainerVideoClip
+import tech.softwarekitchen.moviekt.clips.video.image.StaticImageMode
+import tech.softwarekitchen.moviekt.clips.video.image.StaticImageVideoClip
+import tech.softwarekitchen.moviekt.clips.video.image.StaticImageVideoClipConfiguration
+import tech.softwarekitchen.moviekt.clips.video.shape.ArrowVideoClip
+import tech.softwarekitchen.moviekt.clips.video.shape.ArrowVideoClipConfiguration
 import tech.softwarekitchen.moviekt.clips.video.text.StaticTextVideoClipConfiguration
 import tech.softwarekitchen.moviekt.clips.video.text.TextAnchor
 import tech.softwarekitchen.moviekt.clips.video.text.TextVideoClip
 import tech.softwarekitchen.moviekt.clips.video.util.FULLHD
 import tech.softwarekitchen.moviekt.core.Movie
-import tech.softwarekitchen.moviekt.layout.impl.CenterLayout
-import tech.softwarekitchen.moviekt.layout.impl.OverlayLayout
-import tech.softwarekitchen.moviekt.layout.impl.VerticalLayout
-import tech.softwarekitchen.moviekt.layout.impl.VerticalLayoutConfiguration
+import tech.softwarekitchen.moviekt.layout.impl.*
 import tech.softwarekitchen.moviekt.theme.VideoTheme
 import tech.softwarekitchen.moviekt.theme.VideoTheme.Companion.VTPropertyKey_FontColor
 import tech.softwarekitchen.moviekt.theme.VideoTheme.Companion.VTPropertyKey_FontSize
@@ -22,6 +25,7 @@ import java.awt.Color
 import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.math.atan2
 
 interface DslChapterContainer{
     val chapters: MutableList<DslChapterConfiguration>
@@ -189,6 +193,26 @@ fun DslClipContainer.text(conf: DslTextVideoClipConfiguration.() -> Unit){
     addClip(clip)
 }
 
+data class DslImageVideoClipConfiguration(
+    var size: Vector2i = Vector2i(100,100),
+    var position: Vector2i = Vector2i(0,0),
+    var file: File = File("Foo.bar"),
+    var mode: StaticImageMode = StaticImageMode.StretchWithAspect
+)
+
+fun DslClipContainer.image(conf: DslImageVideoClipConfiguration.() -> Unit){
+    val c = DslImageVideoClipConfiguration()
+    c.conf()
+    val clip = StaticImageVideoClip(
+        UUID.randomUUID().toString(),
+        c.size,
+        c.position,
+        true,
+        c.file,
+        StaticImageVideoClipConfiguration(c.mode)
+    )
+    addClip(clip)
+}
 
 class DslCenterLayoutConfiguration: DslClipContainer()
 
@@ -208,4 +232,60 @@ fun DslClipContainer.vertical(conf: DslVerticalLayoutConfiguration.() -> Unit){
     val verticalLayout = VerticalLayout()
     c.getClips().forEach(verticalLayout::addChild)
     addClip(verticalLayout)
+}
+
+class DslHorizontalLayoutConfiguration: DslClipContainer()
+
+fun DslClipContainer.horizontal(conf: DslHorizontalLayoutConfiguration.() -> Unit){
+    val c = DslHorizontalLayoutConfiguration()
+    c.conf()
+    val hLayout = HorizontalLayout()
+    c.getClips().forEach(hLayout::addChild)
+    addClip(hLayout)
+}
+
+data class DslArrowConfiguration(
+    var topLeft: Vector2i = Vector2i(0,0),
+    var vec: Vector2i = Vector2i(100,0),
+    var width: Double = 30.0,
+    var outlineWidth: Float = 3f,
+    var outlineColor: Color = Color.RED,
+    var fillColor: Color = Color.YELLOW
+)
+
+fun DslClipContainer.arrow(conf: DslArrowConfiguration.() -> Unit){
+    val c = DslArrowConfiguration()
+    c.conf()
+    val clip = ArrowVideoClip(
+        UUID.randomUUID().toString(),
+        c.topLeft,
+        true,
+        ArrowVideoClipConfiguration(
+            Vector2(c.vec.x.toDouble(), c.vec.y.toDouble()).length(),
+            c.width,
+            atan2(c.vec.y.toDouble(), c.vec.x.toDouble()),
+            c.outlineWidth,
+            c.outlineColor,
+            c.fillColor
+        )
+    )
+}
+
+class DslContainerConfiguration(
+    var size: Vector2i = Vector2i(100,100),
+    var position: Vector2i = Vector2i(0,0)
+): DslClipContainer()
+
+fun DslClipContainer.container(conf: DslContainerConfiguration.() -> Unit){
+    val c = DslContainerConfiguration()
+    c.conf()
+
+    val clip = ContainerVideoClip(
+        UUID.randomUUID().toString(),
+        c.size,
+        c.position,
+        true
+    )
+
+    addClip(clip)
 }
