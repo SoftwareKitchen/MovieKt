@@ -3,10 +3,10 @@ package tech.softwarekitchen.moviekt.clips.video.diagram.bar
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.diagram.DiagramAxisConfiguration
 import tech.softwarekitchen.moviekt.clips.video.diagram.DiagramAxisMode
-import tech.softwarekitchen.moviekt.clips.video.diagram.xy.DynamicDiagramBackgroundGrid
-import tech.softwarekitchen.moviekt.clips.video.diagram.xy.DynamicLineDiagramColorConfiguration
-import tech.softwarekitchen.moviekt.clips.video.diagram.xy.XYDiagramConfiguration
-import tech.softwarekitchen.moviekt.clips.video.diagram.xy.XYDiagramVideoClip
+import tech.softwarekitchen.moviekt.clips.video.diagram.XYDiagramConfiguration
+import tech.softwarekitchen.moviekt.clips.video.diagram.XYDiagramVideoClip
+import tech.softwarekitchen.moviekt.clips.video.diagram.impl.DynamicDiagramBackgroundGrid
+import tech.softwarekitchen.moviekt.clips.video.diagram.impl.DynamicLineDiagramColorConfiguration
 
 class BarBasedDiagramConfiguration(
     override val xAxis: DiagramAxisConfiguration = DiagramAxisConfiguration(),

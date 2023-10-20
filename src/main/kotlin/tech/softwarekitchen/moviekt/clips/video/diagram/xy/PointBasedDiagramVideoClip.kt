@@ -1,9 +1,7 @@
 package tech.softwarekitchen.moviekt.clips.video.diagram
 
 import tech.softwarekitchen.common.vector.Vector2i
-import tech.softwarekitchen.moviekt.clips.video.diagram.xy.DynamicDiagramBackgroundGrid
-import tech.softwarekitchen.moviekt.clips.video.diagram.xy.XYDiagramConfiguration
-import tech.softwarekitchen.moviekt.clips.video.diagram.xy.XYDiagramVideoClip
+import tech.softwarekitchen.moviekt.clips.video.diagram.impl.DynamicDiagramBackgroundGrid
 import java.awt.Color
 import java.awt.image.BufferedImage
 
