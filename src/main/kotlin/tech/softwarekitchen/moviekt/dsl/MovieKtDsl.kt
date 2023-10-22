@@ -20,6 +20,7 @@ import tech.softwarekitchen.moviekt.theme.VideoTheme.Companion.VTPropertyKey_Bor
 import tech.softwarekitchen.moviekt.theme.VideoTheme.Companion.VTPropertyKey_Font
 import tech.softwarekitchen.moviekt.theme.VideoTheme.Companion.VTPropertyKey_FontColor
 import tech.softwarekitchen.moviekt.theme.VideoTheme.Companion.VTPropertyKey_FontSize
+import tech.softwarekitchen.moviekt.util.Padding
 import java.awt.Color
 import java.io.File
 import java.util.*
@@ -245,12 +246,16 @@ fun DslClipContainer.centered(conf: DslCenterLayoutConfiguration.() -> Unit){
     addClip(centerLayout)
 }
 
-class DslVerticalLayoutConfiguration: DslClipContainer()
+class DslVerticalLayoutConfiguration(
+    var padding: Padding = Padding(0,0,0,0)
+): DslClipContainer()
 
 fun DslClipContainer.vertical(conf: DslVerticalLayoutConfiguration.() -> Unit){
     val c = DslVerticalLayoutConfiguration()
     c.conf()
-    val verticalLayout = VerticalLayout()
+    val verticalLayout = VerticalLayout(
+        VerticalLayoutConfiguration(c.padding)
+    )
     c.getClips().forEach(verticalLayout::addChild)
     addClip(verticalLayout)
 }
@@ -397,7 +402,7 @@ fun DslClipContainer.svg(conf: DslSVGConfiguration.() -> Unit){
     val c = DslSVGConfiguration()
     c.conf()
 
-    SVGVideoClip(
+    val clip = SVGVideoClip(
         UUID.randomUUID().toString(),
         c.size,
         c.position,
@@ -405,4 +410,33 @@ fun DslClipContainer.svg(conf: DslSVGConfiguration.() -> Unit){
             c.svg
         )
     )
+
+    addClip(clip)
+}
+
+data class DslFormulaConfiguration(
+    var size: Vector2i = Vector2i(100,100),
+    var position: Vector2i = Vector2i(0,0),
+    var initialFontSize: Int = 32,
+    var fontSizeDecrease: Int = 3,
+    var formula: FormulaElement = FormulaTextElement("Blubb")
+)
+
+fun DslClipContainer.formula(conf: DslFormulaConfiguration.() -> Unit){
+    val c = DslFormulaConfiguration()
+    c.conf()
+
+    val clip = FormulaVideoClip(
+        UUID.randomUUID().toString(),
+        c.size,
+        c.position,
+        true,
+        c.formula,
+        StaticFormulaVideoClipConfiguration(
+            c.initialFontSize,
+            c.fontSizeDecrease
+        )
+    )
+
+    addClip(clip)
 }
