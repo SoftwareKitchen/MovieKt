@@ -50,6 +50,8 @@ fun movie(conf: DslVideoConfiguration.() -> Unit){
 
     val rootClip = ContainerVideoClip("_", c.size, Vector2i(0,0),true)
 
+    rootClip.addChild(ColorVideoClip("_", c.size, Vector2i(0,0), true,ColorVideoClipConfiguration(Color.BLACK)))
+
     c.prepareChapters(rootClip)
 
     val videoLength = c.chapters.sumOf{ it.scenes.sumOf{ it.length }}

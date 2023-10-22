@@ -33,7 +33,6 @@ class TextVideoClip (
     visible: Boolean,
     private val configuration: StaticTextVideoClipConfiguration
 ) : VideoClip(id, size, position, visible) {
-    private val font: Font?
 
     companion object{
         val PropertyKey_Text = "Text"
@@ -43,20 +42,27 @@ class TextVideoClip (
     private val textProperty = VideoClipProperty(PropertyKey_Text, configuration.text, this::markDirty)
     private val fontColorProperty = VideoClipThemeProperty(VideoTheme.VTPropertyKey_FontColor, configuration.color, this::markDirty)
     private val fontSizeProperty = VideoClipThemeProperty(VideoTheme.VTPropertyKey_FontSize, configuration.fontSize, this::markDirty)
-
+    private val fontProperty = VideoClipThemeProperty(VideoTheme.VTPropertyKey_Font, configuration.ttFont?.let(this::loadFont), this::markDirty){
+        when{
+            it is Font -> it
+            it is File -> loadFont(it)
+            else -> throw Exception()
+        }
+    }
 
     init{
-        font = configuration.ttFont?.let{
-            Font.createFont(Font.TRUETYPE_FONT, it)
-        }
-
         registerProperty(textProperty)
+        registerProperty(fontProperty)
         registerProperty(fontColorProperty)
         registerProperty(fontSizeProperty)
     }
 
+    private fun loadFont(file: File): Font{
+        return Font.createFont(Font.TRUETYPE_FONT, file)
+    }
+
     fun getTextSize(text: String): Rectangle2D {
-        val f = font ?: run {
+        val f = fontProperty.v ?: run {
             val img = BufferedImage(100,100,TYPE_INT_ARGB)
             val graphics = img.createGraphics()
             graphics.font!!
@@ -69,7 +75,7 @@ class TextVideoClip (
         val curSize = Vector2i(img.width, img.height)
 
         val graphics = img.createGraphics()
-        val font = (font ?: graphics.font).deriveFont(fontSizeProperty.v.toFloat())
+        val font = (fontProperty.v ?: graphics.font).deriveFont(fontSizeProperty.v.toFloat())
         val bounds = font.getStringBounds(textProperty.v,graphics.fontRenderContext)
         val topleft = when(configuration.anchor){
             TextAnchor.Center -> curSize.scale(0.5).plus(Vector2i(- bounds.width.toInt() / 2,- bounds.height.toInt() / 2))
