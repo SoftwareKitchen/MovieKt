@@ -7,9 +7,7 @@ import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.animation.once.SetOnceAnimation
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.basic.*
-import tech.softwarekitchen.moviekt.clips.video.image.StaticImageMode
-import tech.softwarekitchen.moviekt.clips.video.image.StaticImageVideoClip
-import tech.softwarekitchen.moviekt.clips.video.image.StaticImageVideoClipConfiguration
+import tech.softwarekitchen.moviekt.clips.video.image.*
 import tech.softwarekitchen.moviekt.clips.video.shape.ArrowVideoClip
 import tech.softwarekitchen.moviekt.clips.video.shape.ArrowVideoClipConfiguration
 import tech.softwarekitchen.moviekt.clips.video.text.*
@@ -18,6 +16,7 @@ import tech.softwarekitchen.moviekt.core.Movie
 import tech.softwarekitchen.moviekt.layout.impl.*
 import tech.softwarekitchen.moviekt.theme.VideoTheme
 import tech.softwarekitchen.moviekt.theme.VideoTheme.Companion.VTPropertyKey_BackgroundColor
+import tech.softwarekitchen.moviekt.theme.VideoTheme.Companion.VTPropertyKey_BorderColor
 import tech.softwarekitchen.moviekt.theme.VideoTheme.Companion.VTPropertyKey_Font
 import tech.softwarekitchen.moviekt.theme.VideoTheme.Companion.VTPropertyKey_FontColor
 import tech.softwarekitchen.moviekt.theme.VideoTheme.Companion.VTPropertyKey_FontSize
@@ -50,7 +49,7 @@ fun movie(conf: DslVideoConfiguration.() -> Unit){
 
     val rootClip = ContainerVideoClip("_", c.size, Vector2i(0,0),true)
 
-    rootClip.addChild(ColorVideoClip("_", c.size, Vector2i(0,0), true,ColorVideoClipConfiguration(Color.BLACK)))
+    rootClip.addChild(ColorVideoClip("_", c.size, Vector2i(0,0), true, ColorVideoClipConfiguration(Color.BLACK)))
 
     c.prepareChapters(rootClip)
 
@@ -165,6 +164,13 @@ class DslTheme{
         set(v){
             items.add(DslThemeEntry(VTPropertyKey_Font, v))
         }
+
+    var borderColor: Color
+        get() = items.last{it.key == VTPropertyKey_BorderColor } as Color
+        set(v){
+            items.add(DslThemeEntry(VTPropertyKey_BorderColor, v))
+        }
+
 
 }
 
@@ -379,4 +385,24 @@ fun DslClipContainer.color(conf: DslSingleColorConfiguration.() -> Unit){
     )
 
     addClip(clip)
+}
+
+data class DslSVGConfiguration(
+    var position: Vector2i = Vector2i(0,0),
+    var size: Vector2i = Vector2i(100,100),
+    var svg: File = File("foo")
+)
+
+fun DslClipContainer.svg(conf: DslSVGConfiguration.() -> Unit){
+    val c = DslSVGConfiguration()
+    c.conf()
+
+    SVGVideoClip(
+        UUID.randomUUID().toString(),
+        c.size,
+        c.position,
+        true, SVGVideoClipConfiguration(
+            c.svg
+        )
+    )
 }

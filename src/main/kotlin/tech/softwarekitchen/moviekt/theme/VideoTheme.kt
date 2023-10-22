@@ -30,6 +30,7 @@ class VideoTheme {
         val VTPropertyKey_FontSize = "font-size"
         val VTPropertyKey_BackgroundColor = "background-color"
         val VTPropertyKey_Font = "font"
+        val VTPropertyKey_BorderColor = "border-color"
     }
     private val themeData = HashMap<String, Any>()
 

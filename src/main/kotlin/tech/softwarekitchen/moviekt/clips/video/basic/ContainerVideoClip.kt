@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
+import tech.softwarekitchen.moviekt.theme.VideoTheme
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.image.BufferedImage
@@ -28,6 +29,12 @@ open class ContainerVideoClip(
 ): VideoClip(
     id, size, position, visible,timeShift = timeShift
 ) {
+    private val borderColorProperty = VideoClipThemeProperty(VideoTheme.VTPropertyKey_BorderColor, configuration.border.color,this::markDirty)
+
+    init {
+        registerProperty(borderColorProperty)
+    }
+
     override val logger: Logger = LoggerFactory.getLogger(javaClass)
     override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         if(configuration.border.width > 0){
@@ -35,7 +42,7 @@ open class ContainerVideoClip(
             val graphics = img.createGraphics()
             val borderWidth = configuration.border.width.toFloat()
             graphics.stroke = BasicStroke(borderWidth)
-            graphics.color = configuration.border.color
+            graphics.color = borderColorProperty.v
             graphics.drawRect((0 + borderWidth / 2).roundToInt(),(0 + borderWidth / 2).roundToInt(), (size.x - 2 * borderWidth).roundToInt(), (size.y - 2 * borderWidth).roundToInt())
         }
     }
