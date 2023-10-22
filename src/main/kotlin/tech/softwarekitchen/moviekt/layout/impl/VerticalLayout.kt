@@ -22,6 +22,11 @@ class VerticalLayout(private val configuration: VerticalLayoutConfiguration = Ve
     override fun recalculateChildren(){
         val children = getChildren()
 
+        if(children.isEmpty()){
+            logger.debug("No children present")
+            return
+        }
+
         logger.debug("Total space {} {} Padding {}", getSize().x, getSize().y, configuration.padding)
         val totalSpace = Vector2i(getSize().x - configuration.padding.left - configuration.padding.right, getSize().y - configuration.padding.top - configuration.padding.bottom - (children.size * configuration.spaceBetween))
         val spacePerChild = Vector2i(totalSpace.x, totalSpace.y / children.size)

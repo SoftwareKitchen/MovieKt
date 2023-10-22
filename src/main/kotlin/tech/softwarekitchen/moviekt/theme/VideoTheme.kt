@@ -28,6 +28,8 @@ class VideoTheme {
     companion object{
         val VTPropertyKey_FontColor = "font-color"
         val VTPropertyKey_FontSize = "font-size"
+        val VTPropertyKey_BackgroundColor = "background-color"
+        val VTPropertyKey_Font = "font"
     }
     private val themeData = HashMap<String, Any>()
 

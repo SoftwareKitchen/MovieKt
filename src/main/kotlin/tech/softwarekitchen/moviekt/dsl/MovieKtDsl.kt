@@ -6,19 +6,19 @@ import tech.softwarekitchen.common.vector.Vector2
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.animation.once.SetOnceAnimation
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
-import tech.softwarekitchen.moviekt.clips.video.basic.ContainerVideoClip
+import tech.softwarekitchen.moviekt.clips.video.basic.*
 import tech.softwarekitchen.moviekt.clips.video.image.StaticImageMode
 import tech.softwarekitchen.moviekt.clips.video.image.StaticImageVideoClip
 import tech.softwarekitchen.moviekt.clips.video.image.StaticImageVideoClipConfiguration
 import tech.softwarekitchen.moviekt.clips.video.shape.ArrowVideoClip
 import tech.softwarekitchen.moviekt.clips.video.shape.ArrowVideoClipConfiguration
-import tech.softwarekitchen.moviekt.clips.video.text.StaticTextVideoClipConfiguration
-import tech.softwarekitchen.moviekt.clips.video.text.TextAnchor
-import tech.softwarekitchen.moviekt.clips.video.text.TextVideoClip
+import tech.softwarekitchen.moviekt.clips.video.text.*
 import tech.softwarekitchen.moviekt.clips.video.util.FULLHD
 import tech.softwarekitchen.moviekt.core.Movie
 import tech.softwarekitchen.moviekt.layout.impl.*
 import tech.softwarekitchen.moviekt.theme.VideoTheme
+import tech.softwarekitchen.moviekt.theme.VideoTheme.Companion.VTPropertyKey_BackgroundColor
+import tech.softwarekitchen.moviekt.theme.VideoTheme.Companion.VTPropertyKey_Font
 import tech.softwarekitchen.moviekt.theme.VideoTheme.Companion.VTPropertyKey_FontColor
 import tech.softwarekitchen.moviekt.theme.VideoTheme.Companion.VTPropertyKey_FontSize
 import java.awt.Color
@@ -151,6 +151,19 @@ class DslTheme{
         set(v){
             items.add(DslThemeEntry(VTPropertyKey_FontSize, v))
         }
+
+    var backgroundColor: Color
+        get() = items.last{it.key == VTPropertyKey_BackgroundColor } as Color
+        set(v){
+            items.add(DslThemeEntry(VTPropertyKey_BackgroundColor, v))
+        }
+
+    var font: File
+        get() = items.last{it.key == VTPropertyKey_Font } as File
+        set(v){
+            items.add(DslThemeEntry(VTPropertyKey_Font, v))
+        }
+
 }
 
 fun DslVideoConfiguration.theme(conf: DslTheme.() -> Unit){
@@ -263,17 +276,25 @@ fun DslClipContainer.arrow(conf: DslArrowConfiguration.() -> Unit){
         ArrowVideoClipConfiguration(
             Vector2(c.vec.x.toDouble(), c.vec.y.toDouble()).length(),
             c.width,
-            atan2(c.vec.y.toDouble(), c.vec.x.toDouble()),
+            Math.PI / 2 - atan2(c.vec.y.toDouble(), c.vec.x.toDouble()),
             c.outlineWidth,
             c.outlineColor,
             c.fillColor
         )
     )
+
+    addClip(clip)
 }
+
+class DslContainerBorderConfiguration(
+    var width: Int = 0,
+    var color: Color = Color.WHITE
+)
 
 class DslContainerConfiguration(
     var size: Vector2i = Vector2i(100,100),
-    var position: Vector2i = Vector2i(0,0)
+    var position: Vector2i = Vector2i(0,0),
+    var border: DslContainerBorderConfiguration = DslContainerBorderConfiguration()
 ): DslClipContainer()
 
 fun DslClipContainer.container(conf: DslContainerConfiguration.() -> Unit){
@@ -284,7 +305,75 @@ fun DslClipContainer.container(conf: DslContainerConfiguration.() -> Unit){
         UUID.randomUUID().toString(),
         c.size,
         c.position,
-        true
+        true,
+        0f,
+        ContainerVideoClipConfiguration(
+            ContainerBorderConfiguration(
+                c.border.width,
+                c.border.color
+            )
+        )
+    )
+
+    c.getClips().forEach(clip::addChild)
+
+    addClip(clip)
+}
+
+fun DslContainerConfiguration.border(conf: DslContainerBorderConfiguration.() -> Unit){
+    val c = DslContainerBorderConfiguration()
+    c.conf()
+
+    border = c
+}
+
+data class DslMultilineTextConfiguration(
+    var text: String = "Foobar",
+    var position: Vector2i = Vector2i(0,0),
+    var size: Vector2i = Vector2i(100,100),
+    var fontSize: Int = 24,
+    var color: Color = Color.WHITE,
+    var mode: MultilineMode = MultilineMode.Auto,
+    var lineDistance: Int = 2
+)
+
+fun DslClipContainer.multiline(conf: DslMultilineTextConfiguration.() -> Unit){
+    val c = DslMultilineTextConfiguration()
+    c.conf()
+
+    val clip = MultilineTextVideoClip(
+        UUID.randomUUID().toString(),
+        c.size,
+        c.position,
+        true,
+        MultilineTextVideoClipConfiguration(
+            c.text,
+            c.fontSize,
+            c.color,
+            mode = c.mode,
+            lineDistance = c.lineDistance
+        )
+    )
+
+    addClip(clip)
+}
+
+data class DslSingleColorConfiguration(
+    var position: Vector2i = Vector2i(0,0),
+    var size: Vector2i = Vector2i(100,100),
+    var color: Color = Color.BLACK
+)
+
+fun DslClipContainer.color(conf: DslSingleColorConfiguration.() -> Unit){
+    val c = DslSingleColorConfiguration()
+    c.conf()
+
+    val clip = ColorVideoClip(
+        UUID.randomUUID().toString(),
+        c.size,
+        c.position,
+        true,
+        ColorVideoClipConfiguration(c.color)
     )
 
     addClip(clip)
