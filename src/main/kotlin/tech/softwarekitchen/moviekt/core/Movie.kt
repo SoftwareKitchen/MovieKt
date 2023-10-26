@@ -206,35 +206,35 @@ class Movie(
 
         val renderBuffer = RenderBuffer(videoRoot)
 
-        while(videoFramesWritten < numVideoFrames){
+        while (videoFramesWritten < numVideoFrames) {
             val t = videoFramesWritten / fps.toFloat()
 
-            val toExecute = onceCallbacks.filter{it.at <= t}.toSet()
-            toExecute.forEach{it.action()}
+            val toExecute = onceCallbacks.filter { it.at <= t }.toSet()
+            toExecute.forEach { it.action() }
             onceCallbacks.removeAll(toExecute)
 
 
             //Add new
-            val toStart = waitingMutations.filter{t >= it.key.start}
-            val registered = toStart.map{
+            val toStart = waitingMutations.filter { t >= it.key.start }
+            val registered = toStart.map {
                 val key = it.value.prepareMutation(it.key)
                 ActiveMutation(it.value, key, it.key.start, it.key.duration)
             }
             activeMutations.addAll(registered)
-            toStart.forEach{
+            toStart.forEach {
                 waitingMutations.remove(it.key)
             }
 
             //Remove expired
-            val expired = activeMutations.filter{t > it.start + it.duration}
+            val expired = activeMutations.filter { t > it.start + it.duration }
             activeMutations.removeAll(expired)
 
-            expired.forEach{
+            expired.forEach {
                 it.node.removeMutation(it.uuid)
             }
 
             //Run active
-            activeMutations.forEach{
+            activeMutations.forEach {
                 val kf = (t - it.start) / it.duration
                 it.node.applyKeyframe(it.uuid, kf)
             }
@@ -243,11 +243,9 @@ class Movie(
             activeMutations.removeAll(expired)
 
 
-            mappedAnimations.forEach{
-                animData ->
-                if(animData.key.isApplicable(t)){
-                    animData.value.forEach{
-                        target ->
+            mappedAnimations.forEach { animData ->
+                if (animData.key.isApplicable(t)) {
+                    animData.value.forEach { target ->
                         target.set(animData.key.property, animData.key.get(t))
                     }
                 }
@@ -259,13 +257,14 @@ class Movie(
                 !it.isFinished(t)
             }
 
-            frameCallbacks.forEach{it.execute(RenderCallbackTiming.Pre, videoFramesWritten, numVideoFrames, t)}
+            frameCallbacks.forEach { it.execute(RenderCallbackTiming.Pre, videoFramesWritten, numVideoFrames, t) }
 
             renderBuffer.update(VideoTimestamp(t.toDouble(), videoFramesWritten, numVideoFrames))
             writeFrame(videoOutputStream, renderBuffer.resultBuffer)
 
-            frameCallbacks.forEach{it.execute(RenderCallbackTiming.Post, videoFramesWritten, numVideoFrames, t)}
+            frameCallbacks.forEach { it.execute(RenderCallbackTiming.Post, videoFramesWritten, numVideoFrames, t) }
         }
+
 
         videoOutputStream.flush()
         videoOutputStream.close()

@@ -7,9 +7,11 @@ import tech.softwarekitchen.moviekt.filter.VideoClipFilter
 import tech.softwarekitchen.moviekt.filter.VideoClipFilterChain
 import tech.softwarekitchen.moviekt.mutation.MovieKtMutation
 import tech.softwarekitchen.moviekt.theme.ThemedClip
+import tech.softwarekitchen.moviekt.theme.VideoTheme.Companion.VTPropertyKey_Variant
 import tech.softwarekitchen.moviekt.util.Pixel
 import java.awt.image.BufferedImage
 import java.util.*
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 data class VideoTimestamp(val t: Double, val frame: Int, val totFrames: Int)
@@ -35,6 +37,13 @@ abstract class VideoClip(
         private var value: T = initialValue
         val v: T
             get(){return value}
+        fun setDirect(n: T){
+            if(value == n){
+                return
+            }
+            value = n
+            onChange(n)
+        }
         fun set(nv: Any){
             val x = converter(nv)
             if(x == value){
@@ -52,13 +61,23 @@ abstract class VideoClip(
     private val positionProperty = VideoClipProperty(PropertyKey_Position, position, this::markPseudoDirty)
     private val sizeProperty = VideoClipProperty(PropertyKey_Size, size,{onResize(); markDirty(null)})
     private val visibleProperty = VideoClipProperty(PropertyKey_Visible, visible, this::markOpacityChanged)
+    private val variantProperty = VideoClipProperty<String?>(VTPropertyKey_Variant, null, this::markDirty)
     private val properties: MutableList<VideoClipProperty<*>> = arrayListOf(
         offsetProperty,
         opacityProperty,
         positionProperty,
         sizeProperty,
-        visibleProperty
+        visibleProperty,
+        variantProperty
     )
+
+    override fun getVariant(): String? {
+        return variantProperty.v
+    }
+
+    fun setVariant(variant: String?){
+        variantProperty.setDirect(variant)
+    }
 
     protected fun registerProperty(vararg property: VideoClipProperty<*>){
         property.forEach{

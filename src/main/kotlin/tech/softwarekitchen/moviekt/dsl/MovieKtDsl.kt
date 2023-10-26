@@ -134,42 +134,46 @@ fun DslChapterConfiguration.scene(conf: DslSceneConfiguration.() -> Unit){
     scenes.add(c)
 }
 
-data class DslThemeEntry(val key: String, val value: Any)
+data class DslThemeEntry(val key: String, val value: Any, val variant: String?)
 
-class DslTheme{
-    private val items = ArrayList<DslThemeEntry>()
+open class DslTheme{
+    protected val items = ArrayList<DslThemeEntry>()
 
     fun getItems(): List<DslThemeEntry>{
         return items.toList()
     }
 
+    fun addItem(item: DslThemeEntry){
+        items.add(item)
+    }
+
     var fontColor: Color
         get() = items.last{it.key == VTPropertyKey_FontColor}.value as Color
         set(v){
-            items.add(DslThemeEntry(VTPropertyKey_FontColor, v))
+            items.add(DslThemeEntry(VTPropertyKey_FontColor, v, null))
         }
     var fontSize: Int
         get() = items.last{it.key == VTPropertyKey_FontSize}.value as Int
         set(v){
-            items.add(DslThemeEntry(VTPropertyKey_FontSize, v))
+            items.add(DslThemeEntry(VTPropertyKey_FontSize, v, null))
         }
 
     var backgroundColor: Color
         get() = items.last{it.key == VTPropertyKey_BackgroundColor } as Color
         set(v){
-            items.add(DslThemeEntry(VTPropertyKey_BackgroundColor, v))
+            items.add(DslThemeEntry(VTPropertyKey_BackgroundColor, v, null))
         }
 
     var font: File
         get() = items.last{it.key == VTPropertyKey_Font } as File
         set(v){
-            items.add(DslThemeEntry(VTPropertyKey_Font, v))
+            items.add(DslThemeEntry(VTPropertyKey_Font, v, null))
         }
 
     var borderColor: Color
         get() = items.last{it.key == VTPropertyKey_BorderColor } as Color
         set(v){
-            items.add(DslThemeEntry(VTPropertyKey_BorderColor, v))
+            items.add(DslThemeEntry(VTPropertyKey_BorderColor, v, null))
         }
 
 
@@ -185,6 +189,17 @@ fun DslVideoConfiguration.theme(conf: DslTheme.() -> Unit){
     this.theme = theme
 }
 
+data class DslVariantTheme(var name: String = "foo"): DslTheme()
+
+fun DslTheme.variant(conf: DslVariantTheme.() -> Unit){
+    val c = DslVariantTheme()
+    c.conf()
+
+    c.getItems().forEach{
+        addItem(DslThemeEntry(it.key, it.value, c.name))
+    }
+}
+
 data class DslTextVideoClipConfiguration(
     var size: Vector2i = Vector2i(100,20),
     var position: Vector2i = Vector2i(0,0),
@@ -193,7 +208,8 @@ data class DslTextVideoClipConfiguration(
     var fontSize: Int = 24,
     var color: Color = Color.BLACK,
     var font: File? = null,
-    var anchor: TextAnchor = TextAnchor.Left
+    var anchor: TextAnchor = TextAnchor.Left,
+    var variant: String? = null
 )
 
 fun DslClipContainer.text(conf: DslTextVideoClipConfiguration.() -> Unit){
@@ -212,6 +228,7 @@ fun DslClipContainer.text(conf: DslTextVideoClipConfiguration.() -> Unit){
             c.anchor
         )
     )
+    c.variant?.let(clip::setVariant)
     addClip(clip)
 }
 
@@ -436,6 +453,32 @@ fun DslClipContainer.formula(conf: DslFormulaConfiguration.() -> Unit){
             c.initialFontSize,
             c.fontSizeDecrease
         )
+    )
+
+    addClip(clip)
+}
+
+data class DslVideoClipConfiguration(
+    var size: Vector2i = Vector2i(100,100),
+    var position: Vector2i = Vector2i(0,0),
+    var file: File = File("foo"),
+    var shift: Vector2i = Vector2i(0,0),
+    var offset: Double = 0.0,
+    var videoSize: Vector2i = Vector2i(100,100)
+)
+
+fun DslClipContainer.video(conf: DslVideoClipConfiguration.() -> Unit){
+    val c = DslVideoClipConfiguration()
+    c.conf()
+
+    val clip = FileVideoClip(
+        UUID.randomUUID().toString(),
+        c.size,
+        c.position,
+        c.file,
+        c.videoSize,
+        c.offset,
+        c.shift
     )
 
     addClip(clip)

@@ -26,6 +26,7 @@ private class LayerBuffer(
     @OptIn(ExperimentalUnsignedTypes::class)
     private var buffer = UByteArray(4 * size.x * size.y)
     private var position: Vector2i = clip.getPosition()
+    private var visible: Boolean = false
     private var cache: BufferedImage
     private val sublayers: MutableList<LayerBuffer>
     private val depthMap = Array(size.x){Array(size.y){-1} }
