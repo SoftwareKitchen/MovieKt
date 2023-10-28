@@ -60,7 +60,7 @@ abstract class VideoClip(
     private val opacityProperty = VideoClipProperty(PropertyKey_Opacity, 1f, this::markOpacityChanged)
     private val positionProperty = VideoClipProperty(PropertyKey_Position, position, this::markPseudoDirty)
     private val sizeProperty = VideoClipProperty(PropertyKey_Size, size,{onResize(); markDirty(null)})
-    private val visibleProperty = VideoClipProperty(PropertyKey_Visible, visible, this::markOpacityChanged)
+    private val visibleProperty = VideoClipProperty(PropertyKey_Visible, visible, this::markVisibilityChanged)
     private val variantProperty = VideoClipProperty<String?>(VTPropertyKey_Variant, null, this::markDirty)
     private val properties: MutableList<VideoClipProperty<*>> = arrayListOf(
         offsetProperty,
@@ -141,8 +141,12 @@ abstract class VideoClip(
     private var cacheDirty = true
     private var pseudoDirty = false
     private var opacityChanged = false
+    private var visibilityChanged = false
     protected fun markDirty(ignored: Any?){
         cacheDirty = true
+    }
+    protected fun markVisibilityChanged(ignored: Any?){
+        visibilityChanged = true
     }
     protected fun markPseudoDirty(ignored: Any?){
         pseudoDirty = true
@@ -155,14 +159,18 @@ abstract class VideoClip(
     fun hasOpacityChanged(): Boolean{
         return opacityChanged
     }
+    fun hasVisibilityChanged(): Boolean{
+        return visibilityChanged
+    }
 
     fun needsRepaint(): Boolean{
-        return cacheDirty || pseudoDirty || opacityChanged || children.any{it.needsRepaint()} || volatile
+        return cacheDirty || pseudoDirty || opacityChanged || children.any{it.needsRepaint()} || volatile || visibilityChanged
     }
     fun clearRepaintFlags(){
         cacheDirty = false
         pseudoDirty = false
         opacityChanged = false
+        visibilityChanged = false
     }
 
     fun findById(id: String): List<VideoClip>{

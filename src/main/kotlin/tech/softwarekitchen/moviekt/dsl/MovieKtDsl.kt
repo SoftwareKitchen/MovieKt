@@ -38,7 +38,8 @@ class DslVideoConfiguration(
     var fps: Int = 25,
     var size: Vector2i = FULLHD,
     override val chapters: MutableList<DslChapterConfiguration> = ArrayList<DslChapterConfiguration>(),
-    var theme: VideoTheme? = null
+    var theme: VideoTheme? = null,
+    var chapterPreparator: DslVideoConfiguration.(VideoClip) -> Unit = DslVideoConfiguration::prepareChapters
 ): DslChapterContainer
 
 fun movie(conf: DslVideoConfiguration.() -> Unit){
@@ -52,7 +53,8 @@ fun movie(conf: DslVideoConfiguration.() -> Unit){
 
     rootClip.addChild(ColorVideoClip("_", c.size, Vector2i(0,0), true, ColorVideoClipConfiguration(Color.BLACK)))
 
-    c.prepareChapters(rootClip)
+    val cp = c.chapterPreparator
+    c.cp(rootClip)
 
     val videoLength = c.chapters.sumOf{ it.scenes.sumOf{ it.length }}
 

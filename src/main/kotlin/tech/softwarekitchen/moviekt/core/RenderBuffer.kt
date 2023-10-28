@@ -4,7 +4,9 @@ import tech.softwarekitchen.common.vector.Rectangle2i
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.VideoTimestamp
+import tech.softwarekitchen.moviekt.dsl.*
 import tech.softwarekitchen.moviekt.util.Pixel
+import java.awt.Color
 import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_ARGB
 import java.awt.image.DataBufferInt
@@ -179,14 +181,21 @@ private class LayerBuffer(
         }
     }
 
-    fun update(t: VideoTimestamp){
-        if(!clip.needsRepaint()){
+    fun update(t: VideoTimestamp, forceRepaint: Boolean){
+        //Do not repaint invisible nodes & their children
+        if(!clip.isVisible() && !clip.hasVisibilityChanged()){
+            clip.clearRepaintFlags()
+            return
+        }
+        val needsForceRepaint = forceRepaint || (clip.isVisible() && clip.hasVisibilityChanged())
+
+        if(!clip.needsRepaint() && !forceRepaint){
             return
         }
         sublayers.forEach{
-            it.update(t)
+            it.update(t, needsForceRepaint)
         }
-        if(!clip.needsRepaint()){
+        if(!clip.needsRepaint() && !forceRepaint){
             return
         }
 
@@ -224,7 +233,7 @@ private class LayerBuffer(
             }
         }
 
-        val fullRepaintRequired = clip.hasOpacityChanged() || positionChanged || sizeChanged
+        val fullRepaintRequired = clip.hasOpacityChanged() || positionChanged || sizeChanged || clip.hasVisibilityChanged() || forceRepaint
         clip.clearRepaintFlags()
 
         if(fullRepaintRequired){
@@ -271,6 +280,30 @@ class RenderBuffer(
     }
 
     fun update(t: VideoTimestamp){
-        rootLayer.update(t)
+        rootLayer.update(t, false)
+    }
+}
+
+fun main(){
+    movie {
+        theme{
+            fontColor = Color.WHITE
+        }
+        chapter {
+            scene {
+                length = 5
+                text {
+                    text = "Foo"
+                }
+            }
+        }
+        chapter{
+            scene{
+                length = 5
+                text{
+                    text = "Bar"
+                }
+            }
+        }
     }
 }
