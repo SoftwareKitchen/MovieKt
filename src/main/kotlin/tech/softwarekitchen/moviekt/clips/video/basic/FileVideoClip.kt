@@ -43,6 +43,7 @@ class FileVideoClip(id: String, size: Vector2i, position: Vector2i, private val 
         videoStream = process.inputStream
         Thread{
             process.waitFor()
+            logger.debug("FFMPEG process shut down, closing stream")
             videoStream.close()
         }.start()
         loadFrame()
@@ -78,9 +79,24 @@ class FileVideoClip(id: String, size: Vector2i, position: Vector2i, private val 
             return
         }
         val pixelsPerFrame = videoSize.x * videoSize.y
-        var data = videoStream.readNBytes(3 * pixelsPerFrame)
 
-        currentFrameData = data!!
+        var data: ByteArray? = null
+        val fetcher = Thread{
+            data = videoStream.readNBytes(3 * pixelsPerFrame)
+        }
+        fetcher.start()
+
+        for(i in 0 until 100){
+            Thread.sleep(100)
+            data?.let{
+                currentFrameData = it
+                return
+            }
+        }
+        logger.warn("Needed to interrupt FFMPEG frame fetching after 10s")
+        videoStream.close()
+        fetcher.interrupt()
+        outOfData = true
     }
 
     override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
