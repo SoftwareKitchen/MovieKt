@@ -103,7 +103,7 @@ fun DslChapterContainer.prepareChapters(target: VideoClip){
     }
 }
 
-data class DslChapterConfiguration(
+open class DslChapterConfiguration(
     var name: String = "Unnamed chapter",
     val scenes: MutableList<DslSceneConfiguration> = ArrayList<DslSceneConfiguration>()
 )
@@ -124,7 +124,7 @@ abstract class DslClipContainer{
     }
 }
 
-class DslSceneConfiguration(
+open class DslSceneConfiguration(
     var name: String = "Unnamed scene",
     var length: Int = 3
 ): DslClipContainer()

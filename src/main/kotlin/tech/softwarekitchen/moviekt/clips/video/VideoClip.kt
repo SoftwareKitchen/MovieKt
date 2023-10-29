@@ -22,7 +22,7 @@ abstract class VideoClip(
     position: Vector2i,
     visible: Boolean,
     private val volatile: Boolean = false,
-    private val timeShift: Float = 0f
+    val timeShift: Float = 0f
 ): ThemedClip{
     companion object{
         val PropertyKey_Offset = "Offset"
