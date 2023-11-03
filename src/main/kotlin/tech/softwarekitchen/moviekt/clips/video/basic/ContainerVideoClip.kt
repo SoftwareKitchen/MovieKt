@@ -25,9 +25,10 @@ open class ContainerVideoClip(
     position: Vector2i,
     visible: Boolean,
     timeShift: Float = 0f,
-    private val configuration: ContainerVideoClipConfiguration = ContainerVideoClipConfiguration()
+    private val configuration: ContainerVideoClipConfiguration = ContainerVideoClipConfiguration(),
+    private val volatile: Boolean = false
 ): VideoClip(
-    id, size, position, visible,timeShift = timeShift
+    id, size, position, visible,timeShift = timeShift, volatile = volatile
 ) {
     private val borderColorProperty = VideoClipThemeProperty(VideoTheme.VTPropertyKey_BorderColor, configuration.border.color,this::markDirty)
 

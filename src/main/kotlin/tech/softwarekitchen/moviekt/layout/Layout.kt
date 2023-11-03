@@ -4,7 +4,7 @@ import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.basic.ContainerVideoClip
 
-abstract class Layout(name: String = "layout"): ContainerVideoClip(name,Vector2i(100,100), Vector2i(0,0),true) {
+abstract class Layout(name: String = "layout", volatile: Boolean = false): ContainerVideoClip(name,Vector2i(100,100), Vector2i(0,0),true, volatile = volatile) {
     override fun addChild(vararg child: VideoClip){
         super.addChild(*child)
         recalculateChildren()
