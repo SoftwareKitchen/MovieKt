@@ -13,7 +13,7 @@ class VerticalLayout(private val configuration: VerticalLayoutConfiguration = Ve
     companion object{
         fun of(padding: Padding, spaceBetween: Int, vararg clips: VideoClip): VerticalLayout {
             val layout = VerticalLayout(VerticalLayoutConfiguration(padding, spaceBetween))
-            clips.forEach(layout::addChild)
+            layout.addChild(*clips)
             return layout
         }
     }

@@ -6,12 +6,12 @@ import tech.softwarekitchen.moviekt.layout.Layout
 
 class CenterLayout: Layout() {
     override val logger = LoggerFactory.getLogger(javaClass)
-    override fun addChild(child: VideoClip) {
-        if(getChildren().size >= 1){
+    override fun addChild(vararg child: VideoClip) {
+        if(getChildren().size + child.size > 1){
             logger.error("Multiple children in CenterLayout are not supported")
             throw Exception()
         }
-        super.addChild(child)
+        super.addChild(*child)
     }
     override fun recalculateChildren() {
         val child = getChildren().firstOrNull() ?: run {

@@ -70,11 +70,11 @@ class TwoSidedBillboardLayout(name: String): Layout(name){
         return i0
     }
 
-    override fun addChild(child: VideoClip) {
-        if(children.size >= 2){
+    override fun addChild(vararg child: VideoClip) {
+        if(children.size + child.size > 2){
             println("WARNING: Adding more than two children on a TwoSidedBillboardLayout will have them being ignored")
         }
-        children.add(child)
+        child.forEach(children::add)
         recalculateChildren()
     }
 

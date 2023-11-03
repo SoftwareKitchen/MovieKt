@@ -2,6 +2,8 @@ package tech.softwarekitchen.moviekt.clips.video
 
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.animation.MovieKtAnimation
+import tech.softwarekitchen.moviekt.clips.audio.AudioClip
+import tech.softwarekitchen.moviekt.clips.audio.basic.AudioContainerClip
 import tech.softwarekitchen.moviekt.exception.UnknownPropertyException
 import tech.softwarekitchen.moviekt.filter.VideoClipFilter
 import tech.softwarekitchen.moviekt.filter.VideoClipFilterChain
@@ -12,6 +14,7 @@ import tech.softwarekitchen.moviekt.util.Pixel
 import java.awt.image.BufferedImage
 import java.util.*
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 data class VideoTimestamp(val t: Double, val frame: Int, val totFrames: Int)
@@ -22,13 +25,14 @@ abstract class VideoClip(
     position: Vector2i,
     visible: Boolean,
     private val volatile: Boolean = false,
-    val timeShift: Float = 0f
-): ThemedClip{
+    timeShift: Float = 0f
+): AudioClip(1), ThemedClip{
     companion object{
         val PropertyKey_Offset = "Offset"
         val PropertyKey_Opacity = "Opacity"
         val PropertyKey_Position = "Position"
         val PropertyKey_Size = "Size"
+        val PropertyKey_TimeShift = "TimeShift"
         val PropertyKey_Visible = "Visible"
     }
     protected class ActiveMutation(val onTick: (Float) -> Unit, val onClose: () -> Unit)
@@ -61,6 +65,7 @@ abstract class VideoClip(
     private val positionProperty = VideoClipProperty(PropertyKey_Position, position, this::markPseudoDirty)
     private val sizeProperty = VideoClipProperty(PropertyKey_Size, size,{onResize(); markDirty(null)})
     private val visibleProperty = VideoClipProperty(PropertyKey_Visible, visible, this::markVisibilityChanged)
+    private val timeShiftProperty = VideoClipProperty(PropertyKey_TimeShift, timeShift, this::markDirty)
     private val variantProperty = VideoClipProperty<String?>(VTPropertyKey_Variant, null, this::markDirty)
     private val properties: MutableList<VideoClipProperty<*>> = arrayListOf(
         offsetProperty,
@@ -68,7 +73,8 @@ abstract class VideoClip(
         positionProperty,
         sizeProperty,
         visibleProperty,
-        variantProperty
+        variantProperty,
+        timeShiftProperty
     )
 
     override fun getVariant(): String? {
@@ -102,12 +108,9 @@ abstract class VideoClip(
     fun addAddChildListeners(listener: (VideoClip) -> Unit){
         addChildListeners.add(listener)
     }
-    open fun addChild(child: VideoClip){
-        children.add(child)
-
-        addChildListeners.forEach{
-            it(child)
-        }
+    open fun addChild(vararg child: VideoClip){
+        child.forEach(children::add)
+        addChildListeners.forEach{acl -> child.forEach(acl)}
     }
 
     private val removeChildListeners = ArrayList<(VideoClip) -> Unit>()
@@ -287,10 +290,33 @@ abstract class VideoClip(
     }
 
     fun getAnimations(): List<MovieKtAnimation<*>>{
-        return (children.map{it.getAnimations()}.flatten() + rawAnimations).map{it.shift(timeShift)}
+        return (children.map{it.getAnimations()}.flatten() + rawAnimations).map{it.shift(timeShiftProperty.v)}
     }
 
     fun getMutations(): List<MovieKtMutation>{
-        return (children.map{it.getMutations()}.flatten() + rawMutations).map{it.shift(timeShift)}
+        return (children.map{it.getMutations()}.flatten() + rawMutations).map{it.shift(timeShiftProperty.v)}
+    }
+
+    private val audioChildren = AudioContainerClip(1)
+    fun addAudioChild(audioClip: AudioClip, offset: Double){
+        audioChildren.addClip(audioClip, offset)
+    }
+    override fun getAt(t: Double): List<Double> {
+        val audioSum = ArrayList<Double>()
+        for(i in 0 until numChannels){
+            audioSum.add(0.0)
+        }
+        children.forEach{
+            val audio = it.getAt(t - it.timeShiftProperty.v)
+            audio.forEachIndexed {
+                i, v ->
+                audioSum[i] += v
+            }
+        }
+        audioChildren.getAt(t).forEachIndexed {
+            i, v ->
+            audioSum[i] += v
+        }
+        return audioSum.map{min(1.0,max(it, -1.0))}
     }
 }

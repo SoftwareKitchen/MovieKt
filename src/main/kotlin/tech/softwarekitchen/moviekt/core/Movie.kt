@@ -42,11 +42,6 @@ class Movie(
     private lateinit var audioStart: LocalDateTime
     private var audioFramesWritten = 0
     private val numAudioFrames = 44100 * length + 1
-    var audioContainer = AudioContainerClip(length.toDouble(), 1)
-        set(value) {
-            println("WARN Audio container was replaced - all previous settings are lost")
-            field = value
-        }
     private var mergeDone = false
     private val frameCallbacks = ArrayList<RenderCallback>()
     private val onceCallbacks = ArrayList<OnceCallback>()
@@ -275,8 +270,7 @@ class Movie(
 
         audioStart = LocalDateTime.now()
 
-
-        when(audioContainer.numChannels){
+        when(videoRoot.numChannels){
             1 -> {
                 val audioProcess = ProcessBuilder(
                     "ffmpeg",
@@ -296,7 +290,7 @@ class Movie(
                 val audioOutputStream = audioProcess.outputStream
                 while(audioFramesWritten < numAudioFrames){
                     val t = audioFramesWritten / 44100.0
-                    val v = audioContainer.getAt(t)
+                    val v = videoRoot.getAt(t)
                     val ampTranslated = v.map{(32767.0 * (it + 1)).toInt()}
 
                     audioOutputStream.write((ampTranslated[0] / 256) % 256)
@@ -347,7 +341,7 @@ class Movie(
                 val audioOutputStreamRight = audioProcessRight.outputStream
                 while(audioFramesWritten < numAudioFrames){
                     val t = audioFramesWritten / 44100.0
-                    val v = audioContainer.getAt(t)
+                    val v = videoRoot.getAt(t)
                     val ampTranslated = v.map{(32767.0 * it + 1).toInt()}
 
                     audioOutputStreamLeft.write((ampTranslated[0] / 256) % 256)

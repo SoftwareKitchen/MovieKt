@@ -37,7 +37,7 @@ class FileAudioClip(f: File, private val offset: Double = 0.0): AudioClip(1) {
         return listOf(s.toDouble() / 32768.0)
     }
 
-    override fun getLength(): Double {
+    fun getLength(): Double {
         return data.size.toDouble() / 88200.0
     }
 }

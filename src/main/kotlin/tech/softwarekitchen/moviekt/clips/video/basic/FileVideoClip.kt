@@ -49,7 +49,7 @@ class FileVideoClip(id: String, size: Vector2i, position: Vector2i, private val 
         loadFrame()
     }
 
-    fun getAt(t: Double): BufferedImage {
+    fun getFrameAt(t: Double): BufferedImage {
         val frame = (t * fps).toInt()
         if(frame < currentFrame){
             throw Exception("Not yet supported")
@@ -101,7 +101,7 @@ class FileVideoClip(id: String, size: Vector2i, position: Vector2i, private val 
 
     override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val g = img.createGraphics()
-        val content = getAt(t.t)
+        val content = getFrameAt(t.t)
         g.drawImage(content,0,0,null)
     }
 }

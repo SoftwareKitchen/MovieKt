@@ -3,11 +3,10 @@ package tech.softwarekitchen.moviekt.layout
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.clips.video.VideoClip
 import tech.softwarekitchen.moviekt.clips.video.basic.ContainerVideoClip
-import java.util.ConcurrentModificationException
 
 abstract class Layout(name: String = "layout"): ContainerVideoClip(name,Vector2i(100,100), Vector2i(0,0),true) {
-    override fun addChild(child: VideoClip){
-        super.addChild(child)
+    override fun addChild(vararg child: VideoClip){
+        super.addChild(*child)
         recalculateChildren()
     }
 
