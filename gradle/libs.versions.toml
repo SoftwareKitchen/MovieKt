@@ -1,0 +1,24 @@
+[versions]
+kotlin      = "1.9.22"
+jackson     = "2.15.0"
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref="kotlin"}
+
+[libraries]
+# Kotlin
+kotlin-stdlib = { module="org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref="kotlin" }
+kotlin-test = { module="org.jetbrains.kotlin:kotlin-test", version.ref="kotlin" }
+
+# My dependencies
+software-renderer = "tech.softwarekitchen.tsr:TSR:0.2-dev"
+svg = "tech.software-kitchen:kSVG:0.1.1"
+common-vector = "tech.software-kitchen.common:Common-Vector:1.4"
+
+# Jackson
+jackson-kotlin-module = { module="com.fasterxml.jackson.module:jackson-module-kotlin", version.ref="jackson" }
+jackson-databind = { module="com.fasterxml.jackson.core:jackson-databind", version.ref="jackson" }
+jackson-xml = { module="com.fasterxml.jackson.dataformat:jackson-dataformat-xml", version.ref="jackson" }
+
+# Other
+slf4j = "org.slf4j:slf4j-api:2.0.9"

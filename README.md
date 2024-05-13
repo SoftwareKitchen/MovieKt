@@ -3,6 +3,10 @@
 MovieKt is a Library for Kotlin (and thereby Java) which can create Videos from
 Java Images using FFMPEG - similarly to MoviePy.  
 Currently only MP4 videos are supported
+## How to build it
+``` 
+gradle :build-library:publishToMavenLocal
+```
 ## How does it work
 ### Create a Movie
 ``` kotlin
