@@ -23,7 +23,7 @@ dependencies {
 }
 
 group = "tech.software-kitchen.moviekt"
-val versionStr = "0.8.0"
+val versionStr = "0.8.1"
 version = versionStr
 
 sourceSets {
