@@ -24,9 +24,10 @@ class StaticTextVideoClipConfiguration(
     val fontSize: Int = 24,
     val color: Color = Color.BLACK,
     val ttFont: File? = null,
-    val anchor: TextAnchor = TextAnchor.Left
+    val anchor: TextAnchor = TextAnchor.Left,
+    val shift: Vector2i = Vector2i(0,0)
 )
-class TextVideoClip (
+open class TextVideoClip (
     id: String,
     size: Vector2i,
     position: Vector2i,
@@ -81,7 +82,7 @@ class TextVideoClip (
             TextAnchor.Center -> curSize.scale(0.5).plus(Vector2i(- bounds.width.toInt() / 2,- bounds.height.toInt() / 2))
             TextAnchor.Left -> Vector2i( 0, curSize.y / 2 - bounds.height.toInt() / 2)
         }
-        val mapped = Vector2i(topleft.x - bounds.x.toInt() / 2, topleft.y - bounds.y.toInt())
+        val mapped = Vector2i(topleft.x - bounds.x.toInt() / 2, topleft.y - bounds.y.toInt()) + configuration.shift
 
         graphics.font = font
         graphics.color = fontColorProperty.v

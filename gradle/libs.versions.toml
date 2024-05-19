@@ -13,7 +13,7 @@ kotlin-test = { module="org.jetbrains.kotlin:kotlin-test", version.ref="kotlin" 
 # My dependencies
 software-renderer = "tech.softwarekitchen.tsr:TSR:0.2-dev"
 svg = "tech.software-kitchen:kSVG:0.1.2"
-common-vector = "tech.software-kitchen.common:Common-Vector:1.4"
+common-vector = "tech.software-kitchen.common:Common-Vector:1.5"
 
 # Jackson
 jackson-kotlin-module = { module="com.fasterxml.jackson.module:jackson-module-kotlin", version.ref="jackson" }
