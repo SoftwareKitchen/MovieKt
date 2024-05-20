@@ -16,7 +16,6 @@ class MovieKtAnimationExtension: MovieKtExtension {
     override fun frame(t: Float) {
         animations.forEach { animData ->
             if (animData.first.isApplicable(t)) {
-
                 animData.second.forEach { target ->
                     target.set(animData.first.property, animData.first.get(t))
                 }
