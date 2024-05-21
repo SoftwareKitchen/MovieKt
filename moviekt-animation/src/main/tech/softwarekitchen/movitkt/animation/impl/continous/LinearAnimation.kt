@@ -16,6 +16,12 @@ class DoubleInterpolator(val f1: Double, val f2: Double): Interpolatable<Double>
     }
 }
 
+class FloatInterpolator(val f1: Float, val f2: Float): Interpolatable<Float>{
+    override fun interpolateLinear(f: Float): Float {
+        return (1f - f) * f1 + f * f2
+    }
+}
+
 class Vector2Interpolator(val f1: Vector2, val f2: Vector2): Interpolatable<Vector2>{
     override fun interpolateLinear(f: Float): Vector2 {
         return f1.scale(1.0 - f).plus(f2.scale(f.toDouble()))

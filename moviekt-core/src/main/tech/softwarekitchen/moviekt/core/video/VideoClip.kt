@@ -108,6 +108,7 @@ abstract class VideoClip(
     open fun addChild(vararg child: VideoClip){
         child.forEach(children::add)
         addChildListeners.forEach{acl -> child.forEach(acl)}
+        markDirty(null)
     }
 
     private val removeChildListeners = ArrayList<(VideoClip) -> Unit>()
