@@ -38,7 +38,6 @@ class DynamicLineDiagramVideoClip(
         val PropertyKey_DataProvider = "DataProvider"
     }
 
-    override val logger: Logger = LoggerFactory.getLogger(javaClass)
     private val dataProviderProperty = VideoClipProperty(PropertyKey_DataProvider,dataProvider,this::markDirty)
     init{
         registerProperty(dataProviderProperty)

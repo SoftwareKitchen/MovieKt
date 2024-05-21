@@ -20,7 +20,6 @@ class RotatingCounterVideoClip(
     visible: Boolean,
     private val configuration: RotatingCounterVideoClipConfiguration
 ): ContainerVideoClip(id, size, position, visible) {
-    override val logger: Logger = LoggerFactory.getLogger(javaClass.name)
     private val tc1 = TextVideoClip(
         "_",
         size,

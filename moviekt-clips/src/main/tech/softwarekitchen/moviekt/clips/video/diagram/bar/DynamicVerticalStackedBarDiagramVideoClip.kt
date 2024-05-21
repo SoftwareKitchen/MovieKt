@@ -23,8 +23,6 @@ class DynamicVerticalStackedBarDiagramVideoClip(
         val PropertyKey_Providers = "Providers"
     }
 
-    override val logger: Logger = LoggerFactory.getLogger(javaClass)
-
     private val providerProperty = VideoClipProperty(PropertyKey_Providers, providers,this::markDirty)
     init{
         registerProperty(providerProperty)

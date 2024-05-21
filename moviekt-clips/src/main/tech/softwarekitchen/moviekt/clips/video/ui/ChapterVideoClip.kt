@@ -21,7 +21,6 @@ class ChapterVideoClip(
     position: Vector2i,
     private val configuration: ChapterVideoClipConfiguration
     ): VideoClip(id, size, position,true) {
-    override val logger: Logger = LoggerFactory.getLogger(javaClass)
     private val child = ContainerVideoClip(
         UUID.randomUUID().toString(),
         Vector2i(size.x * configuration.chapters.size, size.y),

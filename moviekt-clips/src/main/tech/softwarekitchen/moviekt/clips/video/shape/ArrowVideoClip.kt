@@ -29,7 +29,6 @@ class ArrowVideoClip(
     (Math.abs(Math.cos(configuration.angle)) * (configuration.width + configuration.outlineWidth * 2) + Math.abs(Math.sin(configuration.angle)) * (configuration.length + configuration.outlineWidth * 2)).toInt(),
     (Math.abs(Math.cos(configuration.angle)) * (configuration.length + configuration.outlineWidth * 2) + Math.abs(Math.sin(configuration.angle)) * (configuration.width + configuration.outlineWidth * 2)).toInt()
 ), position, visible) {
-    override val logger: Logger = LoggerFactory.getLogger(javaClass)
     override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val size = Vector2i(img.width, img.height)
 

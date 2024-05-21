@@ -24,7 +24,6 @@ class ProgressBarVideoClip(
     companion object{
         val PropertyKey_Progress = "Progress"
     }
-    override val logger: Logger = LoggerFactory.getLogger(javaClass)
     private val progressProperty = VideoClipProperty(PropertyKey_Progress,0.0, this::markDirty)
 
     init{

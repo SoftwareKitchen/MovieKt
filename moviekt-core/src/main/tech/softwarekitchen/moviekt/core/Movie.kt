@@ -4,13 +4,11 @@ import org.slf4j.LoggerFactory
 import tech.softwarekitchen.moviekt.core.audio.AudioClip
 import tech.softwarekitchen.moviekt.core.exception.FFMPEGDidntShutdownException
 import tech.softwarekitchen.moviekt.core.exception.ImageSizeMismatchException
-import tech.softwarekitchen.moviekt.core.exception.NodeNotFoundException
 import tech.softwarekitchen.moviekt.core.exception.VideoIsClosedException
 import tech.softwarekitchen.moviekt.core.extension.MovieKtExtension
 import tech.softwarekitchen.moviekt.core.render.RenderBuffer
 import tech.softwarekitchen.moviekt.core.util.VideoTimestamp
 import tech.softwarekitchen.moviekt.core.video.VideoClip
-import tech.softwarekitchen.moviekt.theme.VideoTheme
 import java.io.File
 import java.io.OutputStream
 import java.time.Duration
@@ -43,7 +41,6 @@ class Movie(
     private var mergeDone = false
     private val frameCallbacks = ArrayList<RenderCallback>()
     private val onceCallbacks = ArrayList<OnceCallback>()
-    private var theme: VideoTheme? = null
     private val logger = LoggerFactory.getLogger(javaClass)
     private fun log(){
         while(videoFramesWritten < numVideoFrames){
@@ -161,13 +158,6 @@ class Movie(
 
         //Prepare
         logger.info("Starting video preparations")
-        theme?.let{
-            logger.info("Applying theme")
-            videoRoot.applyTheme(it)
-        }
-        theme ?: run {
-            logger.info("No theme provided")
-        }
         extensions.forEach{
             it.prepare(this)
         }
@@ -388,9 +378,5 @@ class Movie(
         mergeDone = true
         File(rawAudioName).delete()
         File(rawVideoName).delete()
-    }
-
-    fun setTheme(theme: VideoTheme){
-        this.theme = theme
     }
 }

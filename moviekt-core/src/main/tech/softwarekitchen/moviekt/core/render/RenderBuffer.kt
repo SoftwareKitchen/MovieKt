@@ -41,7 +41,7 @@ private class LayerBuffer(
             clip.renderContent(cache, VideoTimestamp(0.0,0,0))
         }
 
-        sublayers = clip.getChildren().reversed().mapIndexed{
+        sublayers = clip.readChildren{it}.reversed().mapIndexed{
             depth, child ->
             LayerBuffer(
                 depth,

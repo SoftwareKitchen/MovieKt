@@ -32,8 +32,6 @@ class DynamicTrajectoryDiagramVideoClip(
         val colors = listOf(Color.YELLOW, Color.BLUE)
     }
 
-    override val logger: Logger = LoggerFactory.getLogger(javaClass)
-
     override fun getData(): List<Pair<Double, Double>> {
         return providers.map{it()}.flatten()
     }

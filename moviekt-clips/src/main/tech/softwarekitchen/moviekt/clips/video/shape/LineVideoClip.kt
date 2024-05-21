@@ -21,7 +21,6 @@ class LineVideoClip(
     visible: Boolean,
     private val configuration: LineVideoClipConfiguration
 ): VideoClip(id, size, position, visible) {
-    override val logger: Logger = LoggerFactory.getLogger(javaClass.name)
 
     override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val g = img.graphics

@@ -19,7 +19,6 @@ class DataTableVideoClip(
     companion object{
         val PropertyKey_Data = "Data"
     }
-    override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     private val dataProperty = VideoClipProperty(PropertyKey_Data, data,this::markDirty)
 

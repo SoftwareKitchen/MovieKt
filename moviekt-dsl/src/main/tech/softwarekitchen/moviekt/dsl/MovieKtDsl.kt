@@ -22,6 +22,8 @@ import tech.softwarekitchen.moviekt.theme.VideoTheme.Companion.VTPropertyKey_Bor
 import tech.softwarekitchen.moviekt.theme.VideoTheme.Companion.VTPropertyKey_Font
 import tech.softwarekitchen.moviekt.theme.VideoTheme.Companion.VTPropertyKey_FontColor
 import tech.softwarekitchen.moviekt.theme.VideoTheme.Companion.VTPropertyKey_FontSize
+import tech.softwarekitchen.moviekt.theme.applyTheme
+import tech.softwarekitchen.moviekt.theme.themeContainer
 import tech.softwarekitchen.movitkt.animation.animationContainer
 import java.awt.Color
 import java.io.File
@@ -69,7 +71,7 @@ fun movie(conf: DslVideoConfiguration.() -> Unit){
         rootAudioClip
     )
 
-    c.theme?.let{movie.setTheme(it)}
+    c.theme?.let{movie.applyTheme(it)}
 
 
     movie.write()
@@ -234,7 +236,9 @@ fun DslClipContainer.text(conf: DslTextVideoClipConfiguration.() -> Unit){
             c.anchor
         )
     )
-    c.variant?.let(clip::setVariant)
+    c.variant?.let{
+        clip.themeContainer().setVariant(it)
+    }
     addClip(clip)
 }
 

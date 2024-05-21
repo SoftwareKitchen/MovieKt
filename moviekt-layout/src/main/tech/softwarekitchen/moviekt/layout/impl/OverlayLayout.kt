@@ -5,7 +5,7 @@ import tech.softwarekitchen.moviekt.layout.Layout
 
 class OverlayLayout: Layout("OverlayLayout") {
     override fun recalculateChildren() {
-        getChildren().forEach{
+        onChildren{
             it.set(PropertyKey_Size, getSize())
             it.set(PropertyKey_Position, Vector2i(0,0))
         }

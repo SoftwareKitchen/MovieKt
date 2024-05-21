@@ -27,7 +27,6 @@ class SVGVideoClip(
     companion object{
         val PropertyKey_File = "file"
     }
-    override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     private var content: SVGImage = SVGImage(configuration.file)
     private val fileProperty = VideoClipProperty(PropertyKey_File,configuration.file,this::loadImage,{File(it as String)})

@@ -154,7 +154,6 @@ class ChessBoardVideoClip(
         val PropertyKey_BoardState = "State"
     }
 
-    override val logger: Logger = LoggerFactory.getLogger(javaClass)
     private val pieces = ArrayList<ChessPiece>()
     private val boardStateProperty = VideoClipProperty(PropertyKey_BoardState,configuration.position,this::updateBoardState)
     init{

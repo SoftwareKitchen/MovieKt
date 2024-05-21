@@ -69,7 +69,6 @@ class CodeVideoClip(
         )
     }
 
-    override val logger: Logger = LoggerFactory.getLogger(javaClass)
     private var formatted: Code
     private val anchorProperty =
         VideoClipProperty(

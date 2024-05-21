@@ -18,7 +18,7 @@ abstract class VideoClip(
     visible: Boolean,
     private val volatile: Boolean = false,
     timeShift: Float = 0f
-): ThemedClip{
+) {
     companion object{
         val PropertyKey_Offset = "Offset"
         val PropertyKey_Opacity = "Opacity"
@@ -26,10 +26,12 @@ abstract class VideoClip(
         val PropertyKey_Size = "Size"
         val PropertyKey_TimeShift = "TimeShift"
         val PropertyKey_Visible = "Visible"
+
+
     }
     protected class ActiveMutation(val onTick: (Float) -> Unit, val onClose: () -> Unit)
 
-    protected open class VideoClipProperty<T>(val name: String, initialValue: T, private val onChange: (T) -> Unit, private val converter: (Any) -> T = {it as T}){
+    open class VideoClipProperty<T>(val name: String, private val initialValue: T, private val onChange: (T) -> Unit, private val converter: (Any) -> T = {it as T}){
         private var value: T = initialValue
         val v: T
             get(){return value}
@@ -48,6 +50,10 @@ abstract class VideoClip(
             value = x
             onChange(nv as T)
         }
+
+        fun reset(){
+            setDirect(initialValue)
+        }
     }
 
     private val children =  ArrayList<VideoClip>()
@@ -62,41 +68,24 @@ abstract class VideoClip(
     private val sizeProperty = VideoClipProperty(PropertyKey_Size, size,{onResize(); markDirty(null)})
     private val visibleProperty = VideoClipProperty(PropertyKey_Visible, visible, this::markVisibilityChanged)
     private val timeShiftProperty = VideoClipProperty(PropertyKey_TimeShift, timeShift, this::markDirty)
-    private val variantProperty = VideoClipProperty<String?>(VTPropertyKey_Variant, null, this::markDirty)
     private val properties: MutableList<VideoClipProperty<*>> = arrayListOf(
         offsetProperty,
         opacityProperty,
         positionProperty,
         sizeProperty,
         visibleProperty,
-        variantProperty,
         timeShiftProperty
     )
     val extensions = ArrayList<MovieKtVideoExtensionContainer>()
 
-    override fun getVariant(): String? {
-        return variantProperty.v
-    }
-
-    fun setVariant(variant: String?){
-        variantProperty.setDirect(variant)
+    fun <T>readProperties(op: (VideoClipProperty<*>) -> T): List<T>{
+        return properties.map(op)
     }
 
     protected fun registerProperty(vararg property: VideoClipProperty<*>){
         property.forEach{
             properties.add(it)
         }
-    }
-
-    protected class VideoClipThemeProperty<T>(name: String, initialValue: T, onChange: (T) -> Unit, converter: (Any) -> T = {it as T}): VideoClipProperty<T>(name, initialValue, onChange, converter){
-
-    }
-    protected fun registerThemedProperty(vararg tProperties: VideoClipThemeProperty<*>){
-        tProperties.forEach(properties::add)
-    }
-
-    override fun getPossibleThemeProperties(): List<String>{
-        return properties.filter{it is VideoClipThemeProperty<*> }.map{it.name}
     }
 
     abstract fun renderContent(img: BufferedImage, t: VideoTimestamp)
@@ -122,8 +111,8 @@ abstract class VideoClip(
         }
     }
 
-    override fun getChildren(): List<VideoClip>{
-        return children
+    fun onChildren(op: (VideoClip) -> Unit){
+        children.forEach(op)
     }
 
     fun getPosition(): Vector2i{
@@ -185,9 +174,17 @@ abstract class VideoClip(
         }
     }
 
-    override fun set(key: String, value: Any){
+    fun set(key: String, value: Any){
         val prop = properties.firstOrNull{it.name == key} ?: throw UnknownPropertyException(key, this.id)
         prop.set(value)
+    }
+
+    fun has(key: String): Boolean{
+        return properties.any{it.name == key}
+    }
+
+    fun reset(key: String){
+        properties.firstOrNull{it.name == key}?.reset()
     }
 
     private val mutations = HashMap<String, (MovieKtMutation) -> Pair<String, ActiveMutation>>()

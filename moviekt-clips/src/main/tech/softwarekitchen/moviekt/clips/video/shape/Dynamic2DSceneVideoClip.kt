@@ -18,7 +18,6 @@ class Dynamic2DSceneVideoClip(
     visible: Boolean,
     private val shapeProvider: List<ShapePaintConfiguration>,
 ) : VideoClip(id, size, position, visible){
-    override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val graphics = img.createGraphics()

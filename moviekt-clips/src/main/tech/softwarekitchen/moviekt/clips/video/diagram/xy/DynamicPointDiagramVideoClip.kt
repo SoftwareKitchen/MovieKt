@@ -33,7 +33,6 @@ class DynamicPointDiagramVideoClip(
     id, size,position, visible,
     configuration = configuration,
 ) {
-    override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     override fun generateDataDisplay(size: Vector2i): BufferedImage {
         val img = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)

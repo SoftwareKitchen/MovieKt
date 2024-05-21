@@ -30,13 +30,12 @@ open class ContainerVideoClip(
 ): VideoClip(
     id, size, position, visible,timeShift = timeShift, volatile = volatile
 ) {
-    private val borderColorProperty = VideoClipThemeProperty(VideoTheme.VTPropertyKey_BorderColor, configuration.border.color,this::markDirty)
+    private val borderColorProperty = VideoClipProperty(VideoTheme.VTPropertyKey_BorderColor, configuration.border.color,this::markDirty)
 
     init {
         registerProperty(borderColorProperty)
     }
 
-    override val logger: Logger = LoggerFactory.getLogger(javaClass)
     override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         if(configuration.border.width > 0){
             val size = Vector2i(img.width, img.height)

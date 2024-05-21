@@ -35,6 +35,7 @@ sourceSets {
             srcDirs( "../moviekt-dsl/src/main" )
             srcDirs( "../moviekt-filter/src/main" )
             srcDirs( "../moviekt-layout/src/main" )
+            srcDirs( "../moviekt-theme/src/main" )
         }
     }
 }

@@ -34,7 +34,6 @@ class MultilineTextVideoClip(
     visible: Boolean,
     private val configuration: MultilineTextVideoClipConfiguration
 ): VideoClip(id, size, position, visible){
-    override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val graphics = img.createGraphics()

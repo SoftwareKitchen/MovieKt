@@ -162,7 +162,6 @@ class FormulaVideoClip(
     private val formula: FormulaElement,
     private val configuration: StaticFormulaVideoClipConfiguration = StaticFormulaVideoClipConfiguration()
 ): VideoClip(id, size, position, visible) {
-    override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val curSize = Vector2i(img.width, img.height)

@@ -15,7 +15,6 @@ import kotlin.math.floor
 
 class FileVideoClip(id: String, size: Vector2i, position: Vector2i, private val f: File, private val videoSize: Vector2i, private val offset: Double = 0.0, private val videoOffset: Vector2i = Vector2i(0,0)): VideoClip(id, size, position, true, volatile = true) {
 
-    override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     private lateinit var currentFrameData: ByteArray
     private var currentFrame = -1
@@ -38,12 +37,11 @@ class FileVideoClip(id: String, size: Vector2i, position: Vector2i, private val 
             "rgb24",
             "-"
         )
-        logger.trace("Running ${pb.command().joinToString(" ")}")
+
         val process = pb.start()
         videoStream = process.inputStream
         Thread{
             process.waitFor()
-            logger.debug("FFMPEG process shut down, closing stream")
             videoStream.close()
         }.start()
         loadFrame()
@@ -55,9 +53,7 @@ class FileVideoClip(id: String, size: Vector2i, position: Vector2i, private val 
             throw Exception("Not yet supported")
         }
         while(currentFrame < frame){
-            logger.trace("Loading frame $currentFrame < $frame")
             loadFrame()
-            logger.trace("Done")
         }
 
         val img = BufferedImage(getSize().x, getSize().y, BufferedImage.TYPE_INT_ARGB)
@@ -93,7 +89,7 @@ class FileVideoClip(id: String, size: Vector2i, position: Vector2i, private val 
                 return
             }
         }
-        logger.warn("Needed to interrupt FFMPEG frame fetching after 10s")
+
         videoStream.close()
         fetcher.interrupt()
         outOfData = true

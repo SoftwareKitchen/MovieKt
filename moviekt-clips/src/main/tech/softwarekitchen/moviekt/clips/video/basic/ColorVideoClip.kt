@@ -17,9 +17,8 @@ open class ColorVideoClip(id: String, size: Vector2i, position: Vector2i, visibl
         val PropertyKey_BorderWidth = "BorderWidth"
         val PropertyKey_BorderRadius = "BorderRadius"
     }
-    override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
-    private val propertyBackground = VideoClipThemeProperty(VTPropertyKey_BackgroundColor, configuration.background, this::markDirty)
+    private val propertyBackground = VideoClipProperty(VTPropertyKey_BackgroundColor, configuration.background, this::markDirty)
     private val propertyBorderColor = VideoClipProperty(PropertyKey_BorderColor, configuration.border,this::markDirty)
     private val propertyBorderWidth = VideoClipProperty(PropertyKey_BorderWidth, configuration.borderWidth,this::markDirty)
     private val propertyBorderRadius = VideoClipProperty(PropertyKey_BorderRadius, configuration.borderRadius,this::markDirty)

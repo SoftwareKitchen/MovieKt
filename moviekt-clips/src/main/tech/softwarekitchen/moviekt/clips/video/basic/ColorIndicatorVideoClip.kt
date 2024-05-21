@@ -19,7 +19,6 @@ class ColorIndicatorVideoClip(
 ): VideoClip(
     id, size, position, visible
 ) {
-    override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val size = Vector2i(img.width, img.height)

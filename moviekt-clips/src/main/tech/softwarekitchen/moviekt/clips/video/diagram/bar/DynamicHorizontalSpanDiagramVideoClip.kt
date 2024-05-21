@@ -17,8 +17,6 @@ class DynamicHorizontalSpanDiagramVideoClip(
     private val dataProvider: () -> List<Pair<Double, Double>>,
     private val configuration: BarBasedDiagramConfiguration = BarBasedDiagramConfiguration(),
 ): BarBasedDiagramVideoClip(id, size, position, visible, configuration = configuration) {
-    override val logger: Logger = LoggerFactory.getLogger(javaClass)
-
     override fun generateDataDisplay(size: Vector2i): BufferedImage {
         val image = BufferedImage(size.x,size.y,BufferedImage.TYPE_INT_ARGB)
         val data = dataProvider()

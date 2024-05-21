@@ -42,9 +42,9 @@ fun VideoClip.layout(layout: Layout){
 fun VideoClip.initializeLayouts(){
     if (this is Layout) {
         this.recalculateChildren()
-        getChildren().forEach(VideoClip::initializeLayouts)
+        onChildren(VideoClip::initializeLayouts)
     } else {
-        getChildren().forEach {
+        onChildren {
             if (it is Layout) {
                 it.set(VideoClip.PropertyKey_Position, Vector2i(0, 0))
                 it.set(VideoClip.PropertyKey_Size, this.getSize())

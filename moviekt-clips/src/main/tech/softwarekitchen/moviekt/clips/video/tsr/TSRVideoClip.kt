@@ -18,7 +18,6 @@ class TSRVideoClip(
         val PropertyKey_Scene = "Scene"
     }
 
-    override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     private val sceneProperty = VideoClipProperty(
         PropertyKey_Scene,

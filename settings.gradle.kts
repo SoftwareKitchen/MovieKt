@@ -11,6 +11,7 @@ include(
     "moviekt-core",
     "moviekt-dsl",
     "moviekt-filter",
-    "moviekt-layout"
+    "moviekt-layout",
+    "moviekt-theme"
 )
 

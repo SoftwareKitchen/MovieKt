@@ -38,16 +38,15 @@ open class TextVideoClip (
     companion object{
         val PropertyKey_Text = "Text"
     }
-    override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     private val textProperty = VideoClipProperty(PropertyKey_Text, configuration.text, this::markDirty)
-    private val fontColorProperty = VideoClipThemeProperty(VideoTheme.VTPropertyKey_FontColor, configuration.color, this::markDirty)
-    private val fontSizeProperty = VideoClipThemeProperty(VideoTheme.VTPropertyKey_FontSize, configuration.fontSize, this::markDirty)
-    private val fontProperty = VideoClipThemeProperty(VideoTheme.VTPropertyKey_Font, configuration.ttFont?.let(this::loadFont), this::markDirty){
+    private val fontColorProperty = VideoClipProperty(VideoTheme.VTPropertyKey_FontColor, configuration.color, this::markDirty)
+    private val fontSizeProperty = VideoClipProperty(VideoTheme.VTPropertyKey_FontSize, configuration.fontSize, this::markDirty)
+    private val fontProperty = VideoClipProperty(VideoTheme.VTPropertyKey_Font, configuration.ttFont?.let(this::loadFont), this::markDirty){
         when{
             it is Font -> it
             it is File -> loadFont(it)
-            else -> throw Exception()
+            else -> throw Exception("Unable to parse to file $it")
         }
     }
 
@@ -113,11 +112,10 @@ open class DynamicTextVideoClip (
     companion object{
         val PropertyKey_Text = "Text"
     }
-    override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
-    private val fontColorProperty = VideoClipThemeProperty(VideoTheme.VTPropertyKey_FontColor, configuration.color, this::markDirty)
-    private val fontSizeProperty = VideoClipThemeProperty(VideoTheme.VTPropertyKey_FontSize, configuration.fontSize, this::markDirty)
-    private val fontProperty = VideoClipThemeProperty(VideoTheme.VTPropertyKey_Font, configuration.ttFont?.let(this::loadFont), this::markDirty){
+    private val fontColorProperty = VideoClipProperty(VideoTheme.VTPropertyKey_FontColor, configuration.color, this::markDirty)
+    private val fontSizeProperty = VideoClipProperty(VideoTheme.VTPropertyKey_FontSize, configuration.fontSize, this::markDirty)
+    private val fontProperty = VideoClipProperty(VideoTheme.VTPropertyKey_Font, configuration.ttFont?.let(this::loadFont), this::markDirty){
         when{
             it is Font -> it
             it is File -> loadFont(it)

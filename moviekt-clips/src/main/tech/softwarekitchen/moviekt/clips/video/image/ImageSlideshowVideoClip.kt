@@ -20,7 +20,6 @@ class ImageSlideshowVideoClip(
         val PropertyKey_ImageIndex = "ImageIndex"
     }
 
-    override val logger: Logger = LoggerFactory.getLogger(javaClass)
     private val images = imageFiles.map{ImageIO.read(it)}
     private val imageIndexProperty = VideoClipProperty(PropertyKey_ImageIndex, 0, this::markDirty)
     init{

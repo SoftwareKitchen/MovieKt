@@ -27,7 +27,6 @@ class StaticImageVideoClip(
     private val configuration: StaticImageVideoClipConfiguration = StaticImageVideoClipConfiguration(),
 ): VideoClip(id, size, position, visible) {
     val toDraw = ImageIO.read(imageFile)
-    override val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val graphics = img.createGraphics()

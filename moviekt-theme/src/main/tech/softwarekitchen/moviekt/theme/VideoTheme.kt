@@ -13,12 +13,17 @@ class VideoTheme {
     }
     private val themeData = ArrayList<ThemeData>()
 
+    fun getAvailableKeys(): Set<String>{
+        return themeData.map{it.key}.toSet()
+    }
+
     fun set(key: String, value: Any, variant: String? = null){
         themeData.removeIf{it.key == key && it.variant == variant}
         themeData.add(ThemeData(key, variant, value))
     }
 
     fun get(key: String, variant: String? = null): Any?{
-        return themeData.firstOrNull{it.key == key && it.variant == variant}?.value
+        return themeData.firstOrNull{it.key == key && it.variant == variant}?.value ?:
+                themeData.firstOrNull{it.key == key}?.value
     }
 }
