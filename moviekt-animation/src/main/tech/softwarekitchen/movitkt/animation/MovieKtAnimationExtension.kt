@@ -5,7 +5,7 @@ import tech.softwarekitchen.moviekt.core.extension.MovieKtExtension
 import tech.softwarekitchen.moviekt.core.video.VideoClip
 
 class MovieKtAnimationExtension: MovieKtExtension {
-    val animations = ArrayList<Pair<MovieKtAnimation<*>, List<VideoClip>>>()
+    private val animations = ArrayList<Pair<MovieKtAnimation<*>, List<VideoClip>>>()
     override fun prepare(movie: Movie) {
         animations.addAll(movie.readRoot{
             rootVC ->
@@ -23,5 +23,9 @@ class MovieKtAnimationExtension: MovieKtExtension {
         }
 
         animations.removeIf { it.first.isFinished(t) }
+    }
+
+    fun insertAnimation(anim: MovieKtAnimation<*>, on: List<VideoClip>){
+        animations.add(Pair(anim, on))
     }
 }

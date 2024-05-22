@@ -2,6 +2,7 @@ package tech.softwarekitchen.moviekt.core
 
 import org.slf4j.LoggerFactory
 import tech.softwarekitchen.moviekt.core.audio.AudioClip
+import tech.softwarekitchen.moviekt.core.context.MovieKtContext
 import tech.softwarekitchen.moviekt.core.exception.FFMPEGDidntShutdownException
 import tech.softwarekitchen.moviekt.core.exception.ImageSizeMismatchException
 import tech.softwarekitchen.moviekt.core.exception.VideoIsClosedException
@@ -30,7 +31,7 @@ class Movie(
     private val fps: Int,
     private val videoRoot: VideoClip,
     private val audioRoot: AudioClip,
-    private val extensions: List<MovieKtExtension> = listOf()
+    val extensions: List<MovieKtExtension> = listOf()
 ) {
     private lateinit var videoStart: LocalDateTime
     private val numVideoFrames = 1 + length * fps
@@ -153,6 +154,7 @@ class Movie(
     }
 
     fun write(){
+        MovieKtContext.activeRenderProcess = this
         videoStart = LocalDateTime.now()
         Thread(this::log).start()
 
@@ -378,5 +380,7 @@ class Movie(
         mergeDone = true
         File(rawAudioName).delete()
         File(rawVideoName).delete()
+
+        MovieKtContext.activeRenderProcess = null
     }
 }
