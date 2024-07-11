@@ -24,6 +24,6 @@ class VideoTheme {
 
     fun get(key: String, variant: String? = null): Any?{
         return themeData.firstOrNull{it.key == key && it.variant == variant}?.value ?:
-                themeData.firstOrNull{it.key == key}?.value
+                themeData.firstOrNull{it.key == key && it.variant == null}?.value
     }
 }

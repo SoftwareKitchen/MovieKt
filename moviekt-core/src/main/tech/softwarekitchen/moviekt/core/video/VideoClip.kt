@@ -174,7 +174,7 @@ abstract class VideoClip(
         }
     }
 
-    fun set(key: String, value: Any){
+    open fun set(key: String, value: Any){
         val prop = properties.firstOrNull{it.name == key} ?: throw UnknownPropertyException(key, this.id)
         prop.set(value)
     }

@@ -195,6 +195,7 @@ class Movie(
 
         while (videoFramesWritten < numVideoFrames) {
             val t = videoFramesWritten / fps.toFloat()
+            MovieKtContext.currentTime = t
 
             val toExecute = onceCallbacks.filter { it.at <= t }.toSet()
             toExecute.forEach { it.action() }
@@ -259,6 +260,7 @@ class Movie(
                 val audioOutputStream = audioProcess.outputStream
                 while(audioFramesWritten < numAudioFrames){
                     val t = audioFramesWritten / 44100.0
+                    MovieKtContext.currentTime = t.toFloat()
                     val v = audioRoot.getAt(t)
                     val ampTranslated = v.map{(32767.0 * (it + 1)).toInt()}
 
@@ -310,6 +312,7 @@ class Movie(
                 val audioOutputStreamRight = audioProcessRight.outputStream
                 while(audioFramesWritten < numAudioFrames){
                     val t = audioFramesWritten / 44100.0
+                    MovieKtContext.currentTime = t.toFloat()
                     val v = audioRoot.getAt(t)
                     val ampTranslated = v.map{(32767.0 * it + 1).toInt()}
 

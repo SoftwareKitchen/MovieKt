@@ -7,6 +7,7 @@ import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.animation.once.SetOnceAnimation
 import tech.softwarekitchen.moviekt.clips.audio.basic.AudioContainerClip
 import tech.softwarekitchen.moviekt.clips.video.basic.*
+import tech.softwarekitchen.moviekt.clips.video.file.FileVideoClip
 import tech.softwarekitchen.moviekt.clips.video.image.*
 import tech.softwarekitchen.moviekt.clips.video.shape.ArrowVideoClip
 import tech.softwarekitchen.moviekt.clips.video.shape.ArrowVideoClipConfiguration

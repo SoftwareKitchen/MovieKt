@@ -9,7 +9,7 @@ import tech.softwarekitchen.moviekt.theme.VideoTheme.Companion.VTPropertyKey_Bac
 import java.awt.Color
 import java.awt.image.BufferedImage
 
-data class ColorVideoClipConfiguration(val background: Color, val border: Color? = null, val borderWidth: Int = 0, val borderRadius: Int = 0)
+open class ColorVideoClipConfiguration(val background: Color, val border: Color? = null, val borderWidth: Int = 0, val borderRadius: Int = 0)
 
 open class ColorVideoClip(id: String, size: Vector2i, position: Vector2i, visible: Boolean, configuration: ColorVideoClipConfiguration): VideoClip(id, size,position, visible) {
     companion object{

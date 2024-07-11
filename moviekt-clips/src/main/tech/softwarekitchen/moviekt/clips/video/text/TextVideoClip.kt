@@ -22,10 +22,11 @@ enum class TextAnchor{
 class StaticTextVideoClipConfiguration(
     val text: String,
     val fontSize: Int = 24,
-    val color: Color = Color.BLACK,
+    val color: Color = Color.WHITE,
     val ttFont: File? = null,
     val anchor: TextAnchor = TextAnchor.Left,
-    val shift: Vector2i = Vector2i(0,0)
+    val shift: Vector2i = Vector2i(0,0),
+    val backgroundColor: Color = Color.BLACK
 )
 open class TextVideoClip (
     id: String,
@@ -39,22 +40,24 @@ open class TextVideoClip (
         val PropertyKey_Text = "Text"
     }
 
-    private val textProperty = VideoClipProperty(PropertyKey_Text, configuration.text, this::markDirty)
-    private val fontColorProperty = VideoClipProperty(VideoTheme.VTPropertyKey_FontColor, configuration.color, this::markDirty)
-    private val fontSizeProperty = VideoClipProperty(VideoTheme.VTPropertyKey_FontSize, configuration.fontSize, this::markDirty)
-    private val fontProperty = VideoClipProperty(VideoTheme.VTPropertyKey_Font, configuration.ttFont?.let(this::loadFont), this::markDirty){
+    protected val textProperty = VideoClipProperty(PropertyKey_Text, configuration.text, this::markDirty)
+    protected val fontColorProperty = VideoClipProperty(VideoTheme.VTPropertyKey_FontColor, configuration.color, this::markDirty)
+    protected val fontSizeProperty = VideoClipProperty(VideoTheme.VTPropertyKey_FontSize, configuration.fontSize, this::markDirty)
+    protected val fontProperty = VideoClipProperty(VideoTheme.VTPropertyKey_Font, configuration.ttFont?.let(this::loadFont), this::markDirty){
         when{
             it is Font -> it
             it is File -> loadFont(it)
             else -> throw Exception("Unable to parse to file $it")
         }
     }
+    protected val backgroundColorProperty = VideoClipProperty(VideoTheme.VTPropertyKey_BackgroundColor, configuration.backgroundColor, this::markDirty)
 
     init{
         registerProperty(textProperty)
         registerProperty(fontProperty)
         registerProperty(fontColorProperty)
         registerProperty(fontSizeProperty)
+        registerProperty(backgroundColorProperty)
     }
 
     private fun loadFont(file: File): Font{
@@ -75,6 +78,10 @@ open class TextVideoClip (
         val curSize = Vector2i(img.width, img.height)
 
         val graphics = img.createGraphics()
+
+        graphics.color = backgroundColorProperty.v
+        graphics.fillRect(0,0,getSize().x, getSize().y)
+
         val font = (fontProperty.v ?: graphics.font).deriveFont(fontSizeProperty.v.toFloat())
         val bounds = font.getStringBounds(textProperty.v,graphics.fontRenderContext)
         val topleft = when(configuration.anchor){

@@ -2,11 +2,13 @@ package tech.softwarekitchen.moviekt.filter.impl
 
 import tech.softwarekitchen.moviekt.filter.VideoClipFilter
 import tech.softwarekitchen.moviekt.util.Pixel
+import java.awt.image.BufferedImage
 
 class VerticalFadeFilter(
     val midSize: Int, val padding: Int
 ): VideoClipFilter {
-    override fun filter(x: Int, y: Int, xSize: Int, ySize: Int, pixel: Pixel): Pixel {
+    override fun filter(img: BufferedImage, x: Int, y: Int, pixel: Pixel): Pixel {
+        val ySize = img.height
         val y0 = padding
         val y1 = (ySize - midSize) / 2
         val y2 = (ySize  + midSize) / 2

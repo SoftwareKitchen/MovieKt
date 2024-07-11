@@ -3,6 +3,7 @@ package tech.softwarekitchen.moviekt.filter
 import tech.softwarekitchen.moviekt.core.extension.MovieKtVideoExtensionContainer
 import tech.softwarekitchen.moviekt.core.video.VideoClip
 import tech.softwarekitchen.moviekt.util.Pixel
+import java.awt.image.BufferedImage
 
 class MovieKtFilterContainer(
     override val videoClip: VideoClip
@@ -13,9 +14,9 @@ class MovieKtFilterContainer(
         filters.add(filter)
     }
 
-    override fun pixel(x: Int, y: Int, prev: Pixel): Pixel {
+    override fun pixel(img: BufferedImage, x: Int, y: Int, prev: Pixel): Pixel {
         var pixel = prev
-        filters.forEach{ pixel = it.filter(x,y,videoClip.getSize().x, videoClip.getSize().y, pixel) }
+        filters.forEach{ pixel = it.filter(img, x,y, pixel) }
         return pixel
     }
 }

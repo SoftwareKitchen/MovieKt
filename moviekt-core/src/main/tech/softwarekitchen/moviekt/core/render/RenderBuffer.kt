@@ -169,7 +169,7 @@ private class LayerBuffer(
             }
 
             var pixel = Pixel(a,r,g,b)
-            clip.extensions.forEach{ pixel = it.pixel(x,y,pixel) }
+            clip.extensions.forEach{ pixel = it.pixel(cache, x,y,pixel) }
 
             buffer[4 * linearIndex] = pixel.a
             buffer[4 * linearIndex + 1] = pixel.r

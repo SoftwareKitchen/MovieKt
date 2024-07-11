@@ -1,31 +1,57 @@
-package tech.softwarekitchen.moviekt.clips.video.basic
+package tech.softwarekitchen.moviekt.clips.video.file
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.moviekt.core.util.VideoTimestamp
 import tech.softwarekitchen.moviekt.core.video.VideoClip
 import java.awt.image.BufferedImage
-import java.io.BufferedReader
 import java.io.File
-import java.io.FileInputStream
 import java.io.InputStream
-import java.lang.ref.WeakReference
-import kotlin.math.floor
 
-class FileVideoClip(id: String, size: Vector2i, position: Vector2i, private val f: File, private val videoSize: Vector2i, private val offset: Double = 0.0, private val videoOffset: Vector2i = Vector2i(0,0)): VideoClip(id, size, position, true, volatile = true) {
-
+open class FileVideoClip(id: String, size: Vector2i, position: Vector2i, private val f: File, private val videoSize: Vector2i, private val offset: Double = 0.0, private val videoOffset: Vector2i = Vector2i(
+    0,
+    0
+)
+): VideoClip(id, size, position, true, volatile = true) {
+    companion object {
+        val PropertyKey_VideoTimeMapping = "VideoTimeMapping"
+    }
 
     private lateinit var currentFrameData: ByteArray
     private var currentFrame = -1
-    private val fps = 30 //FIXME
+    private val fps: Int
     private val videoStream: InputStream
     private var outOfData = false
+    val duration: Double
+    private val durationRegex: Regex
+
+    private val mapperProperty =
+        VideoClipProperty<(Double) -> Double>(PropertyKey_VideoTimeMapping, { it }, this::markDirty)
 
     init{
+        durationRegex = "^(\\d+):(\\d+):(\\d+)\\.(\\d+)$".toRegex()
+
+        registerProperty(mapperProperty)
+
         if(!f.exists() || f.isDirectory){
             throw Exception()
         }
+
+        val probe = ProcessBuilder("ffprobe", f.absolutePath)
+        val pp = probe.start()
+        val lines = pp.errorReader().readLines()
+        val r = pp.waitFor()
+        if(r != 0){
+            throw Exception("FFProbe non-zero return code $r")
+            pp.errorReader().lines().forEach{
+                println(it)
+            }
+        }
+        val relevantLine = lines.first{ it.contains("Stream #0:0: Video") }
+        val fpsPart = relevantLine.split(",").map{it.trim()}.first{it.endsWith("fps")}
+        fps = fpsPart.replace("fps", "").trim().toInt()
+        val durationLine = lines.first{ it.trim().startsWith("Duration:")}
+        val durationPart = durationLine.split(",")[0].replace("Duration:", "").trim()
+        duration = parseFfprobeDuration(durationPart)
 
         val pb = ProcessBuilder(
             "ffmpeg",
@@ -96,18 +122,21 @@ class FileVideoClip(id: String, size: Vector2i, position: Vector2i, private val 
     }
 
     override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
+        val mapper = mapperProperty.v
+        val effT = mapper(t.t)
+
         val g = img.createGraphics()
-        val content = getFrameAt(t.t)
+        val content = getFrameAt(effT)
         g.drawImage(content,0,0,null)
     }
-}
-
-
-private fun Long.formatMem(): String{
-    return when{
-        this < 1024 -> "$this"
-        this < 1024 * 1024 -> "${this / 1024}k"
-        this < 1024 * 1024 * 1024 -> "${this / (1024 * 1024)}M"
-        else -> "${this / (1024 * 1024 * 1024)}G"
+    private fun parseFfprobeDuration(duration: String): Double{
+        println("Read video duration $duration")
+        val match = durationRegex.matchEntire(duration) ?: throw Exception()
+        if(match.groups.size != 5){ throw Exception() }
+        val hours = match.groups[1]!!.value.toInt()
+        val minutes = match.groups[2]!!.value.toInt()
+        val seconds = match.groups[3]!!.value.toInt()
+        val nano = match.groups[4]!!.value.toInt()
+        return hours * 3600.0 + minutes + 60.0 + seconds * 1.0 + nano * 1e-9
     }
 }

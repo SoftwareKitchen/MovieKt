@@ -4,6 +4,7 @@ import tech.softwarekitchen.common.vector.Vector2
 import tech.softwarekitchen.common.vector.Vector2i
 import tech.softwarekitchen.movitkt.animation.MovieKtAnimation
 import tech.softwarekitchen.movitkt.animation.basic.MKTTimerangeAnimation
+import java.awt.Color
 import kotlin.math.cos
 
 interface Interpolatable<T: Any>{
@@ -19,6 +20,17 @@ class DoubleInterpolator(val f1: Double, val f2: Double): Interpolatable<Double>
 class FloatInterpolator(val f1: Float, val f2: Float): Interpolatable<Float>{
     override fun interpolateLinear(f: Float): Float {
         return (1f - f) * f1 + f * f2
+    }
+}
+
+class ColorInterpolator(val c1: Color, val c2: Color): Interpolatable<Color>{
+    override fun interpolateLinear(f: Float): Color {
+        val inv = 1f - f
+        return Color(
+            (c1.red * inv + c2.red * f).toInt(),
+            (c1.green * inv + c2.green * f).toInt(),
+            (c1.blue * inv + c2.blue* f).toInt()
+        )
     }
 }
 
