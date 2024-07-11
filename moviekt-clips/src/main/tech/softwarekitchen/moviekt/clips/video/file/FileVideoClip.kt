@@ -15,8 +15,9 @@ open class FileVideoClip(id: String, size: Vector2i, position: Vector2i, private
     companion object {
         val PropertyKey_VideoTimeMapping = "VideoTimeMapping"
     }
-
-    private lateinit var currentFrameData: ByteArray
+    val pixelsPerFrame = videoSize.x * videoSize.y
+    val bytesPerFrame = 3 * pixelsPerFrame
+    val currentFrameData = ByteArray(bytesPerFrame)
     private var currentFrame = -1
     private val fps: Int
     private val videoStream: InputStream
@@ -49,6 +50,7 @@ open class FileVideoClip(id: String, size: Vector2i, position: Vector2i, private
         val relevantLine = lines.first{ it.contains("Stream #0:0: Video") }
         val fpsPart = relevantLine.split(",").map{it.trim()}.first{it.endsWith("fps")}
         fps = fpsPart.replace("fps", "").trim().toInt()
+        println("Video FPS $fps")
         val durationLine = lines.first{ it.trim().startsWith("Duration:")}
         val durationPart = durationLine.split(",")[0].replace("Duration:", "").trim()
         duration = parseFfprobeDuration(durationPart)
@@ -100,25 +102,15 @@ open class FileVideoClip(id: String, size: Vector2i, position: Vector2i, private
         if(outOfData){
             return
         }
-        val pixelsPerFrame = videoSize.x * videoSize.y
 
-        var data: ByteArray? = null
-        val fetcher = Thread{
-            data = videoStream.readNBytes(3 * pixelsPerFrame)
+        try{
+            videoStream.readNBytes(currentFrameData, 0, bytesPerFrame)
+        }catch(ex: Exception){
+            println("WARN No frame data, video might have ended")
+            videoStream.close()
+            outOfData = true
+
         }
-        fetcher.start()
-
-        for(i in 0 until 100){
-            Thread.sleep(100)
-            data?.let{
-                currentFrameData = it
-                return
-            }
-        }
-
-        videoStream.close()
-        fetcher.interrupt()
-        outOfData = true
     }
 
     override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
@@ -137,6 +129,6 @@ open class FileVideoClip(id: String, size: Vector2i, position: Vector2i, private
         val minutes = match.groups[2]!!.value.toInt()
         val seconds = match.groups[3]!!.value.toInt()
         val nano = match.groups[4]!!.value.toInt()
-        return hours * 3600.0 + minutes + 60.0 + seconds * 1.0 + nano * 1e-9
+        return hours * 3600.0 + minutes * 60.0 + seconds * 1.0 + nano * 1e-9
     }
 }

@@ -24,6 +24,8 @@ class TimeMappedFileVideoClip(
             val q = (at - outerStart) / (outerEnd - outerStart)
             return videoStart + (videoEnd - videoStart) * q
         }
+
+        override fun toString(): String = "OUTER [$outerStart - $outerEnd] -> VIDEO [$videoStart $videoEnd]"
     }
     private val intervals: List<TimeMapInterval>
 
@@ -53,7 +55,8 @@ class TimeMappedFileVideoClip(
     }
 
     override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
-        val interval = intervals.firstOrNull{ t.t >= it.outerStart && t.t < it.outerEnd } ?: return
+        val interval = intervals.firstOrNull{ t.t >= it.outerStart && t.t < it.outerEnd }
+        interval ?: return
         super.renderContent(img, t)
     }
 }
