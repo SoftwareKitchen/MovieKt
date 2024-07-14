@@ -8,6 +8,8 @@ import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.geom.AffineTransform
 import java.awt.image.BufferedImage
+import java.io.File
+import javax.imageio.ImageIO
 
 enum class DiagramAxisLegendMode{
     None, AxisOnly, Full
@@ -29,36 +31,51 @@ abstract class DiagramVideoClip(
     size: Vector2i,
     position: Vector2i,
     visible: Boolean,
-    private val yAxis: DiagramAxisConfiguration,
-    private val xAxis: DiagramAxisConfiguration,
+    yAxis: DiagramAxisConfiguration,
+    xAxis: DiagramAxisConfiguration,
     volatile: Boolean = false
 ): VideoClip(id, size,position, visible, volatile) {
+    companion object{
+        val PropertyKey_Configuration_XAxis = "DLDVC_X_Configuration"
+        val PropertyKey_Configuration_YAxis = "DLDVC_Y_Configuration"
+    }
+
+    val xAxisConfigurationProperty = VideoClipProperty(PropertyKey_Configuration_XAxis, xAxis, this::markDirty)
+    val yAxisConfigurationProperty = VideoClipProperty(PropertyKey_Configuration_YAxis, yAxis, this::markDirty)
+
+    init{
+        registerProperty(xAxisConfigurationProperty, yAxisConfigurationProperty)
+    }
+
     abstract fun generateDataDisplay(size: Vector2i): BufferedImage
     data class LegendEntry(val pos: Int, val legend: String)
     abstract fun getYLegendEntries(dataScreenHeight: Int): List<LegendEntry>
     abstract fun getXLegendEntries(dataScreenWidth: Int): List<LegendEntry>
 
     override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
-        val bottomPadding = when(xAxis.legendMode){
+        val xAxis = xAxisConfigurationProperty.v
+        val yAxis = yAxisConfigurationProperty.v
+        val bottomPadding = when (xAxis.legendMode) {
             DiagramAxisLegendMode.None -> 0
             DiagramAxisLegendMode.AxisOnly -> 3
             DiagramAxisLegendMode.Full -> 30
-        } + when(xAxis.title){
+        } + when (xAxis.title) {
             null -> 0
             else -> 30
         }
-        val leftPadding = when(yAxis.legendMode){
+        val leftPadding = when (yAxis.legendMode) {
             DiagramAxisLegendMode.None -> 0
             DiagramAxisLegendMode.AxisOnly -> 3
             DiagramAxisLegendMode.Full -> 70
-        } + when(yAxis.title){
+        } + when (yAxis.title) {
             null -> 0
             else -> 35
         }
-        val padding = Padding(leftPadding,0,0,bottomPadding)
+        val padding = Padding(leftPadding, 0, 0, bottomPadding)
 
         val curSize = Vector2i(img.width, img.height)
-        val dataDisplaySize = Vector2i(curSize.x - padding.left - padding.right, curSize.y - padding.top - padding.bottom)
+        val dataDisplaySize =
+            Vector2i(curSize.x - padding.left - padding.right, curSize.y - padding.top - padding.bottom)
         val targetGraph = img.createGraphics()
 
         val dataImage = generateDataDisplay(dataDisplaySize)
@@ -69,6 +86,7 @@ abstract class DiagramVideoClip(
     }
 
     private fun drawYAxis(padding: Padding, graphics: Graphics2D, dataDisplaySize: Vector2i, totSize: Vector2i){
+        val yAxis = yAxisConfigurationProperty.v
         val yShift = when(yAxis.title){
             null -> 0
             else -> 20
@@ -104,6 +122,7 @@ abstract class DiagramVideoClip(
     }
 
     private fun drawXAxis(padding: Padding, graphics: Graphics2D, dataDisplaySize: Vector2i, totSize: Vector2i){
+        val xAxis = xAxisConfigurationProperty.v
         graphics.color = Color.WHITE
         when(xAxis.legendMode){
             DiagramAxisLegendMode.None -> {}

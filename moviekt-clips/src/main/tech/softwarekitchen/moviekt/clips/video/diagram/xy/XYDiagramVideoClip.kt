@@ -17,11 +17,23 @@ abstract class XYDiagramVideoClip(
     size: Vector2i,
     position: Vector2i,
     visible: Boolean,
-    private val configuration: XYDiagramConfiguration,
+    configuration: XYDiagramConfiguration,
     volatile: Boolean = false
 ): DiagramVideoClip(
     id, size, position, visible, yAxis = configuration.yAxis, xAxis = configuration.xAxis, volatile
 ) {
+    companion object{
+        val PropertyKey_Configuration_Grid = "DLDVC_Grid_Configuration"
+        val PropertyKey_Configuration_Colors = "DLDVC_Color_Configuration"
+    }
+
+    val gridConfigurationProperty = VideoClipProperty(PropertyKey_Configuration_Grid, configuration.grid, this::markDirty)
+    val colorConfigurationProperty = VideoClipProperty(PropertyKey_Configuration_Colors, configuration.colors, this::markDirty)
+
+    init{
+        registerProperty(gridConfigurationProperty, colorConfigurationProperty)
+    }
+
     abstract fun getData(): List<Pair<Double,Double>>
 
 
@@ -73,11 +85,11 @@ abstract class XYDiagramVideoClip(
         val dataBounds = getDataBounds()
         val min = dataBounds.ymin
         val max = dataBounds.ymax
-        val unit = when(val v = configuration.yAxis.unit){
+        val unit = when(val v = yAxisConfigurationProperty.v.unit){
             null -> ""
             else -> v
         }
-        if(configuration.yAxis.mode == DiagramAxisMode.Logarithmic){
+        if(yAxisConfigurationProperty.v.mode == DiagramAxisMode.Logarithmic){
             return generateLogarithmicBounds(min,max,dataScreenHeight, invert=true).map{ LegendEntry(it.pos, it.legend+unit) }
         }
         return generateLinearBounds(min,max,dataScreenHeight, invert=true).map{ LegendEntry(it.pos, it.legend+unit) }
@@ -87,11 +99,11 @@ abstract class XYDiagramVideoClip(
         val dataBounds = getDataBounds()
         val max = dataBounds.xmax
         val min = dataBounds.xmin
-        val unit = when(val v = configuration.xAxis.unit){
+        val unit = when(val v = xAxisConfigurationProperty.v.unit){
             null -> ""
             else -> v
         }
-        if(configuration.xAxis.mode == DiagramAxisMode.Logarithmic){
+        if(xAxisConfigurationProperty.v.mode == DiagramAxisMode.Logarithmic){
             return generateLogarithmicBounds(min, max, dataScreenWidth).map{ LegendEntry(it.pos, it.legend+unit) }
         }
         return generateLinearBounds(min, max, dataScreenWidth).map{ LegendEntry(it.pos, it.legend+unit) }
@@ -145,24 +157,24 @@ abstract class XYDiagramVideoClip(
     protected class DataBounds(val xmin: Double, val ymin: Double, val xmax: Double, val ymax: Double)
     protected fun getDataBounds(): DataBounds {
         val data = getData()
-        val xmin = configuration.xAxis.min ?: try{ data.minOf{ it.first } } catch(ex: Exception) { 0.0 }
-        val xmax = configuration.xAxis.max ?: try{ data.maxOf{ it.first } } catch(ex: Exception) { 1.0 }
-        val ymin = configuration.yAxis.min ?: try{ data.minOf{ it.second } } catch(ex: Exception) { 0.0 }
-        val ymax = configuration.yAxis.max ?: try{ data.maxOf{ it.second } } catch(ex: Exception) { 1.0 }
+        val xmin = xAxisConfigurationProperty.v.min ?: try{ data.minOf{ it.first } } catch(ex: Exception) { 0.0 }
+        val xmax = xAxisConfigurationProperty.v.max ?: try{ data.maxOf{ it.first } } catch(ex: Exception) { 1.0 }
+        val ymin = yAxisConfigurationProperty.v.min ?: try{ data.minOf{ it.second } } catch(ex: Exception) { 0.0 }
+        val ymax = yAxisConfigurationProperty.v.max ?: try{ data.maxOf{ it.second } } catch(ex: Exception) { 1.0 }
         return DataBounds(xmin,ymin,xmax,ymax)
     }
 
     protected fun getScreenMapper(dataScreenSize: Vector2i): Pair<(Double) -> Int, (Double) -> Int>{
         val dataBounds = getDataBounds()
-        val totalDeltaExpX = when(configuration.xAxis.mode){
+        val totalDeltaExpX = when(xAxisConfigurationProperty.v.mode){
             DiagramAxisMode.Logarithmic -> Math.log10(dataBounds.xmax / dataBounds.xmin)
             else -> 0.0
         }
-        val totalDeltaExpY = when(configuration.yAxis.mode){
+        val totalDeltaExpY = when(yAxisConfigurationProperty.v.mode){
             DiagramAxisMode.Logarithmic -> Math.log10(dataBounds.ymax / dataBounds.ymin)
             else -> 0.0
         }
-        val xScale: (Double) -> Int = if(configuration.xAxis.mode == DiagramAxisMode.Logarithmic){
+        val xScale: (Double) -> Int = if(xAxisConfigurationProperty.v.mode == DiagramAxisMode.Logarithmic){
             {
                 val deltaExp = Math.log10(it / dataBounds.xmin)
                 (dataScreenSize.x * deltaExp / totalDeltaExpX).toInt()
@@ -170,7 +182,7 @@ abstract class XYDiagramVideoClip(
         }else{
             { (dataScreenSize.x * (it - dataBounds.xmin) / (dataBounds.xmax - dataBounds.xmin)).toInt() }
         }
-        val yScale: (Double) -> Int = if(configuration.yAxis.mode == DiagramAxisMode.Logarithmic){
+        val yScale: (Double) -> Int = if(yAxisConfigurationProperty.v.mode == DiagramAxisMode.Logarithmic){
             {
                 val deltaExp = Math.log10(it / dataBounds.ymin)
                 (dataScreenSize.y * (1 - deltaExp / totalDeltaExpY)).toInt()

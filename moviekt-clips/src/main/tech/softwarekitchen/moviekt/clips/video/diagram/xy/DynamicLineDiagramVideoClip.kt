@@ -32,13 +32,14 @@ class DynamicLineDiagramVideoClip(
     position: Vector2i,
     visible: Boolean,
     dataProvider: () -> List<Double>,
-    private val configuration: DynamicLineDiagramVideoClipConfiguration = DynamicLineDiagramVideoClipConfiguration()
+    configuration: DynamicLineDiagramVideoClipConfiguration = DynamicLineDiagramVideoClipConfiguration()
 ): PointBasedDiagramVideoClip(id, size, position, visible, configuration = configuration, volatile = true) {
     companion object{
         val PropertyKey_DataProvider = "DataProvider"
     }
 
     private val dataProviderProperty = VideoClipProperty(PropertyKey_DataProvider,dataProvider,this::markDirty)
+
     init{
         registerProperty(dataProviderProperty)
     }
@@ -62,7 +63,7 @@ class DynamicLineDiagramVideoClip(
         graphics.color = Color(255,0,0,64)
         graphics.stroke = BasicStroke(1f)
 
-        configuration.colors.underGraphColor?.let{
+        colorConfigurationProperty.v.underGraphColor?.let{
             graphics.color = it
             for(i in 1 until data.size){
                 val shape = Polygon()
