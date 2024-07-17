@@ -11,6 +11,7 @@ import tech.softwarekitchen.moviekt.clips.video.diagram.impl.DynamicLineDiagramC
 class BarBasedDiagramConfiguration(
     override val xAxis: DiagramAxisConfiguration = DiagramAxisConfiguration(),
     override val yAxis: DiagramAxisConfiguration = DiagramAxisConfiguration(),
+    override val yAxis2: DiagramAxisConfiguration? = null,
     override val grid: DynamicDiagramBackgroundGrid = DynamicDiagramBackgroundGrid.None,
     override val colors: DynamicLineDiagramColorConfiguration = DynamicLineDiagramColorConfiguration(),
     barWidth: Double = 1.0

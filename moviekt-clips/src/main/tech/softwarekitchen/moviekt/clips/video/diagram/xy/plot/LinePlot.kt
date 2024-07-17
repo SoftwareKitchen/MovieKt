@@ -8,7 +8,8 @@ import java.awt.image.BufferedImage
 class LinePlot(
     val plotData: List<Pair<Double, Double>>,
     val lineColor: Color,
-    val underGraphColor: Color?
+    val underGraphColor: Color?,
+    override val referenceAxis: XYDiagramReferenceAxis = XYDiagramReferenceAxis.Left
 ): XYDiagramPlot {
 
     override fun getData(): List<Pair<Double, Double>> = plotData

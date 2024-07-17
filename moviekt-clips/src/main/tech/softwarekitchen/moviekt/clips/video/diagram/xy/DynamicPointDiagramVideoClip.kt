@@ -19,6 +19,7 @@ data class XYDataPoint(val x: Double, val y: Double)
 data class DynamicPointDiagramVideoClipConfiguration(
     override val xAxis: DiagramAxisConfiguration = DiagramAxisConfiguration(),
     override val yAxis: DiagramAxisConfiguration = DiagramAxisConfiguration(),
+    override val yAxis2: DiagramAxisConfiguration? = null,
     override val grid: DynamicDiagramBackgroundGrid = DynamicDiagramBackgroundGrid.None,
     override val colors: DynamicLineDiagramColorConfiguration = DynamicLineDiagramColorConfiguration()
 ): XYDiagramConfiguration

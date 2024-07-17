@@ -12,6 +12,7 @@ import java.awt.image.BufferedImage
 data class DynamicTrajectoryDiagramVideoClipConfiguration(
     override val xAxis: DiagramAxisConfiguration = DiagramAxisConfiguration(),
     override val yAxis: DiagramAxisConfiguration = DiagramAxisConfiguration(),
+    override val yAxis2: DiagramAxisConfiguration? = null,
     override val grid: DynamicDiagramBackgroundGrid = DynamicDiagramBackgroundGrid.None,
     override val colors: DynamicLineDiagramColorConfiguration = DynamicLineDiagramColorConfiguration()
 ): XYDiagramConfiguration

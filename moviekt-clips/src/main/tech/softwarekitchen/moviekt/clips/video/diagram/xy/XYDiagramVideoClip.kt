@@ -10,6 +10,7 @@ interface XYDiagramConfiguration{
     val yAxis: DiagramAxisConfiguration
     val grid: DynamicDiagramBackgroundGrid
     val colors: DynamicLineDiagramColorConfiguration
+    val yAxis2: DiagramAxisConfiguration?
 }
 
 abstract class XYDiagramVideoClip(
@@ -20,7 +21,7 @@ abstract class XYDiagramVideoClip(
     configuration: XYDiagramConfiguration,
     volatile: Boolean = false
 ): DiagramVideoClip(
-    id, size, position, visible, yAxis = configuration.yAxis, xAxis = configuration.xAxis, volatile
+    id, size, position, visible, yAxis = configuration.yAxis, xAxis = configuration.xAxis,yAxis2 = configuration.yAxis2, volatile = volatile
 ) {
     companion object{
         val PropertyKey_Configuration_Grid = "DLDVC_Grid_Configuration"
@@ -37,7 +38,7 @@ abstract class XYDiagramVideoClip(
     abstract fun getData(): List<Pair<Double,Double>>
 
 
-    private fun generateLinearBounds(min: Double, max: Double, pixSize: Int, invert: Boolean = false): List<LegendEntry>{
+    protected fun generateLinearBounds(min: Double, max: Double, pixSize: Int, invert: Boolean = false): List<LegendEntry>{
         if(min == max){
             return generateLinearBounds(min-1, max+1, pixSize, invert)
         }
@@ -63,7 +64,7 @@ abstract class XYDiagramVideoClip(
             }
     }
 
-    private fun generateLogarithmicBounds(min: Double, max: Double, pixSize: Int, invert: Boolean = false): List<LegendEntry>{
+    protected fun generateLogarithmicBounds(min: Double, max: Double, pixSize: Int, invert: Boolean = false): List<LegendEntry>{
         if(min <= 0.0 || max <= 0.0){
             throw InvalidConfigurationException("Invalid logarithmic bounds")
         }
@@ -80,6 +81,8 @@ abstract class XYDiagramVideoClip(
             LegendEntry((quot * pixSize).toInt(),formatExp10(Math.pow(10.0,it.toDouble())))
         }
     }
+
+    override fun getY2LegendEntries(dataScreenHeight: Int): List<LegendEntry> = listOf()
 
     override fun getYLegendEntries(dataScreenHeight: Int): List<LegendEntry> {
         val dataBounds = getDataBounds()

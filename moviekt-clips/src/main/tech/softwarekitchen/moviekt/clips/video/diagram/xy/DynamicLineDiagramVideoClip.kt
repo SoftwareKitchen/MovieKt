@@ -22,6 +22,7 @@ data class DynamicLineDiagramColorConfiguration(
 data class DynamicLineDiagramVideoClipConfiguration(
     override val xAxis: DiagramAxisConfiguration = DiagramAxisConfiguration(),
     override val yAxis: DiagramAxisConfiguration = DiagramAxisConfiguration(),
+    override val yAxis2: DiagramAxisConfiguration? = null,
     override val grid: DynamicDiagramBackgroundGrid = DynamicDiagramBackgroundGrid.None,
     override val colors: DynamicLineDiagramColorConfiguration = DynamicLineDiagramColorConfiguration()
 ): XYDiagramConfiguration

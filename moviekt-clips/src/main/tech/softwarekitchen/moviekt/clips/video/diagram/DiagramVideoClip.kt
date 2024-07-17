@@ -33,15 +33,18 @@ abstract class DiagramVideoClip(
     visible: Boolean,
     yAxis: DiagramAxisConfiguration,
     xAxis: DiagramAxisConfiguration,
-    volatile: Boolean = false
+    volatile: Boolean = false,
+    yAxis2: DiagramAxisConfiguration? = null
 ): VideoClip(id, size,position, visible, volatile) {
     companion object{
         val PropertyKey_Configuration_XAxis = "DLDVC_X_Configuration"
         val PropertyKey_Configuration_YAxis = "DLDVC_Y_Configuration"
+        val PropertyKey_Configuration_YAxis2 = "DLDVC_Y2_Configuration"
     }
 
     val xAxisConfigurationProperty = VideoClipProperty(PropertyKey_Configuration_XAxis, xAxis, this::markDirty)
     val yAxisConfigurationProperty = VideoClipProperty(PropertyKey_Configuration_YAxis, yAxis, this::markDirty)
+    val yAxis2ConfigurationProperty = VideoClipProperty(PropertyKey_Configuration_YAxis2, yAxis2, this::markDirty)
 
     init{
         registerProperty(xAxisConfigurationProperty, yAxisConfigurationProperty)
@@ -50,11 +53,13 @@ abstract class DiagramVideoClip(
     abstract fun generateDataDisplay(size: Vector2i): BufferedImage
     data class LegendEntry(val pos: Int, val legend: String)
     abstract fun getYLegendEntries(dataScreenHeight: Int): List<LegendEntry>
+    abstract fun getY2LegendEntries(dataScreenHeight: Int): List<LegendEntry>
     abstract fun getXLegendEntries(dataScreenWidth: Int): List<LegendEntry>
 
     override fun renderContent(img: BufferedImage, t: VideoTimestamp) {
         val xAxis = xAxisConfigurationProperty.v
         val yAxis = yAxisConfigurationProperty.v
+        val yAxis2 = yAxis2ConfigurationProperty.v
         val bottomPadding = when (xAxis.legendMode) {
             DiagramAxisLegendMode.None -> 0
             DiagramAxisLegendMode.AxisOnly -> 3
@@ -71,7 +76,16 @@ abstract class DiagramVideoClip(
             null -> 0
             else -> 35
         }
-        val padding = Padding(leftPadding, 0, 0, bottomPadding)
+        val rightPadding = when(yAxis2?.legendMode){
+            null -> 0
+            DiagramAxisLegendMode.None -> 0
+            DiagramAxisLegendMode.AxisOnly -> 3
+            DiagramAxisLegendMode.Full -> 70
+        } + when(yAxis2?.title) {
+            null -> 0
+            else -> 35
+        }
+        val padding = Padding(leftPadding, rightPadding, 0, bottomPadding)
 
         val curSize = Vector2i(img.width, img.height)
         val dataDisplaySize =
@@ -83,6 +97,40 @@ abstract class DiagramVideoClip(
 
         drawYAxis(padding, targetGraph, dataDisplaySize, curSize)
         drawXAxis(padding, targetGraph, dataDisplaySize, curSize)
+        yAxis2?.let{
+            drawYAxis2(padding, targetGraph, dataDisplaySize, curSize)
+        }
+    }
+
+    private fun drawYAxis2(padding: Padding, graphics: Graphics2D, dataDisplaySize: Vector2i, totSize: Vector2i){
+        val yAxis = yAxis2ConfigurationProperty.v!!
+        graphics.color = Color.WHITE
+        when(yAxis.legendMode){
+            DiagramAxisLegendMode.None -> {}
+            DiagramAxisLegendMode.AxisOnly -> {
+                graphics.fillRect(totSize.x - padding.right - 4,padding.top,3,dataDisplaySize.y)
+            }
+            DiagramAxisLegendMode.Full -> {
+                val yAxisEntries = getY2LegendEntries(dataDisplaySize.y)
+
+                for(item in yAxisEntries){
+                    graphics.fillRect(totSize.x - padding.right - 4,padding.top + item.pos-2,7,5)
+                    graphics.drawString(item.legend,totSize.x - padding.right + 5,padding.top + item.pos+8)
+                }
+                graphics.fillRect(totSize.x - padding.right - 4,padding.top,3,dataDisplaySize.y)
+            }
+        }
+        yAxis.title?.let{
+            graphics.font = graphics.font.deriveFont(18f)
+            val rect = graphics.font.getStringBounds(it, graphics.fontRenderContext)
+            val width = rect.width
+            val centerX = totSize.x - 10
+            val centerY = (totSize.y - padding.bottom) / 2
+            val forRestore = graphics.transform
+            graphics.transform = AffineTransform.getRotateInstance(+Math.PI / 2, centerX.toDouble(), centerY.toDouble())
+            graphics.drawString(it, (centerX - width / 2).toInt(), centerY + 4)
+            graphics.transform = forRestore
+        }
     }
 
     private fun drawYAxis(padding: Padding, graphics: Graphics2D, dataDisplaySize: Vector2i, totSize: Vector2i){
